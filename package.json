@@ -1,0 +1,37 @@
+{
+  "name": "nexo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "start": "webpack serve --mode=development",
+    "lint": "eslint src/ --ext .ts,.js --report-unused-disable-directives",
+    "lint:fix": "eslint src/ --ext .ts,.js --report-unused-disable-directives --fix",
+    "prepare": "husky"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@eslint/js": "^9.23.0",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.3",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.27.0",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "dependencies": {
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
+    "bootstrap": "^5.3.3"
+  }
+}
