@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NEXO</title>
     <link rel="icon" href="public/Icon.ico" type="image/x-icon" />
-
+    <link href="/dist/styles.css" rel="stylesheet" />
     <!-- Metatags SEO -->
     <meta
       name="description"
@@ -36,7 +36,9 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+    <link href="../dist/styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../src/styles/global.css" />
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
   </head>
 
@@ -45,9 +47,7 @@
       <!-- Aquí se inyectará la navbar correcta -->
     </header>
 
-    <main id="app">
-      <!-- Aquí se renderizará el contenido de cada página dinámicamente -->
-    </main>
+    <app-container></app-container>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script
