@@ -5,15 +5,33 @@ class SubjectCard extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['name', 'career', 'credits', 'nucleus'];
+        return ['name', 'career', 'credits', 'nucleus', 'id', 'rating'];
     }
 
     connectedCallback() {
         this.render();
         this.setupStarInteraction();
+        this.setupCardClickHandler();
+    }
+
+    setupCardClickHandler() {
+        const card = this.shadowRoot?.querySelector('.card');
+        card?.addEventListener('click', () => {
+            const id = this.getAttribute('id') || '1';
+            const name = this.getAttribute('name') || 'Name not specified';
+            
+            // Usar el evento de navegación personalizado en lugar de window.location.href
+            const customEvent = new CustomEvent('navigate', {
+                bubbles: true,
+                composed: true,
+                detail: '/subject-detail'
+            });
+            document.dispatchEvent(customEvent);
+        });
     }
 
     setupStarInteraction() {
+        const rating = parseInt(this.getAttribute('rating') || '3');
         const stars = this.shadowRoot?.querySelectorAll('.star-icon');
         if (stars) {
             stars.forEach((star, index) => {
@@ -25,7 +43,7 @@ class SubjectCard extends HTMLElement {
 
                 star.addEventListener('mouseout', () => {
                     stars.forEach((s, i) => {
-                        s.setAttribute('fill', i < 3 ? '#5354ED' : '#ccc');
+                        s.setAttribute('fill', i < rating ? '#5354ED' : '#ccc');
                     });
                 });
             });
@@ -36,6 +54,7 @@ class SubjectCard extends HTMLElement {
         if (oldValue !== newValue) {
             this.render();
             this.setupStarInteraction();
+            this.setupCardClickHandler();
         }
     }
 
@@ -44,11 +63,12 @@ class SubjectCard extends HTMLElement {
         const career = this.getAttribute('career') || 'Career not specified';
         const credits = this.getAttribute('credits') || '0';
         const nucleus = this.getAttribute('nucleus') || 'Nucleus not specified';
+        const rating = parseInt(this.getAttribute('rating') || '3');
         const randomId = Math.floor(Math.random() * 1000);
         const image = `https://picsum.photos/id/${randomId}/250/150`;
 
         const stars = Array(5).fill(0).map((_, index) => `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < 3 ? '#5354ED' : '#ccc'}" class="star-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < rating ? '#5354ED' : '#ccc'}" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
         `).join('');
@@ -66,6 +86,7 @@ class SubjectCard extends HTMLElement {
                     border: 1px solid rgb(0, 0, 0);
                     transition: all 0.3s ease;
                     overflow: hidden;
+                    cursor: pointer;
                 }
 
                 .card:hover {

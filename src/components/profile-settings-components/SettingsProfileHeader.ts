@@ -11,10 +11,20 @@ class SettingsProfileHeader extends HTMLElement {
 
     addEventListeners() {
         const xButton = this.shadowRoot!.querySelector('.x-button');
-        xButton?.addEventListener('click', () => {
-            // Navegar de vuelta a la página de perfil
+        xButton?.addEventListener('click', () => { 
             const navigationEvent = new CustomEvent('navigate', { detail: '/profile', bubbles: true });
             document.dispatchEvent(navigationEvent);
+        });
+
+        const profilePicture = this.shadowRoot!.querySelector('.profile-picture-container');
+        const fileInput = this.shadowRoot!.querySelector('#profile-upload');
+        
+        profilePicture?.addEventListener('click', () => {
+            (fileInput as HTMLElement).click();
+        });
+
+        fileInput?.addEventListener('change', () => {
+            alert('Image uploaded successfully! (simulation)');
         });
     }
 
@@ -58,7 +68,7 @@ class SettingsProfileHeader extends HTMLElement {
                     
                 }
 
-                .profile-picture {
+                .profile-picture-container {
                     width: 100px;
                     height: 100px;
                     border-radius: 50%;
@@ -66,8 +76,45 @@ class SettingsProfileHeader extends HTMLElement {
                     margin: 0 auto;
                     position: relative;
                     z-index: 2;
+                    cursor: pointer;
+                    overflow: hidden;
+                }
+
+                .profile-picture {
+                    width: 100%;
+                    height: 100%;
                     object-fit: cover;
                     background-color: white;
+                    transition: filter 0.3s ease;
+                }
+
+                .profile-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    color: white;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                }
+
+                .profile-picture-container:hover .profile-overlay {
+                    opacity: 1;
+                }
+
+                .profile-picture-container:hover .profile-picture {
+                    filter: brightness(0.8);
+                }
+
+                #profile-upload {
+                    display: none;
                 }
 
                 .x-button {
@@ -84,12 +131,30 @@ class SettingsProfileHeader extends HTMLElement {
                     justify-content: center;
                     cursor: pointer;
                     z-index: 3;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+
+                .x-button:hover {
+                    transform: scale(1.1) rotate(90deg);
+                    background: #5354ED;
+                    box-shadow: 3px 3px 15px -6px rgba(0, 0, 0, 0.4);
+                }
+
+                .x-button:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
                 }
 
                 .x-button svg {
                     width: 20px;
                     height: 20px;
                     fill: white;
+                    transition: all 0.3s ease;
+                }
+
+                .x-button:hover svg {
+                    fill: #ffffff;
                 }
 
                 .profile-info {
@@ -120,7 +185,13 @@ class SettingsProfileHeader extends HTMLElement {
                 </div>
             </div>
             <div class="profile-section">
-                <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture"  >
+                <div class="profile-picture-container">
+                    <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture">
+                    <div class="profile-overlay">
+                        <span>Change Image</span>
+                    </div>
+                    <input type="file" id="profile-upload" accept="image/*">
+                </div>
                 <button class="x-button">
                     <svg viewBox="0 0 24 24">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>

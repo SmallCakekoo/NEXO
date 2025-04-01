@@ -84,12 +84,30 @@ class ProfileHeader extends HTMLElement {
                     justify-content: center;
                     cursor: pointer;
                     z-index: 3;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+
+                .edit-button:hover {
+                    transform: scale(1.1) rotate(90deg);
+                    background: #5354ED;
+                   box-shadow: 3px 3px 15px -6px rgba(0, 0, 0, 0.4);
+                }
+
+                .edit-button:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
                 }
 
                 .edit-button svg {
                     width: 20px;
                     height: 20px;
                     fill: white;
+                    transition: all 0.3s ease;
+                }
+
+                .edit-button:hover svg {
+                    fill: #ffffff;
                 }
 
                 .profile-info {

@@ -26,13 +26,19 @@ class AppContainer extends HTMLElement {
                 newComponent = "<feed-page></feed-page>";
                 break;
             case "/academic":
-                newComponent = "<academic-page></academic-page>";
+                newComponent = "<academics-pages></academics-pages>";
                 break;
             case "/profile":
                 newComponent = "<profile-page></profile-page>";
                 break;
             case "/profile-settings":
                 newComponent = "<profile-settings-page></profile-settings-page>";
+                break;
+            case "/teacher-detail":
+                newComponent = "<teacher-detail-page></teacher-detail-page>";
+                break;
+            case "/subject-detail":
+                newComponent = "<subject-detail-page></subject-detail-page>";
                 break;
             default:
                 newComponent = "<feed-page></feed-page>";

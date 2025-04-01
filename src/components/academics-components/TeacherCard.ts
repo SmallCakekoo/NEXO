@@ -5,12 +5,29 @@ class TeacherCard extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['name', 'subject', 'nucleus', 'rating', 'image'];
+        return ['name', 'subject', 'nucleus', 'rating', 'image', 'id'];
     }
 
     connectedCallback() {
         this.render();
         this.setupStarInteraction();
+        this.setupCardClickHandler();
+    }
+
+    setupCardClickHandler() {
+        const card = this.shadowRoot?.querySelector('.card');
+        card?.addEventListener('click', () => {
+            const id = this.getAttribute('id') || '1';
+            const name = this.getAttribute('name') || 'Name not specified';
+            
+            // Usar el evento de navegación personalizado en lugar de window.location.href
+            const customEvent = new CustomEvent('navigate', {
+                bubbles: true,
+                composed: true,
+                detail: '/teacher-detail'
+            });
+            document.dispatchEvent(customEvent);
+        });
     }
 
     setupStarInteraction() {
@@ -37,6 +54,7 @@ class TeacherCard extends HTMLElement {
         if (oldValue !== newValue) {
             this.render();
             this.setupStarInteraction();
+            this.setupCardClickHandler();
         }
     }
 
@@ -67,6 +85,7 @@ class TeacherCard extends HTMLElement {
                     border: 1px solid rgb(0, 0, 0);
                     transition: all 0.3s ease;
                     overflow: hidden;
+                    cursor: pointer;
                 }
 
                 .card:hover {
