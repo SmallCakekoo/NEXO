@@ -1,4 +1,3 @@
-// @ts-ignore
 import teachersJson from '../../data/teachers.json';
 
 export interface Teacher {
@@ -22,7 +21,6 @@ class TeachersContainer extends HTMLElement {
 
     loadTeachers() {
         try {
-            // @ts-ignore
             const teachers: Teacher[] = teachersJson.teachers;
 
             const row = this.shadowRoot?.querySelector('.row');

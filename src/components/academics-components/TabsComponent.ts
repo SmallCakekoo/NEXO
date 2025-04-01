@@ -82,9 +82,8 @@ class TabsComponent extends HTMLElement {
                             <button class="nav-item nav-link" data-target="subjects" type="button">Subjects Reviews</button>
                         </div>
                     </nav>
-                   
-                    <div class="tab-content">
                        <search-bar></search-bar>
+                    <div class="tab-content">
                         <div class="tab-pane show active" id="teacher">
                             <teachers-container></teachers-container>
                         </div>

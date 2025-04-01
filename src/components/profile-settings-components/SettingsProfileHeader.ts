@@ -1,4 +1,4 @@
-class ProfileHeader extends HTMLElement {
+class SettingsProfileHeader extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -10,10 +10,10 @@ class ProfileHeader extends HTMLElement {
     }
 
     addEventListeners() {
-        const editButton = this.shadowRoot!.querySelector('.edit-button');
-        editButton?.addEventListener('click', () => {
-            // Navegar a la página de configuración de perfil
-            const navigationEvent = new CustomEvent('navigate', { detail: '/profile-settings', bubbles: true });
+        const xButton = this.shadowRoot!.querySelector('.x-button');
+        xButton?.addEventListener('click', () => {
+            // Navegar de vuelta a la página de perfil
+            const navigationEvent = new CustomEvent('navigate', { detail: '/profile', bubbles: true });
             document.dispatchEvent(navigationEvent);
         });
     }
@@ -70,7 +70,7 @@ class ProfileHeader extends HTMLElement {
                     background-color: white;
                 }
 
-                .edit-button {
+                .x-button {
                     position: absolute;
                     right: 30%;
                     top: 30px;
@@ -86,7 +86,7 @@ class ProfileHeader extends HTMLElement {
                     z-index: 3;
                 }
 
-                .edit-button svg {
+                .x-button svg {
                     width: 20px;
                     height: 20px;
                     fill: white;
@@ -121,19 +121,14 @@ class ProfileHeader extends HTMLElement {
             </div>
             <div class="profile-section">
                 <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture"  >
-                <button class="edit-button">
+                <button class="x-button">
                     <svg viewBox="0 0 24 24">
-                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
-                <div class="profile-info">
-                    <h1>Rosa Elvira</h1>
-                    <p class="career">Medicine</p>
-                    <p class="bio">Hi! I'm Rosa (the girl of the right). I'm a medicine student that likes to have fun. Here's my insta @Rosa_Elvira</p>
-                </div>
             </div>
         `;
     }
 }
 
-export default ProfileHeader; 
+export default SettingsProfileHeader; 

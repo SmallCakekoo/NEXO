@@ -1,4 +1,4 @@
-class FeedPage extends HTMLElement {
+class ProfileSettingsPage extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -15,11 +15,11 @@ class FeedPage extends HTMLElement {
             </style>
             
             <nav-bar></nav-bar>  
-            <h2>Feed Section</h2>
-            <p>Contenido del feed...</p>
-            <teacher-oldcard></teacher-oldcard>
+            <settings-profile-header></settings-profile-header>
+            <settings-profile-container></settings-profile-container>
+
         `;
     }
 }
 
-export default FeedPage;
+export default ProfileSettingsPage;

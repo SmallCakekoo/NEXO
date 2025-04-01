@@ -25,6 +25,8 @@ class ProfileContainer extends HTMLElement {
                 }
 
                 .posts-container {
+                background-color: #EFF0FD;
+                border-radius: 30px;
                     padding: 20px;
                 }
 

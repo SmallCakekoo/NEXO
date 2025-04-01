@@ -1,4 +1,3 @@
-// @ts-ignore
 import subjectsJson from '../../data/subjects.json';
 
 export interface Subject {
@@ -21,7 +20,6 @@ class SubjectsContainer extends HTMLElement {
 
     loadSubjects() {
         try {
-            // @ts-ignore
             const subjects: Subject[] = subjectsJson.subjects;
 
             const row = this.shadowRoot?.querySelector('.row');

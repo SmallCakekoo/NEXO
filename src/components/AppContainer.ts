@@ -31,6 +31,9 @@ class AppContainer extends HTMLElement {
             case "/profile":
                 newComponent = "<profile-page></profile-page>";
                 break;
+            case "/profile-settings":
+                newComponent = "<profile-settings-page></profile-settings-page>";
+                break;
             default:
                 newComponent = "<feed-page></feed-page>";
         }

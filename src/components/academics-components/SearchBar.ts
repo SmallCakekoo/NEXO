@@ -16,12 +16,13 @@ class SearchBar extends HTMLElement {
                     width: 100%;
                     max-width: 600px;
                     margin: 0 auto;
+                    box-sizing: border-box;
                 }
 
                 .search-input {
                     width: 100%;
                     padding: 12px 20px;
-                    padding-left: 45px;
+                    padding-left: 50px;
                     font-size: 1rem;
                     border: 2px solid #e9ecef;
                     border-radius: 50px;
@@ -29,6 +30,20 @@ class SearchBar extends HTMLElement {
                     transition: all 0.3s ease;
                     background-color: white;
                     color: #2d3748;
+                    box-sizing: border-box;
+                }
+
+                @media (max-width: 600px) {
+                    .search-input {
+                        font-size: 0.9rem;
+                        padding: 10px 20px;
+                        padding-left: 50px;
+                    }
+
+                    .search-icon {
+                        width: 18px;
+                        height: 18px;
+                    }
                 }
 
                 .search-input:focus {
