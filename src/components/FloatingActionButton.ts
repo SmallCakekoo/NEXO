@@ -1,16 +1,16 @@
 class FloatingActionButton extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.addEventListeners();
-    }
+  connectedCallback() {
+    this.render();
+    this.addEventListeners();
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 .fab {
                     position: fixed;
@@ -51,16 +51,16 @@ class FloatingActionButton extends HTMLElement {
                 </svg>
             </button>
         `;
-    }
+  }
 
-    addEventListeners() {
-        const fab = this.shadowRoot!.querySelector('.fab');
-        fab?.addEventListener('click', () => {
-            // Aquí se puede agregar la lógica para crear un nuevo post
-            const event = new CustomEvent('new-post-click');
-            this.dispatchEvent(event);
-        });
-    }
+  addEventListeners() {
+    const fab = this.shadowRoot!.querySelector(".fab");
+    fab?.addEventListener("click", () => {
+      // Aquí se puede agregar la lógica para crear un nuevo post
+      const event = new CustomEvent("new-post-click");
+      this.dispatchEvent(event);
+    });
+  }
 }
 
-export default FloatingActionButton; 
+export default FloatingActionButton;

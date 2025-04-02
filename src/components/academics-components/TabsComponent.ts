@@ -1,23 +1,22 @@
 class TabsComponent extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.setupTabs();
-    }
+  connectedCallback() {
+    this.render();
+    this.setupTabs();
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
             <style>
                 .project-tab {
                     padding: 20px;
                     background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    border-radius: 8px; 
                 }
                 
                 .nav-tabs {
@@ -94,38 +93,40 @@ class TabsComponent extends HTMLElement {
                 </div>
             </section>
         `;
-    }
+  }
 
-    setupTabs() {
-        const triggerTabList = Array.from(this.shadowRoot!.querySelectorAll<HTMLElement>('[data-target]'));
-        const navTabs = this.shadowRoot!.querySelector('.nav-tabs') as HTMLElement;
+  setupTabs() {
+    const triggerTabList = Array.from(
+      this.shadowRoot!.querySelectorAll<HTMLElement>("[data-target]")
+    );
+    const navTabs = this.shadowRoot!.querySelector(".nav-tabs") as HTMLElement;
 
-        triggerTabList.forEach((triggerEl) => {
-            triggerEl.addEventListener('click', (event: Event) => {
-                event.preventDefault();
-                
-                const allPanes = this.shadowRoot!.querySelectorAll('.tab-pane');
-                allPanes.forEach(pane => {
-                    pane.classList.remove('show', 'active');
-                });
+    triggerTabList.forEach((triggerEl) => {
+      triggerEl.addEventListener("click", (event: Event) => {
+        event.preventDefault();
 
-                const allButtons = this.shadowRoot!.querySelectorAll('.nav-link');
-                allButtons.forEach(button => {
-                    button.classList.remove('active');
-                });
-                
-                const targetId = triggerEl.getAttribute('data-target');
-                if (targetId) {
-                    const targetPane = this.shadowRoot!.querySelector(`#${targetId}`);
-                    if (targetPane) {
-                        targetPane.classList.add('show', 'active');
-                    }
-                    triggerEl.classList.add('active');
-                    navTabs.setAttribute('data-active-tab', targetId);
-                }
-            });
+        const allPanes = this.shadowRoot!.querySelectorAll(".tab-pane");
+        allPanes.forEach((pane) => {
+          pane.classList.remove("show", "active");
         });
-    }
+
+        const allButtons = this.shadowRoot!.querySelectorAll(".nav-link");
+        allButtons.forEach((button) => {
+          button.classList.remove("active");
+        });
+
+        const targetId = triggerEl.getAttribute("data-target");
+        if (targetId) {
+          const targetPane = this.shadowRoot!.querySelector(`#${targetId}`);
+          if (targetPane) {
+            targetPane.classList.add("show", "active");
+          }
+          triggerEl.classList.add("active");
+          navTabs.setAttribute("data-active-tab", targetId);
+        }
+      });
+    });
+  }
 }
 
 export default TabsComponent;

@@ -1,77 +1,82 @@
 class TeacherCard extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    static get observedAttributes() {
-        return ['name', 'subject', 'nucleus', 'rating', 'image', 'id'];
-    }
+  static get observedAttributes() {
+    return ["name", "subject", "nucleus", "rating", "image", "id"];
+  }
 
-    connectedCallback() {
-        this.render();
-        this.setupStarInteraction();
-        this.setupCardClickHandler();
-    }
+  connectedCallback() {
+    this.render();
+    this.setupStarInteraction();
+    this.setupCardClickHandler();
+  }
 
-    setupCardClickHandler() {
-        const card = this.shadowRoot?.querySelector('.card');
-        card?.addEventListener('click', () => {
-            const id = this.getAttribute('id') || '1';
-            const name = this.getAttribute('name') || 'Name not specified';
-            
-            const customEvent = new CustomEvent('navigate', {
-                bubbles: true,
-                composed: true,
-                detail: '/teacher-detail'
-            });
-            document.dispatchEvent(customEvent);
+  setupCardClickHandler() {
+    const card = this.shadowRoot?.querySelector(".card");
+    card?.addEventListener("click", () => {
+      const id = this.getAttribute("id") || "1";
+      const name = this.getAttribute("name") || "Name not specified";
+
+      const customEvent = new CustomEvent("navigate", {
+        bubbles: true,
+        composed: true,
+        detail: "/teacher-detail",
+      });
+      document.dispatchEvent(customEvent);
+    });
+  }
+
+  setupStarInteraction() {
+    const rating = parseInt(this.getAttribute("rating") || "0");
+    const stars = this.shadowRoot?.querySelectorAll(".star-icon");
+    if (stars) {
+      stars.forEach((star, index) => {
+        star.addEventListener("mouseover", () => {
+          stars.forEach((s, i) => {
+            s.setAttribute("fill", i <= index ? "#5354ED" : "#ccc");
+          });
         });
+
+        star.addEventListener("mouseout", () => {
+          stars.forEach((s, i) => {
+            s.setAttribute("fill", i < rating ? "#5354ED" : "#ccc");
+          });
+        });
+      });
     }
+  }
 
-    setupStarInteraction() {
-        const rating = parseInt(this.getAttribute('rating') || '0');
-        const stars = this.shadowRoot?.querySelectorAll('.star-icon');
-        if (stars) {
-            stars.forEach((star, index) => {
-                star.addEventListener('mouseover', () => {
-                    stars.forEach((s, i) => {
-                        s.setAttribute('fill', i <= index ? '#5354ED' : '#ccc');
-                    });
-                });
-
-                star.addEventListener('mouseout', () => {
-                    stars.forEach((s, i) => {
-                        s.setAttribute('fill', i < rating ? '#5354ED' : '#ccc');
-                    });
-                });
-            });
-        }
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (oldValue !== newValue) {
+      this.render();
+      this.setupStarInteraction();
+      this.setupCardClickHandler();
     }
+  }
 
-    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-        if (oldValue !== newValue) {
-            this.render();
-            this.setupStarInteraction();
-            this.setupCardClickHandler();
-        }
-    }
+  render() {
+    const name = this.getAttribute("name") || "Name not specified";
+    const subject = this.getAttribute("subject") || "Subject not specified";
+    const nucleus = this.getAttribute("nucleus") || "Nucleus not specified";
+    const rating = parseInt(this.getAttribute("rating") || "0");
+    const randomId = Math.floor(Math.random() * 100);
+    const image = `https://picsum.photos/id/${randomId}/250/150`;
 
-    render() {
-        const name = this.getAttribute('name') || 'Name not specified';
-        const subject = this.getAttribute('subject') || 'Subject not specified';
-        const nucleus = this.getAttribute('nucleus') || 'Nucleus not specified';
-        const rating = parseInt(this.getAttribute('rating') || '0');
-        const randomId = Math.floor(Math.random() * 100);
-        const image = `https://picsum.photos/id/${randomId}/250/150`;
-
-        const stars = Array(5).fill(0).map((_, index) => `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < rating ? '#5354ED' : '#ccc'}" class="star-icon">
+    const stars = Array(5)
+      .fill(0)
+      .map(
+        (_, index) => `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < rating ? "#5354ED" : "#ccc"}" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
-        `).join('');
+        `
+      )
+      .join("");
 
-        this.shadowRoot!.innerHTML = `
+    this.shadowRoot!.innerHTML = `
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
             <style>
                 .card {
@@ -182,7 +187,7 @@ class TeacherCard extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
 export default TeacherCard;

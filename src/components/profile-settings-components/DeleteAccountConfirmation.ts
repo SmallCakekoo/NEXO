@@ -1,25 +1,25 @@
 class DeleteAccountConfirmation extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.setupEventListeners();
-        // Aplicar animación después de que el elemento se haya agregado al DOM
-        setTimeout(() => {
-            const dialog = this.shadowRoot!.querySelector('.confirmation-dialog') as HTMLElement;
-            if (dialog) {
-                dialog.style.opacity = '1';
-                dialog.style.transform = 'translateY(0)';
-            }
-            this.shadowRoot!.host.classList.add('visible');
-        }, 10);
-    }
+  connectedCallback() {
+    this.render();
+    this.setupEventListeners();
+    // Aplicar animación después de que el elemento se haya agregado al DOM
+    setTimeout(() => {
+      const dialog = this.shadowRoot!.querySelector(".confirmation-dialog") as HTMLElement;
+      if (dialog) {
+        dialog.style.opacity = "1";
+        dialog.style.transform = "translateY(0)";
+      }
+      this.shadowRoot!.host.classList.add("visible");
+    }, 10);
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -174,49 +174,49 @@ class DeleteAccountConfirmation extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 
-    setupEventListeners() {
-        const confirmBtn = this.shadowRoot!.querySelector('.confirm-btn');
-        const cancelBtn = this.shadowRoot!.querySelector('.cancel-btn');
+  setupEventListeners() {
+    const confirmBtn = this.shadowRoot!.querySelector(".confirm-btn");
+    const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
-        confirmBtn?.addEventListener('click', () => {
-            // Animate out before removing
-            this.animateOut().then(() => {
-                // Dispatch event for account deletion confirmation
-                const confirmEvent = new CustomEvent('delete-account-confirmed', {
-                    bubbles: true,
-                    composed: true
-                });
-                this.dispatchEvent(confirmEvent);
-                this.remove();
-            });
+    confirmBtn?.addEventListener("click", () => {
+      // Animate out before removing
+      this.animateOut().then(() => {
+        // Dispatch event for account deletion confirmation
+        const confirmEvent = new CustomEvent("delete-account-confirmed", {
+          bubbles: true,
+          composed: true,
         });
+        this.dispatchEvent(confirmEvent);
+        this.remove();
+      });
+    });
 
-        cancelBtn?.addEventListener('click', () => {
-            // Animate out before removing
-            this.animateOut().then(() => {
-                this.remove();
-            });
-        });
-    }
+    cancelBtn?.addEventListener("click", () => {
+      // Animate out before removing
+      this.animateOut().then(() => {
+        this.remove();
+      });
+    });
+  }
 
-    animateOut() {
-        return new Promise<void>((resolve) => {
-            const dialog = this.shadowRoot!.querySelector('.confirmation-dialog') as HTMLElement;
-            this.shadowRoot!.host.classList.remove('visible');
-            
-            if (dialog) {
-                dialog.style.opacity = '0';
-                dialog.style.transform = 'translateY(20px) scale(0.95)';
-            }
-            
-            // Wait for animation to complete
-            setTimeout(() => {
-                resolve();
-            }, 300);
-        });
-    }
+  animateOut() {
+    return new Promise<void>((resolve) => {
+      const dialog = this.shadowRoot!.querySelector(".confirmation-dialog") as HTMLElement;
+      this.shadowRoot!.host.classList.remove("visible");
+
+      if (dialog) {
+        dialog.style.opacity = "0";
+        dialog.style.transform = "translateY(20px) scale(0.95)";
+      }
+
+      // Wait for animation to complete
+      setTimeout(() => {
+        resolve();
+      }, 300);
+    });
+  }
 }
 
-export default DeleteAccountConfirmation; 
+export default DeleteAccountConfirmation;

@@ -51,5 +51,4 @@ class BtnProfile extends HTMLElement {
   }
 }
 
-
 export default BtnProfile;

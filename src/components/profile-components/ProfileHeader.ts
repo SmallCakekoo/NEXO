@@ -1,25 +1,28 @@
 class ProfileHeader extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.addEventListeners();
-    }
+  connectedCallback() {
+    this.render();
+    this.addEventListeners();
+  }
 
-    addEventListeners() {
-        const editButton = this.shadowRoot!.querySelector('.edit-button');
-        editButton?.addEventListener('click', () => {
-            // Navegar a la página de configuración de perfil
-            const navigationEvent = new CustomEvent('navigate', { detail: '/profile-settings', bubbles: true });
-            document.dispatchEvent(navigationEvent);
-        });
-    }
+  addEventListeners() {
+    const editButton = this.shadowRoot!.querySelector(".edit-button");
+    editButton?.addEventListener("click", () => {
+      // Navegar a la página de configuración de perfil
+      const navigationEvent = new CustomEvent("navigate", {
+        detail: "/profile-settings",
+        bubbles: true,
+      });
+      document.dispatchEvent(navigationEvent);
+    });
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -49,6 +52,12 @@ class ProfileHeader extends HTMLElement {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
+                }
+
+                @media (max-width: 768px) {
+                    .banner-image {
+                        content: url('/assets/images/bannerimgsmall.png');
+                    }
                 }
 
                 .profile-section {
@@ -151,7 +160,7 @@ class ProfileHeader extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
-export default ProfileHeader; 
+export default ProfileHeader;

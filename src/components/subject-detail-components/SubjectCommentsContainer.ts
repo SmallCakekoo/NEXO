@@ -1,17 +1,16 @@
 class SubjectCommentsContainer extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    connectedCallback() {
-        this.render();
-    }
-
-    render() {
-        if (this.shadowRoot) {
-            this.shadowRoot.innerHTML = `
+  render() {
+    if (this.shadowRoot) {
+      this.shadowRoot.innerHTML = `
                 <style>
                     :host {
                         display: flex;
@@ -32,8 +31,8 @@ class SubjectCommentsContainer extends HTMLElement {
                 <div class="divider"></div>
                 <subject-review-list></subject-review-list>
             `;
-        }
     }
+  }
 }
 
-export default SubjectCommentsContainer; 
+export default SubjectCommentsContainer;

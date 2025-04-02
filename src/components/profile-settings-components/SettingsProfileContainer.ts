@@ -1,18 +1,18 @@
-import DeleteAccountConfirmation from './DeleteAccountConfirmation';
+import DeleteAccountConfirmation from "./DeleteAccountConfirmation";
 
 class SettingsProfileContainer extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.setupEventListeners();
-    }
+  connectedCallback() {
+    this.render();
+    this.setupEventListeners();
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -329,53 +329,53 @@ class SettingsProfileContainer extends HTMLElement {
                 </div>
             </div>
         `;
- 
-        this.updateCharCounter();
-    }
 
-    updateCharCounter() {
-        const bioText = this.shadowRoot!.querySelector('.bio-text') as HTMLTextAreaElement;
-        const charCounter = this.shadowRoot!.querySelector('.char-counter');
-        
-        if (bioText && charCounter) {
-            const count = bioText.value.length;
-            charCounter.textContent = `${count}/280 caracteres`;
-        }
-    }
+    this.updateCharCounter();
+  }
 
-    setupEventListeners() {
-        const saveBtn = this.shadowRoot!.querySelector('.save-btn');
-        const unlogBtn = this.shadowRoot!.querySelector('.unlog-btn');
-        const deleteAccount = this.shadowRoot!.querySelector('.delete-account');
-        const bioText = this.shadowRoot!.querySelector('.bio-text');
-        
-        bioText?.addEventListener('input', () => {
-            this.updateCharCounter();
-        });
-        
-        saveBtn?.addEventListener('click', () => {
-            console.log('Save button clicked');
-            // Aquí la lógica para guardar los cambios
-        });
-        
-        unlogBtn?.addEventListener('click', () => {
-            console.log('Unlog button clicked');
-            // Aquí la lógica para cerrar sesión
-        });
-        
-        deleteAccount?.addEventListener('click', () => {
-            console.log('Delete account clicked');
-            // Mostrar el diálogo de confirmación
-            const confirmationDialog = document.createElement('delete-account-confirmation');
-            document.body.appendChild(confirmationDialog);
-            
-            // Escuchar el evento de confirmación
-            confirmationDialog.addEventListener('delete-account-confirmed', () => {
-                console.log('Account deletion confirmed');
-                // Aquí la lógica para eliminar la cuenta
-            });
-        });
+  updateCharCounter() {
+    const bioText = this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement;
+    const charCounter = this.shadowRoot!.querySelector(".char-counter");
+
+    if (bioText && charCounter) {
+      const count = bioText.value.length;
+      charCounter.textContent = `${count}/280 caracteres`;
     }
+  }
+
+  setupEventListeners() {
+    const saveBtn = this.shadowRoot!.querySelector(".save-btn");
+    const unlogBtn = this.shadowRoot!.querySelector(".unlog-btn");
+    const deleteAccount = this.shadowRoot!.querySelector(".delete-account");
+    const bioText = this.shadowRoot!.querySelector(".bio-text");
+
+    bioText?.addEventListener("input", () => {
+      this.updateCharCounter();
+    });
+
+    saveBtn?.addEventListener("click", () => {
+      console.log("Save button clicked");
+      // Aquí la lógica para guardar los cambios
+    });
+
+    unlogBtn?.addEventListener("click", () => {
+      console.log("Unlog button clicked");
+      // Aquí la lógica para cerrar sesión
+    });
+
+    deleteAccount?.addEventListener("click", () => {
+      console.log("Delete account clicked");
+      // Mostrar el diálogo de confirmación
+      const confirmationDialog = document.createElement("delete-account-confirmation");
+      document.body.appendChild(confirmationDialog);
+
+      // Escuchar el evento de confirmación
+      confirmationDialog.addEventListener("delete-account-confirmed", () => {
+        console.log("Account deletion confirmed");
+        // Aquí la lógica para eliminar la cuenta
+      });
+    });
+  }
 }
 
-export default SettingsProfileContainer; 
+export default SettingsProfileContainer;

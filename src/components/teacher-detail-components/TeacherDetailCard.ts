@@ -1,39 +1,43 @@
 class TeacherDetailCard extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    static get observedAttributes() {
-        return ['name', 'subject', 'rating', 'image', 'nucleus'];
-    }
+  static get observedAttributes() {
+    return ["name", "subject", "rating", "image", "nucleus"];
+  }
 
-    connectedCallback() {
-        this.render();
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    attributeChangedCallback() {
-        this.render();
-    }
+  attributeChangedCallback() {
+    this.render();
+  }
 
-    render() {
-        const name = this.getAttribute('name') || 'Jimmy Ramirez';
-        const subject = this.getAttribute('subject') || 'Logic & Argumentation';
-        const rating = parseInt(this.getAttribute('rating') || '0');
-        const imageId = this.getAttribute('image') || '425';
-        const nucleus = this.getAttribute('nucleus') || 'basic';
-        
-        const image = `https://picsum.photos/id/${imageId}/400/300`;
-        
-        const stars = Array(5).fill(0).map((_, i) => 
-            `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="${i < rating ? 'filled' : ''}" fill="${i < rating ? '#5354ED' : '#e0e0fe'}" stroke="none" class="star-icon">
+  render() {
+    const name = this.getAttribute("name") || "Jimmy Ramirez";
+    const subject = this.getAttribute("subject") || "Logic & Argumentation";
+    const rating = parseInt(this.getAttribute("rating") || "0");
+    const imageId = this.getAttribute("image") || "425";
+    const nucleus = this.getAttribute("nucleus") || "basic";
+
+    const image = `https://picsum.photos/id/${imageId}/400/300`;
+
+    const stars = Array(5)
+      .fill(0)
+      .map(
+        (_, i) =>
+          `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="${i < rating ? "filled" : ""}" fill="${i < rating ? "#5354ED" : "#e0e0fe"}" stroke="none" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>`
-        ).join('');
+      )
+      .join("");
 
-        const nucleusText = nucleus === 'basic' ? 'Núcleo Básico' : 'Núcleo Profesional';
-        
-        this.shadowRoot!.innerHTML = `
+    const nucleusText = nucleus === "basic" ? "Núcleo Básico" : "Núcleo Profesional";
+
+    this.shadowRoot!.innerHTML = `
             <style>
                 .teacher-card {
                     display: flex;
@@ -154,7 +158,7 @@ class TeacherDetailCard extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
-export default TeacherDetailCard; 
+export default TeacherDetailCard;

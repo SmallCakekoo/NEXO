@@ -4,7 +4,7 @@ import BtnAcademic from "./components/navbar-buttons/BtnAcademic";
 import BtnProfile from "./components/navbar-buttons/BtnProfile";
 
 // la navbar
-import NavBar from "./components/NavbarComponent";
+import NavBarLog from "./components/navigation/NavbarLogComponent";
 
 // el boton de regreso y el boton de flotante
 import BackButton from "./components/BackButton";
@@ -19,7 +19,7 @@ import TeacherDetailPage from "./pages/teacherdetail";
 import SubjectDetailPage from "./pages/subjectdetail";
 
 // el contenedor de la app
-import AppContainer from "./components/AppContainer";
+import AppContainer from "./layouts/AppContainer";
 
 // los componentes de los academicos
 import SearchBar from "./components/academics-components/SearchBar";
@@ -59,7 +59,7 @@ customElements.define("btn-academic", BtnAcademic);
 customElements.define("btn-profile", BtnProfile);
 
 // la navbar
-customElements.define("nav-bar", NavBar);
+customElements.define("nav-bar", NavBarLog);
 
 // el boton de regreso y el boton de flotante
 customElements.define("back-button", BackButton);

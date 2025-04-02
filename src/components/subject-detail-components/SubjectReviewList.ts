@@ -43,7 +43,7 @@ class SubjectReviewList extends HTMLElement {
         rating: 5,
         text: "The course materials are well-organized and the online resources are comprehensive.",
         image: "https://i.pravatar.cc/150?img=6",
-      }
+      },
     ];
 
     this.render();

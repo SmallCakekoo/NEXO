@@ -1,15 +1,15 @@
 class PostCard extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 .post-card {
                     background: white;
@@ -130,7 +130,7 @@ class PostCard extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
-export default PostCard; 
+export default PostCard;

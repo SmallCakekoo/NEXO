@@ -1,18 +1,18 @@
 class SubjectDetailPage extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    render() {
-        // In a real application, you would get subject details from URL or state
-        const subjectId = new URLSearchParams(window.location.search).get('id') || '1';
-        
-        this.shadowRoot!.innerHTML = `
+  render() {
+    // In a real application, you would get subject details from URL or state
+    // const subjectId = new URLSearchParams(window.location.search).get('id') || '1';
+
+    this.shadowRoot!.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -70,7 +70,7 @@ class SubjectDetailPage extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
 export default SubjectDetailPage;

@@ -1,17 +1,16 @@
 class TeacherCommentsContainer extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    connectedCallback() {
-        this.render();
-    }
-
-    render() {
-        if (this.shadowRoot) {
-            this.shadowRoot.innerHTML = `
+  render() {
+    if (this.shadowRoot) {
+      this.shadowRoot.innerHTML = `
                 <style>
                     :host {
                         display: flex;
@@ -32,8 +31,8 @@ class TeacherCommentsContainer extends HTMLElement {
                 <div class="divider"></div>
                 <teacher-review-list></teacher-review-list>
             `;
-        }
     }
+  }
 }
 
-export default TeacherCommentsContainer; 
+export default TeacherCommentsContainer;

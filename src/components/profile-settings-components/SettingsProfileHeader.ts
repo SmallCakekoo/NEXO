@@ -1,35 +1,35 @@
 class SettingsProfileHeader extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        this.render();
-        this.addEventListeners();
-    }
+  connectedCallback() {
+    this.render();
+    this.addEventListeners();
+  }
 
-    addEventListeners() {
-        const xButton = this.shadowRoot!.querySelector('.x-button');
-        xButton?.addEventListener('click', () => { 
-            const navigationEvent = new CustomEvent('navigate', { detail: '/profile', bubbles: true });
-            document.dispatchEvent(navigationEvent);
-        });
+  addEventListeners() {
+    const xButton = this.shadowRoot!.querySelector(".x-button");
+    xButton?.addEventListener("click", () => {
+      const navigationEvent = new CustomEvent("navigate", { detail: "/profile", bubbles: true });
+      document.dispatchEvent(navigationEvent);
+    });
 
-        const profilePicture = this.shadowRoot!.querySelector('.profile-picture-container');
-        const fileInput = this.shadowRoot!.querySelector('#profile-upload');
-        
-        profilePicture?.addEventListener('click', () => {
-            (fileInput as HTMLElement).click();
-        });
+    const profilePicture = this.shadowRoot!.querySelector(".profile-picture-container");
+    const fileInput = this.shadowRoot!.querySelector("#profile-upload");
 
-        fileInput?.addEventListener('change', () => {
-            alert('Image uploaded successfully! (simulation)');
-        });
-    }
+    profilePicture?.addEventListener("click", () => {
+      (fileInput as HTMLElement).click();
+    });
 
-    render() {
-        this.shadowRoot!.innerHTML = `
+    fileInput?.addEventListener("change", () => {
+      alert("Image uploaded successfully! (simulation)");
+    });
+  }
+
+  render() {
+    this.shadowRoot!.innerHTML = `
             <style>
                 :host {
                     display: block;
@@ -59,6 +59,12 @@ class SettingsProfileHeader extends HTMLElement {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
+                }
+
+                  @media (max-width: 768px) {
+                    .banner-image {
+                        content: url('/assets/images/bannerimgsmall.png');
+                    }
                 }
 
                 .profile-section {
@@ -199,7 +205,7 @@ class SettingsProfileHeader extends HTMLElement {
                 </button>
             </div>
         `;
-    }
+  }
 }
 
-export default SettingsProfileHeader; 
+export default SettingsProfileHeader;

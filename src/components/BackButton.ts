@@ -1,45 +1,45 @@
 class BackButton extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    static get observedAttributes() {
-        return ['text', 'target'];
-    }
+  static get observedAttributes() {
+    return ["text", "target"];
+  }
 
-    connectedCallback() {
-        this.render();
-        this.addEventListeners();
-    }
+  connectedCallback() {
+    this.render();
+    this.addEventListeners();
+  }
 
-    addEventListeners() {
-        const button = this.shadowRoot?.querySelector('.back-button');
-        button?.addEventListener('click', () => {
-            // Obtener el destino de la navegación (por defecto '/academic')
-            const target = this.getAttribute('target') || '/academic';
-            
-            // Usar un evento de navegación personalizado
-            const customEvent = new CustomEvent('navigate', {
-                bubbles: true,
-                composed: true,
-                detail: target
-            });
-            document.dispatchEvent(customEvent);
-        });
-    }
+  addEventListeners() {
+    const button = this.shadowRoot?.querySelector(".back-button");
+    button?.addEventListener("click", () => {
+      // Obtener el destino de la navegación (por defecto '/academic')
+      const target = this.getAttribute("target") || "/academic";
 
-    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-        if (oldValue !== newValue) {
-            this.render();
-            this.addEventListeners();
-        }
-    }
+      // Usar un evento de navegación personalizado
+      const customEvent = new CustomEvent("navigate", {
+        bubbles: true,
+        composed: true,
+        detail: target,
+      });
+      document.dispatchEvent(customEvent);
+    });
+  }
 
-    render() {
-        const buttonText = this.getAttribute('text') || 'Back';
-        
-        this.shadowRoot!.innerHTML = `
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (oldValue !== newValue) {
+      this.render();
+      this.addEventListeners();
+    }
+  }
+
+  render() {
+    const buttonText = this.getAttribute("text") || "Back";
+
+    this.shadowRoot!.innerHTML = `
             <style>
                 .back-button {
                     display: flex;
@@ -71,7 +71,7 @@ class BackButton extends HTMLElement {
                 ${buttonText}
             </button>
         `;
-    }
+  }
 }
 
-export default BackButton; 
+export default BackButton;
