@@ -1,9 +1,9 @@
-export enum TxtButton {
-    txtbutton = "txtbutton"
+export enum TextButton {
+    textbutton = "textbutton"
   }
   
-  class Buttons extends HTMLElement {
-    txtbutton?: string;
+  class ButtonTags extends HTMLElement {
+    textbutton?: string;
   
     constructor() {
       super();
@@ -11,12 +11,12 @@ export enum TxtButton {
     }
   
     static get observedAttributes(): string[] {
-      return Object.values(TxtButton);
+      return Object.values(TextButton);
     }
   
     attributeChangedCallback(propName: string, oldValue: string, newValue: string) {
-      if (propName === TxtButton.txtbutton) {
-        this.txtbutton = newValue;
+      if (propName === TextButton.textbutton) {
+        this.textbutton = newValue;
         this.render();
       }
     }
@@ -50,11 +50,10 @@ export enum TxtButton {
             }
           </style>
   
-          <button>${this.txtbutton || "Default Text"}</button>
+          <button>${this.textbutton || "Default Text"}</button>
         `;
       }
     }
   }
   
-  customElements.define("text-button", Buttons);
-  export default Buttons;
+  export default ButtonTags;
