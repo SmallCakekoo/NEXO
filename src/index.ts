@@ -49,6 +49,10 @@ import TeacherDetailCard from "./components/teacher-detail-components/TeacherDet
 import TeacherReviewForm from "./components/teacher-detail-components/TeacherReviewForm";
 import TeacherReviewList from "./components/teacher-detail-components/TeacherReviewList";
 
+// los contenedores de los comentarios
+import TeacherCommentsContainer from "./components/teacher-detail-components/TeacherCommentsContainer";
+import SubjectCommentsContainer from "./components/subject-detail-components/SubjectCommentsContainer";
+
 // botones de la navbar
 customElements.define("btn-feed", BtnFeed);
 customElements.define("btn-academic", BtnAcademic);
@@ -100,3 +104,6 @@ customElements.define("teacher-detail-card", TeacherDetailCard);
 customElements.define("teacher-review-form", TeacherReviewForm);
 customElements.define("teacher-review-list", TeacherReviewList);
 
+// los contenedores de los comentarios
+customElements.define("teacher-comments-container", TeacherCommentsContainer);
+customElements.define("subject-comments-container", SubjectCommentsContainer);

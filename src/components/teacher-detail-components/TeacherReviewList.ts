@@ -76,26 +76,15 @@ class TeacherReviewList extends HTMLElement {
 
         this.shadowRoot!.innerHTML = `
             <style>
-                .reviews-container {
-                    background-color: white;
-                    border-radius: 16px;
-                    padding: 30px 24px;
-                    box-shadow: 0 6px 18px rgba(83, 84, 237, 0.1);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .reviews-container:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 10px 25px rgba(83, 84, 237, 0.15);
-                }
                 
                 .reviews-title {
+                    top:-10;
                     font-size: 18px;
                     font-weight: 600;
                     margin-bottom: 20px;
                     color: #000;
                     position: relative;
-                    padding-bottom: 10px;
+                    padding-bottom: 1px;
                 }
                 
                 .reviews-title::after {
@@ -103,14 +92,14 @@ class TeacherReviewList extends HTMLElement {
                     position: absolute;
                     bottom: 0;
                     left: 0;
-                    width: 50px;
+                    width: 70px;
                     height: 3px;
                     background-color: #5354ED;
                     border-radius: 2px;
                 }
                 
                 .review-item {
-                    background-color: #f8f9fd;
+                    background-color: #eef0fd;
                     border-radius: 12px;
                     padding: 20px;
                     margin-bottom: 16px;
@@ -189,7 +178,7 @@ class TeacherReviewList extends HTMLElement {
                 
                 @media (min-width: 768px) {
                     .reviews-container {
-                        padding: 36px;
+                        padding: 0px 36px 36px 36px;
                     }
                     
                     .review-item {

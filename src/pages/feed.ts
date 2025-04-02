@@ -13,7 +13,7 @@ class FeedPage extends HTMLElement {
             <style>
                 h2 { color: #4f46e5; }
             </style>
-            
+
             <nav-bar></nav-bar>  
             <h2>Feed Section</h2>
             <p>Contenido del feed...</p>

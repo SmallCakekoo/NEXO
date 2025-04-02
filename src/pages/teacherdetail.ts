@@ -16,19 +16,19 @@ class TeacherDetailPage extends HTMLElement {
             <style>
                 :host {
                     display: block;
-                    background-color: #f0f2fa;
+                    background-color:rgb(255, 255, 255);
                     min-height: 100vh;
                 }
                 
                 body {
                     margin: 0;
-                    background-color: #f0f2fa;
+                    background-color:rgb(255, 255, 255) !important;
                 }
                 
                 .page-wrapper {
                     min-height: 100vh;
                     padding-bottom: 60px;
-                    background-color: #f0f2fa;
+                    background-color: #ffffff;
                 }
                 
                 .teacher-detail-container {
@@ -37,10 +37,11 @@ class TeacherDetailPage extends HTMLElement {
                     padding: 25px 20px;
                     font-family: 'Arial', sans-serif;
                     background-color: #f8f9fd;
-                    box-shadow: 0 8px 25px rgba(83, 84, 237, 0.08);
                     border-radius: 20px;
                     margin-top: 20px;
                     margin-bottom: 40px;
+                    margin-left: 16px;
+                    margin-right: 16px;
                 }
                 
                 back-button {
@@ -52,6 +53,8 @@ class TeacherDetailPage extends HTMLElement {
                     .teacher-detail-container {
                         padding: 30px;
                         margin-top: 25px;
+                        margin-left: auto;
+                        margin-right: auto;
                     }
                 }
             </style>
@@ -65,8 +68,7 @@ class TeacherDetailPage extends HTMLElement {
                         rating="3"
                         image="425">
                     </teacher-detail-card>
-                    <teacher-review-form></teacher-review-form>
-                    <teacher-review-list></teacher-review-list>
+                    <teacher-comments-container></teacher-comments-container>
                 </div>
             </div>
         `;

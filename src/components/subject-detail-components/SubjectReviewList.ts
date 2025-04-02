@@ -1,69 +1,88 @@
-type SubjectReview = {
-    author: string;
-    date: string;
-    rating: number;
-    text: string;
-    image?: string;
-}
+type Review = {
+  author: string;
+  date: string;
+  rating: number;
+  text: string;
+  image?: string;
+};
 
 class SubjectReviewList extends HTMLElement {
-    private reviews: SubjectReview[] = [];
+  private reviews: Review[] = [];
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    connectedCallback() {
-        // Add sample review data
-        this.reviews = [
-            {
-                author: 'Maria García',
-                date: '10/02/25',
-                rating: 4,
-                text: 'Excellent subject. The content is very interesting and useful for professional development.',
-                image: 'https://i.pravatar.cc/150?img=5'
-            },
-            {
-                author: 'Carlos Mendoza',
-                date: '05/01/25',
-                rating: 5,
-                text: 'One of the best subjects I have taken. Very practical and well organized.',
-                image: 'https://i.pravatar.cc/150?img=12'
-            }
-        ];
+  connectedCallback() {
+    this.reviews = [
+      {
+        author: "John Smith",
+        date: "20/03/25",
+        rating: 5,
+        text: "The professor's explanations are crystal clear. Highly recommend taking detailed notes during lectures.",
+        image: "https://i.pravatar.cc/150?img=2",
+      },
+      {
+        author: "Michael Brown",
+        date: "17/03/25",
+        rating: 5,
+        text: "The practical assignments are challenging but rewarding. The feedback is constructive and helpful.",
+        image: "https://i.pravatar.cc/150?img=4",
+      },
+      {
+        author: "Emma Wilson",
+        date: "16/03/25",
+        rating: 4,
+        text: "Make sure to attend all the tutoring sessions - they're invaluable for exam preparation.",
+        image: "https://i.pravatar.cc/150?img=5",
+      },
+      {
+        author: "David Lee",
+        date: "15/03/25",
+        rating: 5,
+        text: "The course materials are well-organized and the online resources are comprehensive.",
+        image: "https://i.pravatar.cc/150?img=6",
+      }
+    ];
 
-        this.render();
-        this.setupEventListeners();
-    }
+    this.render();
+    this.setupEventListeners();
+  }
 
-    setupEventListeners() {
-        // Listen for new review submissions
-        document.addEventListener('subject-review-submitted', ((event: CustomEvent) => {
-            this.reviews.unshift(event.detail);
-            this.render();
-        }) as EventListener);
-    }
+  setupEventListeners() {
+    // Listen for new review submissions
+    document.addEventListener("review-submitted", ((event: CustomEvent) => {
+      this.reviews.unshift(event.detail);
+      this.render();
+    }) as EventListener);
+  }
 
-    addReview(review: SubjectReview) {
-        this.reviews.unshift(review);
-        this.render();
-    }
+  addReview(review: Review) {
+    this.reviews.unshift(review);
+    this.render();
+  }
 
-    render() {
-        const reviewsHTML = this.reviews.map(review => {
-            const stars = Array(5).fill(0).map((_, index) => `
+  render() {
+    const reviewsHTML = this.reviews
+      .map((review) => {
+        const stars = Array(5)
+          .fill(0)
+          .map(
+            (_, index) => `
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" 
-                    fill="${index < review.rating ? '#5354ED' : '#e0e0fe'}" class="star-icon">
+                    fill="${index < review.rating ? "#5354ED" : "#e0e0fe"}" class="star-icon">
                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                 </svg>
-            `).join('');
+            `
+          )
+          .join("");
 
-            // Generate a fallback avatar based on the first letter of the author's name
-            const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${review.author.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
-            const userImage = review.image || defaultAvatar;
+        // Generate a fallback avatar based on the first letter of the author's name
+        const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${review.author.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
+        const userImage = review.image || defaultAvatar;
 
-            return `
+        return `
                 <div class="review-item">
                     <div class="review-header">
                         <div class="user-info">
@@ -80,30 +99,19 @@ class SubjectReviewList extends HTMLElement {
                     <p class="review-text">${review.text}</p>
                 </div>
             `;
-        }).join('');
+      })
+      .join("");
 
-        this.shadowRoot!.innerHTML = `
+    this.shadowRoot!.innerHTML = `
             <style>
-                .reviews-container {
-                    background-color: white;
-                    border-radius: 16px;
-                    padding: 30px 24px;
-                    box-shadow: 0 6px 18px rgba(83, 84, 237, 0.1);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .reviews-container:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 10px 25px rgba(83, 84, 237, 0.15);
-                }
-                
                 .reviews-title {
+                    top:-10;
                     font-size: 18px;
                     font-weight: 600;
                     margin-bottom: 20px;
                     color: #000;
                     position: relative;
-                    padding-bottom: 10px;
+                    padding-bottom: 1px;
                 }
                 
                 .reviews-title::after {
@@ -111,14 +119,14 @@ class SubjectReviewList extends HTMLElement {
                     position: absolute;
                     bottom: 0;
                     left: 0;
-                    width: 50px;
+                    width: 70px;
                     height: 3px;
                     background-color: #5354ED;
                     border-radius: 2px;
                 }
                 
                 .review-item {
-                    background-color: #f8f9fd;
+                    background-color: #eef0fd;
                     border-radius: 12px;
                     padding: 20px;
                     margin-bottom: 16px;
@@ -197,7 +205,7 @@ class SubjectReviewList extends HTMLElement {
                 
                 @media (min-width: 768px) {
                     .reviews-container {
-                        padding: 36px;
+                        padding: 0px 36px 36px 36px;
                     }
                     
                     .review-item {
@@ -206,11 +214,11 @@ class SubjectReviewList extends HTMLElement {
                 }
             </style>
             <div class="reviews-container">
-                <h3 class="reviews-title">Subject Reviews</h3>
-                ${reviewsHTML || `<div class="empty-state">No reviews yet. Be the first to leave one!</div>`}
+                <h3 class="reviews-title">Reviews</h3>
+                ${reviewsHTML}
             </div>
         `;
-    }
+  }
 }
 
-export default SubjectReviewList; 
+export default SubjectReviewList;

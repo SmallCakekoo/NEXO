@@ -35,14 +35,14 @@ class SubjectReviewForm extends HTMLElement {
 
         publishButton?.addEventListener('click', () => {
             if (this.selectedRating === 0) {
-                alert('Please select a rating before publishing your review.');
+                alert('Por favor selecciona una calificación antes de publicar tu reseña.');
                 return;
             }
 
             const reviewText = reviewInput?.value || '';
             
             // You would typically send this data to a server
-            console.log('Subject review submitted:', {
+            console.log('Review submitted:', {
                 rating: this.selectedRating,
                 text: reviewText
             });
@@ -57,12 +57,12 @@ class SubjectReviewForm extends HTMLElement {
             this.updateStars();
             
             // For demo purposes, add the review to the page
-            this.dispatchEvent(new CustomEvent('subject-review-submitted', {
+            this.dispatchEvent(new CustomEvent('review-submitted', {
                 detail: {
                     rating: oldRating,
                     text: reviewText,
                     date: new Date().toLocaleDateString(),
-                    author: 'Current User',
+                    author: 'Usuario Actual',
                     image: defaultAvatar
                 },
                 bubbles: true,
@@ -79,37 +79,31 @@ class SubjectReviewForm extends HTMLElement {
     }
 
     render() {
+        const stars = Array(5).fill(0).map(() => `
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+        `).join('');
+
         this.shadowRoot!.innerHTML = `
             <style>
-                .review-form {
-                    background-color: white;
-                    border-radius: 16px;
-                    padding: 30px 24px;
-                    margin-bottom: 24px;
-                    box-shadow: 0 6px 18px rgba(83, 84, 237, 0.1);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .review-form:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 10px 25px rgba(83, 84, 237, 0.15);
-                }
-                
                 .form-title {
                     font-size: 18px;
                     font-weight: 600;
-                    margin-bottom: 16px;
+                    margin-top: 10px;
                     color: #000;
                     position: relative;
-                    padding-bottom: 10px;
+                    padding-bottom: 3px;
+                    text-align: center;
                 }
                 
                 .form-title::after {
                     content: '';
                     position: absolute;
                     bottom: 0;
-                    left: 0;
-                    width: 50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 160px;
                     height: 3px;
                     background-color: #5354ED;
                     border-radius: 2px;
@@ -119,11 +113,12 @@ class SubjectReviewForm extends HTMLElement {
                     display: flex;
                     gap: 10px;
                     margin-bottom: 20px;
+                    justify-content: center;
                 }
                 
                 .star-rating svg {
-                    width: 32px;
-                    height: 32px;
+                    width: 40px;
+                    height: 40px;
                     cursor: pointer;
                     fill: #e0e0fe;
                     stroke: none;
@@ -202,21 +197,11 @@ class SubjectReviewForm extends HTMLElement {
                     height: 18px;
                     fill: white;
                 }
-                
-                @media (min-width: 768px) {
-                    .review-form {
-                        padding: 36px;
-                    }
-                }
             </style>
             <div class="review-form">
-                <h3 class="form-title">Leave your review about this subject:</h3>
+                <h3 class="form-title">Leave your review:</h3>
                 <div class="star-rating">
-                    ${Array(5).fill(0).map(() => `
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    `).join('')}
+                    ${stars}
                 </div>
                 <textarea class="review-input" placeholder="Write something..."></textarea>
                 <div class="button-container">

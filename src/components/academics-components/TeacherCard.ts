@@ -20,7 +20,6 @@ class TeacherCard extends HTMLElement {
             const id = this.getAttribute('id') || '1';
             const name = this.getAttribute('name') || 'Name not specified';
             
-            // Usar el evento de navegación personalizado en lugar de window.location.href
             const customEvent = new CustomEvent('navigate', {
                 bubbles: true,
                 composed: true,
@@ -63,7 +62,7 @@ class TeacherCard extends HTMLElement {
         const subject = this.getAttribute('subject') || 'Subject not specified';
         const nucleus = this.getAttribute('nucleus') || 'Nucleus not specified';
         const rating = parseInt(this.getAttribute('rating') || '0');
-        const randomId = Math.floor(Math.random() * 1000);
+        const randomId = Math.floor(Math.random() * 100);
         const image = `https://picsum.photos/id/${randomId}/250/150`;
 
         const stars = Array(5).fill(0).map((_, index) => `

@@ -16,19 +16,19 @@ class SubjectDetailPage extends HTMLElement {
             <style>
                 :host {
                     display: block;
-                    background-color: #f0f2fa;
+                    background-color: #ffffff;
                     min-height: 100vh;
                 }
                 
                 body {
                     margin: 0;
-                    background-color: #f0f2fa;
+                    background-color: #ffffff;
                 }
                 
                 .page-wrapper {
                     min-height: 100vh;
                     padding-bottom: 60px;
-                    background-color: #f0f2fa;
+                    background-color: #ffffff;
                 }
                 
                 .subject-detail-container {
@@ -37,7 +37,6 @@ class SubjectDetailPage extends HTMLElement {
                     padding: 25px 20px;
                     font-family: 'Arial', sans-serif;
                     background-color: #f8f9fd;
-                    box-shadow: 0 8px 25px rgba(83, 84, 237, 0.08);
                     border-radius: 20px;
                     margin-top: 20px;
                     margin-bottom: 40px;
@@ -67,8 +66,7 @@ class SubjectDetailPage extends HTMLElement {
                         rating="4"
                         image="301">
                     </subject-detail-card>
-                    <subject-review-form></subject-review-form>
-                    <subject-review-list></subject-review-list>
+                    <subject-comments-container></subject-comments-container>
                 </div>
             </div>
         `;

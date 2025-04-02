@@ -5,7 +5,7 @@ class TeacherDetailCard extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['name', 'subject', 'rating', 'image'];
+        return ['name', 'subject', 'rating', 'image', 'nucleus'];
     }
 
     connectedCallback() {
@@ -21,23 +21,23 @@ class TeacherDetailCard extends HTMLElement {
         const subject = this.getAttribute('subject') || 'Logic & Argumentation';
         const rating = parseInt(this.getAttribute('rating') || '0');
         const imageId = this.getAttribute('image') || '425';
+        const nucleus = this.getAttribute('nucleus') || 'basic';
         
-        // Use a placeholder image service with a local fallback
-        const image = `https://picsum.photos/id/${imageId}/200/200`;
+        const image = `https://picsum.photos/id/${imageId}/400/300`;
         
-        // Generate star rating
         const stars = Array(5).fill(0).map((_, i) => 
-            `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="${i < rating ? 'filled' : ''}">
+            `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="${i < rating ? 'filled' : ''}" fill="${i < rating ? '#5354ED' : '#e0e0fe'}" stroke="none" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>`
         ).join('');
+
+        const nucleusText = nucleus === 'basic' ? 'Núcleo Básico' : 'Núcleo Profesional';
         
         this.shadowRoot!.innerHTML = `
             <style>
                 .teacher-card {
                     display: flex;
                     flex-direction: column;
-                    align-items: center;
                     background-color: white;
                     border-radius: 16px;
                     padding: 30px 24px;
@@ -52,12 +52,11 @@ class TeacherDetailCard extends HTMLElement {
                 }
 
                 .teacher-image {
-                    width: 180px;
+                    width: 100%;
                     height: 180px;
-                    border-radius: 8px;
+                    border-radius: 10px;
                     object-fit: cover;
                     margin-bottom: 24px;
-                    border: 3px solid #f5f7ff;
                     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
                     background-color: #f0f2fa;
                 }
@@ -65,32 +64,53 @@ class TeacherDetailCard extends HTMLElement {
                 .teacher-name {
                     font-size: 28px;
                     font-weight: 700;
-                    margin: 6px 0;
+                    margin: 0 0 12px 0;
                     color: #000;
-                    text-align: center;
                 }
 
                 .teacher-subject {
                     font-size: 18px;
+                    margin: 0 0 16px 0;
                     color: #5354ED;
-                    margin: 6px 0 18px;
-                    text-align: center;
                     font-weight: 500;
+                }
+
+                .subject-details {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                }
+
+                .detail-item {
+                    background-color: #f5f7ff;
+                    padding: 10px 16px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 15px;
+                    font-weight: 500;
+                    color: #5354ED;
+                    box-shadow: 0 3px 8px rgba(83, 84, 237, 0.06);
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+                
+                .detail-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 12px rgba(83, 84, 237, 0.1);
+                }
+
+                .detail-icon {
+                    width: 20px;
+                    height: 20px;
+                    fill: #5354ED;
                 }
 
                 .rating {
                     display: flex;
                     gap: 10px;
-                    margin-top: 6px;
-                    justify-content: center;
-                }
-                
-                .rating svg {
-                    width: 32px;
-                    height: 32px;
-                    fill: #e0e0fe;
-                    stroke: none;
-                    transition: fill 0.2s ease;
+                    margin-top: 12px;
                 }
                 
                 .rating svg.filled {
@@ -99,21 +119,38 @@ class TeacherDetailCard extends HTMLElement {
 
                 @media (min-width: 768px) {
                     .teacher-card {
+                        flex-direction: row;
+                        gap: 28px;
                         padding: 36px;
                     }
 
                     .teacher-image {
-                        width: 200px;
+                        width: 280px;
                         height: 200px;
+                        margin-bottom: 0;
+                    }
+
+                    .teacher-info {
+                        flex: 1;
                     }
                 }
             </style>
             <div class="teacher-card">
-                <img class="teacher-image" src="${image}" alt="${name}" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22200%22%20height%3D%22200%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-size%3D%2220%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${name.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E';">
-                <h2 class="teacher-name">${name}</h2>
-                <p class="teacher-subject">${subject}</p>
-                <div class="rating">
-                    ${stars}
+                <img class="teacher-image" src="${image}" alt="${name}" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22400%22%20height%3D%22300%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%22200%22%20y%3D%22150%22%20font-size%3D%2240%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${name.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E';">
+                <div class="teacher-info">
+                    <h2 class="teacher-name">${name}</h2>
+                    <p class="teacher-subject">${subject}</p>
+                    <div class="subject-details">
+                        <div class="detail-item">
+                            <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M22 9l-7-5v3H9v4h6v3l7-5zM2 9l7-5v3h6v4h-6v3l-7-5z"/>
+                            </svg>
+                            ${nucleusText}
+                        </div>
+                    </div>
+                    <div class="rating">
+                        ${stars}
+                    </div>
                 </div>
             </div>
         `;

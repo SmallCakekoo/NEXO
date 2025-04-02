@@ -1,39 +1,44 @@
 class SubjectDetailCard extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
 
-    static get observedAttributes() {
-        return ['name', 'career', 'nucleus', 'credits', 'rating', 'image'];
-    }
+  static get observedAttributes() {
+    return ["name", "career", "nucleus", "credits", "rating", "image"];
+  }
 
-    connectedCallback() {
-        this.render();
-    }
+  connectedCallback() {
+    this.render();
+  }
 
-    attributeChangedCallback() {
-        this.render();
-    }
+  attributeChangedCallback() {
+    this.render();
+  }
 
-    render() {
-        const name = this.getAttribute('name') || 'Logic & Argumentation';
-        const career = this.getAttribute('career') || 'Computer Science';
-        const nucleus = this.getAttribute('nucleus') || 'Disciplinary';
-        const credits = this.getAttribute('credits') || '3';
-        const rating = parseInt(this.getAttribute('rating') || '3');
-        const imageId = this.getAttribute('image') || '301';
-        
-        // Use a placeholder image service with a local fallback
-        const image = `https://picsum.photos/id/${imageId}/400/300`;
+  render() {
+    const name = this.getAttribute("name") || "Logic & Argumentation";
+    const career = this.getAttribute("career") || "Computer Science";
+    const nucleus = this.getAttribute("nucleus") || "Disciplinary";
+    const credits = this.getAttribute("credits") || "3";
+    const rating = parseInt(this.getAttribute("rating") || "3");
+    const imageId = this.getAttribute("image") || "301";
 
-        const stars = Array(5).fill(0).map((_, index) => `
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="${index < rating ? 'filled' : ''}" fill="${index < rating ? '#5354ED' : '#e0e0fe'}" stroke="none" class="star-icon">
+    // Use a placeholder image service with a local fallback
+    const image = `https://picsum.photos/id/${imageId}/400/300`;
+
+    const stars = Array(5)
+      .fill(0)
+      .map(
+        (_, index) => `
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="${index < rating ? "filled" : ""}" fill="${index < rating ? "#5354ED" : "#e0e0fe"}" stroke="none" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
-        `).join('');
+        `
+      )
+      .join("");
 
-        this.shadowRoot!.innerHTML = `
+    this.shadowRoot!.innerHTML = `
             <style>
                 .subject-card {
                     display: flex;
@@ -143,16 +148,9 @@ class SubjectDetailCard extends HTMLElement {
                     <div class="subject-details">
                         <div class="detail-item">
                             <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
-                                <path d="M4 12v8l8 4 8-4v-8l-8 4-8-4z"/>
-                            </svg>
-                            ${nucleus}
-                        </div>
-                        <div class="detail-item">
-                            <svg class="detail-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
                             </svg>
-                            ${credits} Credits
+                            ${credits} Créditos
                         </div>
                     </div>
                     <div class="rating">
@@ -161,7 +159,7 @@ class SubjectDetailCard extends HTMLElement {
                 </div>
             </div>
         `;
-    }
+  }
 }
 
-export default SubjectDetailCard; 
+export default SubjectDetailCard;

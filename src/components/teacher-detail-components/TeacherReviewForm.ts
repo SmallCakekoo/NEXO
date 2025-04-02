@@ -81,35 +81,23 @@ class TeacherReviewForm extends HTMLElement {
     render() {
         this.shadowRoot!.innerHTML = `
             <style>
-                .review-form {
-                    background-color: white;
-                    border-radius: 16px;
-                    padding: 30px 24px;
-                    margin-bottom: 24px;
-                    box-shadow: 0 6px 18px rgba(83, 84, 237, 0.1);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .review-form:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 10px 25px rgba(83, 84, 237, 0.15);
-                }
-                
                 .form-title {
                     font-size: 18px;
                     font-weight: 600;
-                    margin-bottom: 16px;
+                    margin-top: 10px;
                     color: #000;
                     position: relative;
-                    padding-bottom: 10px;
+                    padding-bottom: 3px;
+                    text-align: center;
                 }
                 
                 .form-title::after {
                     content: '';
                     position: absolute;
                     bottom: 0;
-                    left: 0;
-                    width: 50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 160px;
                     height: 3px;
                     background-color: #5354ED;
                     border-radius: 2px;
@@ -119,11 +107,12 @@ class TeacherReviewForm extends HTMLElement {
                     display: flex;
                     gap: 10px;
                     margin-bottom: 20px;
+                    justify-content: center;
                 }
                 
                 .star-rating svg {
-                    width: 32px;
-                    height: 32px;
+                    width: 40px;
+                    height: 40px;
                     cursor: pointer;
                     fill: #e0e0fe;
                     stroke: none;
@@ -203,11 +192,6 @@ class TeacherReviewForm extends HTMLElement {
                     fill: white;
                 }
                 
-                @media (min-width: 768px) {
-                    .review-form {
-                        padding: 36px;
-                    }
-                }
             </style>
             <div class="review-form">
                 <h3 class="form-title">Leave your review:</h3>

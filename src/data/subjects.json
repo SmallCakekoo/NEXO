@@ -1,124 +1,172 @@
 {
-    "subjects": [
-        {
-            "name": "Logic & Argumentation",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject1.jpg"
-        },
-        {
-            "name": "Programming I",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject2.jpg"
-        },
-        {
-            "name": "Database Systems",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject3.jpg"
-        },
-        {
-            "name": "Web Development",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject4.jpg"
-        },
-        {
-            "name": "Computer Networks",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject5.jpg"
-        },
-        {
-            "name": "Software Engineering",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject6.jpg"
-        },
-        {
-            "name": "Operating Systems",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject7.jpg"
-        },
-        {
-            "name": "Artificial Intelligence",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject8.jpg"
-        },
-        {
-            "name": "Computer Architecture",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject9.jpg"
-        },
-        {
-            "name": "Mobile Development",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject10.jpg"
-        },
-        {
-            "name": "Cloud Computing",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject11.jpg"
-        },
-        {
-            "name": "Cybersecurity",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject12.jpg"
-        },
-        {
-            "name": "Digital Marketing",
-            "career": "Business Administration",
-            "credits": "3",
-            "image": "/src/assets/images/subject13.jpg"
-        },
-        {
-            "name": "Business Analytics",
-            "career": "Business Administration",
-            "credits": "4",
-            "image": "/src/assets/images/subject14.jpg"
-        },
-        {
-            "name": "Data Science",
-            "career": "Data Science",
-            "credits": "3",
-            "image": "/src/assets/images/subject15.jpg"
-        },
-        {
-            "name": "Project Management",
-            "career": "Business Administration",
-            "credits": "4",
-            "image": "/src/assets/images/subject16.jpg"
-        },
-        {
-            "name": "Machine Learning",
-            "career": "Data Science",
-            "credits": "3",
-            "image": "/src/assets/images/subject17.jpg"
-        },
-        {
-            "name": "UI/UX Design",
-            "career": "Digital Design",
-            "credits": "4",
-            "image": "/src/assets/images/subject18.jpg"
-        },
-        {
-            "name": "Blockchain Technology",
-            "career": "Systems Engineering",
-            "credits": "3",
-            "image": "/src/assets/images/subject19.jpg"
-        },
-        {
-            "name": "DevOps & CI/CD",
-            "career": "Systems Engineering",
-            "credits": "4",
-            "image": "/src/assets/images/subject20.jpg"
-        }
-    ]
+  "subjects": [
+    {
+      "name": "Photography",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Digital Design",
+      "career": "Design media",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Two-dimensional",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Motion Graphics",
+      "career": "Design media",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Web Design",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Criminal Law",
+      "career": "Law",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Human Anatomy",
+      "career": "Medicine",
+      "credits": "5",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Digital Strategies",
+      "career": "Int. Mktg & Adv.",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Clinical Psychology",
+      "career": "Psychology",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Organic Chemistry",
+      "career": "Chemistry",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Algorithms",
+      "career": "Systems Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Industrial Processes",
+      "career": "Industrial Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Music Theory",
+      "career": "Music",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Corporate",
+      "career": "Finance",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Genetic Eng.",
+      "career": "Biochemical Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Data Structures",
+      "career": "Computer Science",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Machine Learning",
+      "career": "Artificial Intelligence",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Environmental Law",
+      "career": "Law",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Neuroscience",
+      "career": "Medicine",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Microeconomics",
+      "career": "Int. Mktg & Adv.",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Child Psychology",
+      "career": "Psychology",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    },
+    {
+      "name": "Physical Chemistry",
+      "career": "Chemistry",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Cloud Computing",
+      "career": "Systems Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5"
+    },
+    {
+      "name": "Quality Control",
+      "career": "Industrial Engineering",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4"
+    }
+  ]
 }
