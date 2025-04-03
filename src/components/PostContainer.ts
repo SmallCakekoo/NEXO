@@ -27,7 +27,7 @@ class PostContainer extends HTMLElement {
 
     async fetchComments(): Promise<void> {
         try {
-            const response = await fetch("./data/comments.json");
+            const response = await fetch("/src/data/Feed.json");
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
