@@ -1,40 +1,90 @@
 {
-    "comments": [
+    "posts": [
     {
         "photo": "https://picsum.photos/800/450?random=1",
         "name": "Pepito Fetch",
         "degree": "Medicine",
         "semestre": "seventh",
-        "comment": "Does Chismes Icesi was reported?",
-        "tag": "Daiy",
-        "likes": "3"
+        "message": "Does Chismes Icesi was reported?",
+        "tag": "Daily Life",
+        "likes": 3,
+        "coments": [
+        {   
+        "photo": "https://picsum.photos/800/450?random=2",
+        "name": "Carlin",
+        "degree": "DMI",
+        "message": "Not at all"
+        },
+        {   
+            "photo": "https://picsum.photos/800/450?random=3",
+            "name": "Elsa Ancocho",
+            "degree": "Marketing",
+            "message": "WTF jajajajaja"
+            }
+    ]
     },
     {
-        "photo": "https://picsum.photos/800/450?random=3",
+        "photo": "https://picsum.photos/800/450?random=4",
         "name": "Carlos Méndez",
         "degree": "Law",
         "semestre": "third",
-        "comment": "Is the library open during the holidays?",
-        "tag": "Daily",
-        "likes": "2"
+        "message": "Is the library open during the holidays?",
+        "tag": "Daily Life",
+        "likes": 2,
+        "coments": [
+            {   
+            "photo": "https://picsum.photos/800/450?random=2",
+            "name": "Carlin",
+            "degree": "DMI",
+            "message": "Negative"
+            }
+        ]
     },
     {
         "photo": "https://picsum.photos/800/450?random=4",
         "name": "Andrea Gómez",
         "degree": "Psychology",
         "semestre": "sixth",
-        "comment": "Who is the professor for Clinical Psychology this semester?",
-        "tag": "Daily",
-        "likes": "8"
+        "message": "Who is the professor for Clinical Psychology this semester?",
+        "tag": "Daily Life",
+        "likes": 8,
+        "coments": [
+            {   
+            "photo": "https://picsum.photos/800/450?random=2",
+            "name": "Carlin",
+            "degree": "DMI",
+            "message": "Not at all"
+            },
+            {   
+                "photo": "https://picsum.photos/800/450?random=3",
+                "name": "Elsa Ancocho",
+                "degree": "Marketing",
+                "message": "WTF jajajajaja"
+                }
+        ]
     },
     {
         "photo": "https://picsum.photos/800/450?random=5",
         "name": "Javier Ríos",
         "degree": "Business Administration",
         "semestre": "second",
-        "comment": "Where can I find case studies for my research?",
-        "tag": "Daily",
-        "likes": "4"
+        "message": "Offering 3 seats to Ciudad Pacifico",
+        "tag": "Carpool",
+        "likes": 4,
+        "coments": [
+            {   
+            "photo": "https://picsum.photos/800/450?random=2",
+            "name": "Carlin",
+            "degree": "DMI",
+            "message": "What is the cost?"
+            },
+            {   
+                "photo": "https://picsum.photos/800/450?random=3",
+                "name": "Elsa Ancocho",
+                "degree": "Marketing",
+                "message": "There's any seats available?"
+                }
+        ]
     }
 ]
 }

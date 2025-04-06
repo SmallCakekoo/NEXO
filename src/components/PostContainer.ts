@@ -1,19 +1,8 @@
-interface Comment {
-    photo: string;
-    name: string;
-    degree: string;
-    semestre: string;
-    comment: string;
-    tag: string;
-    likes: string;
-}
-
-interface CommentsResponse {
-    comments: Comment[];
-}
+import { Post, PostsResponse } from '../types/feeds.types';
+import { fetchPosts } from '../services/feed.service';
 
 class PostContainer extends HTMLElement {
-    private comments: Comment[] = [];
+    private posts: Post[] = [];
 
     constructor() {
         super();
@@ -22,40 +11,35 @@ class PostContainer extends HTMLElement {
 
     async connectedCallback() {
         console.log("PostContainer component mounted.");
-        await this.fetchComments();
+        await this.loadPosts();
     }
 
-    async fetchComments(): Promise<void> {
+    async loadPosts(): Promise<void> {
         try {
-            const response = await fetch("/src/data/Feed.json");
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const data: CommentsResponse = await response.json();
-            console.log("Fetched comments:", data);
-            this.comments = data.comments;
-            this.render(); 
+            const data = await fetchPosts();
+            this.posts = data.posts;
+            this.render();
         } catch (error) {
-            console.error("Failed to fetch comments:", error);
+            console.error("Error loading posts:", error);
         }
     }
-
+    
     render() {
-        console.log("Rendering comments:", this.comments);
+        console.log("Rendering posts:", this.posts);
         if (!this.shadowRoot) return;
         this.shadowRoot.innerHTML = `
             <div>
-                ${this.comments.length > 0
-                    ? this.comments.map(
-                        (c) => `
-                            <div tag="${c.tag}">
-                                <img src="${c.photo}" alt="Foto de ${c.name}" />
-                                <p><strong>${c.name}</strong> (${c.degree} - ${c.semestre})</p>
-                                <p>${c.comment}</p>
-                                <span>Likes: ${c.likes}</span>
+                ${this.posts.length > 0
+                    ? this.posts.map(
+                        (post) => `
+                            <div tag="${post.tag}">
+                                <img src="${post.photo}" alt="Foto de ${post.name}" />
+                                <p><strong>${post.name}</strong> (${post.degree} - ${post.semestre})</p>
+                                <p>${post.message}</p>
+                                <span>Likes: ${post.likes}</span>
                             </div>`
                     ).join("")
-                    : "<p>There's no comments..</p>"}
+                    : "<p>There are no posts yet.</p>"}
             </div>
         `;
     }
