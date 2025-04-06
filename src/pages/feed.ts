@@ -11,12 +11,52 @@ class FeedPage extends HTMLElement {
     render() {
       this.shadowRoot!.innerHTML = `
               <style>
+
+              .section-buttons {
+                width: 100vw; 
+                display: flex; 
+                gap: 6%;
+                padding: 2% 0;
+                justify-self: center;
+                justify-content: center;
+              
+              }
+                
+              
+              .post-container{
+              justify-content: center;
+              display:flex; 
+              margin-top: 8%;
+              }
               </style>
   
               <nav-bar></nav-bar> 
-              <section>
+              
+              <section class="section-buttons">
                <button-tags textbutton="All"></button-tags>
+               <button-tags textbutton="Daily life"></button-tags>
+               <button-tags textbutton="Carpool "></button-tags>
+               <button-tags textbutton="Academics"></button-tags>
               </section> 
+            
+            <div class ="post-container">
+              <the-post 
+                
+                photo= "https://picsum.photos/800/450?random=1"
+                name = "Luis Carlos Bodoque"
+                date ="26/03/2025"
+                degree = "Engeneering System"
+                semestre = "Seventh"
+                comment = "Did anyone else stump against a guy using boots in the stairs???"
+                tag = "Daily Life"
+                Likes = "100"
+                share = ""
+                comments = ""
+                ></the-post>
+                </div>
+            </div>
+              
+
           `;
     }
   }

@@ -14,13 +14,7 @@ export enum TextButton {
       return Object.values(TextButton);
     }
   
-    attributeChangedCallback(propName: string, oldValue: string, newValue: string) {
-      if (propName === TextButton.textbutton) {
-        this.textbutton = newValue;
-        this.render();
-      }
-    }
-  
+    
     connectedCallback() {
       this.render();
     }
@@ -30,27 +24,29 @@ export enum TextButton {
         this.shadowRoot.innerHTML = `
           <style>
             button {
-              padding: 8px 16px;
+              padding: 8px 40px;
               border-radius: 999px;
               border: 2px solid blue;
-              color: blue;
+              color: #5354ED;
               background-color: white;
               font-size: 14px;
               cursor: pointer;
               transition: background-color 0.3s ease;
+              
             }
   
             button:hover {
-              background-color: rgba(173, 216, 230, 0.5);
+              background-color:rgba(83, 83, 237, 0.32);
+              color:#5354ED; 
             }
   
-            button.active {
-              background-color: lightblue;
-              color: white;
+            button:active {
+              background-color:#5354ED;
+              color:rgb(255, 255, 255);
             }
           </style>
   
-          <button>${this.textbutton || "Default Text"}</button>
+          <button>${this.getAttribute('textbutton')}</button>
         `;
       }
     }
