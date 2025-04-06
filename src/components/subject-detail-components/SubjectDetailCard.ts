@@ -24,7 +24,6 @@ class SubjectDetailCard extends HTMLElement {
     const rating = parseInt(this.getAttribute("rating") || "3");
     const imageId = this.getAttribute("image") || "301";
 
-    // Use a placeholder image service with a local fallback
     const image = `https://picsum.photos/id/${imageId}/400/300`;
 
     const stars = Array(5)

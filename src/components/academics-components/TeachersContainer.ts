@@ -36,15 +36,12 @@ class TeachersContainer extends HTMLElement {
   renderPage() {
     const row = this.shadowRoot?.querySelector(".row");
     if (row) {
-      // Clear existing content
       row.innerHTML = "";
 
-      // Calculate pagination
       const totalPages = Math.ceil(this.teachers.length / this.itemsPerPage);
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = Math.min(startIndex + this.itemsPerPage, this.teachers.length);
 
-      // Render only current page items
       for (let i = startIndex; i < endIndex; i++) {
         const teacher = this.teachers[i];
         const col = document.createElement("div");
@@ -66,12 +63,10 @@ class TeachersContainer extends HTMLElement {
   renderPagination() {
     const paginationContainer = this.shadowRoot?.querySelector(".pagination");
     if (paginationContainer) {
-      // Clear existing content
       paginationContainer.innerHTML = "";
 
       const totalPages = Math.ceil(this.teachers.length / this.itemsPerPage);
 
-      // Previous button
       const prevButton = document.createElement("button");
       prevButton.textContent = "«";
       prevButton.disabled = this.currentPage === 1;
@@ -84,7 +79,6 @@ class TeachersContainer extends HTMLElement {
       });
       paginationContainer.appendChild(prevButton);
 
-      // Page numbers
       for (let i = 1; i <= totalPages; i++) {
         const pageButton = document.createElement("button");
         pageButton.textContent = i.toString();
@@ -101,7 +95,6 @@ class TeachersContainer extends HTMLElement {
         paginationContainer.appendChild(pageButton);
       }
 
-      // Next button
       const nextButton = document.createElement("button");
       nextButton.textContent = "»";
       nextButton.disabled = this.currentPage === totalPages;

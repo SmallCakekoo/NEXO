@@ -26,7 +26,6 @@ class ProfileContainer extends HTMLElement {
   setupEventListeners() {
     const fab = this.shadowRoot!.querySelector("floating-action-button");
     fab?.addEventListener("new-post-click", () => {
-      // Aquí la lógica para manejar la creación de un nuevo post
       console.log("New post button clicked");
     });
   }

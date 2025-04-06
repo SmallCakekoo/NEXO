@@ -30,7 +30,6 @@ class TeacherReviewList extends HTMLElement {
   }
 
   setupEventListeners() {
-    // Listen for new review submissions
     document.addEventListener("review-submitted", ((event: CustomEvent) => {
       this.reviews.unshift(event.detail);
       this.render();
@@ -57,7 +56,6 @@ class TeacherReviewList extends HTMLElement {
           )
           .join("");
 
-        // Generate a fallback avatar based on the first letter of the author's name
         const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${review.author.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
         const userImage = review.image || defaultAvatar;
 

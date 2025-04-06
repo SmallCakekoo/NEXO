@@ -46,9 +46,7 @@ class DeleteAccountConfirmation extends HTMLElement {
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
     confirmBtn?.addEventListener("click", () => {
-      // Animate out before removing
       this.animateOut().then(() => {
-        // Dispatch event for account deletion confirmation
         const confirmEvent = new CustomEvent("delete-account-confirmed", {
           bubbles: true,
           composed: true,
@@ -59,7 +57,6 @@ class DeleteAccountConfirmation extends HTMLElement {
     });
 
     cancelBtn?.addEventListener("click", () => {
-      // Animate out before removing
       this.animateOut().then(() => {
         this.remove();
       });
@@ -76,7 +73,6 @@ class DeleteAccountConfirmation extends HTMLElement {
         dialog.style.transform = "translateY(20px) scale(0.95)";
       }
 
-      // Wait for animation to complete
       setTimeout(() => {
         resolve();
       }, 300);

@@ -12,7 +12,6 @@ class ProfileHeader extends HTMLElement {
   addEventListeners() {
     const editButton = this.shadowRoot!.querySelector(".edit-button");
     editButton?.addEventListener("click", () => {
-      // Navegar a la página de configuración de perfil
       const navigationEvent = new CustomEvent("navigate", {
         detail: "/profile-settings",
         bubbles: true,

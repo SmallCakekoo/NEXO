@@ -116,24 +116,19 @@ class SettingsProfileContainer extends HTMLElement {
 
     saveBtn?.addEventListener("click", () => {
       console.log("Save button clicked");
-      // Aquí la lógica para guardar los cambios
     });
 
     unlogBtn?.addEventListener("click", () => {
       console.log("Unlog button clicked");
-      // Aquí la lógica para cerrar sesión
     });
 
     deleteAccount?.addEventListener("click", () => {
       console.log("Delete account clicked");
-      // Mostrar el diálogo de confirmación
       const confirmationDialog = document.createElement("delete-account-confirmation");
       document.body.appendChild(confirmationDialog);
 
-      // Escuchar el evento de confirmación
       confirmationDialog.addEventListener("delete-account-confirmed", () => {
         console.log("Account deletion confirmed");
-        // Aquí la lógica para eliminar la cuenta
       });
     });
   }

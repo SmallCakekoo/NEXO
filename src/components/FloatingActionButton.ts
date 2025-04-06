@@ -23,7 +23,6 @@ class FloatingActionButton extends HTMLElement {
   addEventListeners() {
     const fab = this.shadowRoot!.querySelector(".fab");
     fab?.addEventListener("click", () => {
-      // Aquí se puede agregar la lógica para crear un nuevo post
       const event = new CustomEvent("new-post-click");
       this.dispatchEvent(event);
     });
