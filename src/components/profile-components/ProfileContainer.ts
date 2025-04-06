@@ -11,35 +11,7 @@ class ProfileContainer extends HTMLElement {
 
   render() {
     this.shadowRoot!.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    width: 100%;
-                    min-height: 100vh;
-                }
-
-                .profile-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-
-                .posts-container {
-                background-color: #EFF0FD;
-                border-radius: 30px;
-                    padding: 20px;
-                }
-
-                @media (max-width: 568px) {
-                    .profile-container {
-                        max-width: 100%;
-                    }
-
-                    .posts-container {
-                        margin: 0 10px;
-                        padding: 10px;
-                    }
-                }
-            </style>
+     <link rel="stylesheet" href="/styles/components/profile/ProfileContainer.css">
             <div class="profile-container">
                 <div class="posts-container">
                     <post-card></post-card>
