@@ -21,7 +21,7 @@ NEXO/
 │   ├── layouts/      # General layouts and page structures
 │   ├── pages/        # Main application views
 │   ├── services/     # API calls and business logic
-│   ├── styles/       # CSS/Tailwind styles
+│   ├── styles/       # CSS styles
 │   ├── types/        # Type declaration for TS
 │   ├── utils/        # Helper functions and utilities
 │   ├── index.ts      # Main entry point
@@ -54,7 +54,6 @@ NEXO/
 - **CSS**
 - **JavaScript & TypeScript**
 - **Bootstrap**
-- **TailwindCSS**
 - **Animate.css / AOS / GSAP**
 
 ### Backend

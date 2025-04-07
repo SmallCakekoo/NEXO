@@ -11,28 +11,34 @@ class SubjectReviewForm extends HTMLElement {
     this.setupEventListeners();
   }
 
+  // Sets up all event listeners like star rating interaction and publish button click
   setupEventListeners() {
     const stars = this.shadowRoot?.querySelectorAll(".star-rating svg");
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const reviewInput = this.shadowRoot?.querySelector(".review-input") as HTMLTextAreaElement;
 
+    // Adds click, hover, and mouseout events for each star icon
     stars?.forEach((star, index) => {
+      // When a star is clicked, update the selected rating
       star.addEventListener("click", () => {
         this.selectedRating = index + 1;
         this.updateStars();
       });
 
+      // Highlight stars on mouseover
       star.addEventListener("mouseover", () => {
         stars.forEach((s, i) => {
           s.classList.toggle("hovered", i <= index);
         });
       });
 
+      // Remove highlight on mouseout
       star.addEventListener("mouseout", () => {
         stars.forEach((s) => s.classList.remove("hovered"));
       });
     });
 
+    // Handles the publish button click
     publishButton?.addEventListener("click", () => {
       if (this.selectedRating === 0) {
         alert("Por favor selecciona una calificación antes de publicar tu reseña.");
@@ -41,18 +47,22 @@ class SubjectReviewForm extends HTMLElement {
 
       const reviewText = reviewInput?.value || "";
 
-      console.log("Review submitted:", {
-        rating: this.selectedRating,
-        text: reviewText,
-      });
+      // TODO: Logs review data for now (probably can be replaced with backend logic)
+      // console.log("Review submitted:", {
+      //   rating: this.selectedRating,
+      //   text: reviewText,
+      // });
 
+      // Fallback avatar if user doesn't have one
       const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E`;
 
+      // Reset form
       const oldRating = this.selectedRating;
       this.selectedRating = 0;
       if (reviewInput) reviewInput.value = "";
       this.updateStars();
 
+      //Dispatch a custom event with review data to parent component
       this.dispatchEvent(
         new CustomEvent("review-submitted", {
           detail: {
@@ -69,6 +79,7 @@ class SubjectReviewForm extends HTMLElement {
     });
   }
 
+  // Updates the visual appearance of stars based on the rating
   updateStars() {
     const stars = this.shadowRoot?.querySelectorAll(".star-rating svg");
     stars?.forEach((star, index) => {

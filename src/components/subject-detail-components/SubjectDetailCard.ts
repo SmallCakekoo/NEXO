@@ -1,25 +1,35 @@
+import { SubjectDetailCardAttributes } from "../../types/subject-detail/SubjectDetailCard.types";
+
 class SubjectDetailCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  static get observedAttributes() {
-    return ["name", "career", "nucleus", "credits", "rating", "image"];
+  // Specifies which attributes to observe for changes
+  static get observedAttributes(): (keyof SubjectDetailCardAttributes)[] {
+    return ["name", "career", "credits", "rating", "image"];
   }
 
   connectedCallback() {
     this.render();
   }
 
-  attributeChangedCallback() {
-    this.render();
+  // Called when one of the observed attributes is changed
+  attributeChangedCallback(
+    name: keyof SubjectDetailCardAttributes,
+    oldValue: string,
+    newValue: string
+  ) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
   }
 
   render() {
+    // Retrieves attribute values or assigns default values (bc this is static for now)
     const name = this.getAttribute("name") || "Logic & Argumentation";
     const career = this.getAttribute("career") || "Computer Science";
-    const nucleus = this.getAttribute("nucleus") || "Disciplinary";
     const credits = this.getAttribute("credits") || "3";
     const rating = parseInt(this.getAttribute("rating") || "3");
     const imageId = this.getAttribute("image") || "301";

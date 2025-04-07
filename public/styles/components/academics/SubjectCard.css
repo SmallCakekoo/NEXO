@@ -1,3 +1,5 @@
+@import url('../colors.css');
+
 .card {
     max-width: 300px;
     border-radius: 12px;
@@ -56,7 +58,7 @@
 .credits {
     font-size: 1rem;
     font-weight: 600;
-    color: #5354ED;
+    color: var(--nexopurple);
     margin: 0 0 12px 0;
     display: flex;
     align-items: center;
@@ -65,7 +67,7 @@
 
 .credits::before {
     content: "•";
-    color: #5354ED;
+    color: var(--nexopurple);
     font-size: 1.2rem;
 }
 

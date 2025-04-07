@@ -9,12 +9,13 @@ class ProfileHeader extends HTMLElement {
     this.addEventListeners();
   }
 
+  // Adds event listener to the "edit" button to trigger navigation
   addEventListeners() {
     const editButton = this.shadowRoot!.querySelector(".edit-button");
     editButton?.addEventListener("click", () => {
       const navigationEvent = new CustomEvent("navigate", {
         detail: "/profile-settings",
-        bubbles: true,
+        bubbles: true, // Allows the event to bubble up to the parent
       });
       document.dispatchEvent(navigationEvent);
     });

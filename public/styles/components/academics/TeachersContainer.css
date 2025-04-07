@@ -1,3 +1,5 @@
+@import url('../colors.css');
+
 .container {
     padding: 20px;
 }
@@ -19,24 +21,24 @@
 
 .pagination button {
     padding: 8px 16px;
-    border: 1px solid #e3e5ff;
-    background-color: white;
+    border: 1px solid var(--nexolightwhite);
+    background-color: var(--nexowhite);
     cursor: pointer;
     border-radius: 8px;
-    color: #5354ED;
+    color: var(--nexopurple);
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .pagination button:hover {
-    background-color: #e3e5ff;
+    background-color: var(--nexolightwhite);
     transform: translateY(-2px);
 }
 
 .pagination button.active {
-    background-color: #5354ED;
-    color: white;
-    border-color: #5354ED;
+    background-color: var(--nexopurple);
+    color: var(--nexowhite);
+    border-color: var(--nexopurple);
 }
 
 .pagination button:disabled {

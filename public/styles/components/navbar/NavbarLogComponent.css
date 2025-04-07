@@ -67,7 +67,7 @@ img {
     opacity: 1;
     transform: translateX(0);
 }
-@media (max-width: 991px) {
+@media (max-width: 576px) {
 .navbar-collapse {
 display: none;
 } 

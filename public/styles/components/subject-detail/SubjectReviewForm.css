@@ -1,8 +1,10 @@
+@import url('../colors.css');
+
 .form-title {
   font-size: 18px;
   font-weight: 600;
   margin-top: 10px;
-  color: #000;
+  color: var(--nexoblack);
   position: relative;
   padding-bottom: 3px;
   text-align: center;
@@ -16,7 +18,7 @@
   transform: translateX(-50%);
   width: 160px;
   height: 3px;
-  background-color: #5354ed;
+  background-color: var(--nexopurple);
   border-radius: 2px;
 }
 
@@ -31,7 +33,7 @@
   width: 40px;
   height: 40px;
   cursor: pointer;
-  fill: #e0e0fe;
+  fill: var(--nexolightwhite);
   stroke: none;
   transition: all 0.3s ease;
 }
@@ -42,25 +44,25 @@
 
 .star-rating svg.selected,
 .star-rating svg.hovered {
-  fill: #5354ed;
+  fill: var(--nexopurple);
 }
 
 .review-input {
   width: 100%;
   min-height: 120px;
-  border: 1px solid #e0e0fe;
+  border: 1px solid var(--nexolightwhite);
   border-radius: 10px;
   padding: 14px;
   font-family: inherit;
   font-size: 15px;
   margin-bottom: 20px;
   resize: vertical;
-  background-color: #f8f9fd;
+  background-color: var(--nexowhite);
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 576px) {
   .review-input {
     min-height: 100px;
     font-size: 14px;
@@ -68,7 +70,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .review-input {
     min-height: 80px;
     font-size: 13px;
@@ -78,9 +80,9 @@
 
 .review-input:focus {
   outline: none;
-  border-color: #5354ed;
+  border-color: var(--nexopurple);
   box-shadow: 0 0 0 3px rgba(83, 84, 237, 0.15);
-  background-color: white;
+  background-color: var(--nexowhite);
 }
 
 .button-container {
@@ -89,10 +91,10 @@
 }
 
 .publish-button {
-  background-color: #5354ed;
-  color: white;
+  background-color: var(--nexopurple);
+  color: var(--nexowhite);
   font-size: 15px;
-  border: 2px solid black;
+  border: 2px solid var(--nexoblack);
   padding: 10px 24px;
   border-radius: 50px;
   cursor: pointer;
@@ -123,5 +125,5 @@
 .publish-button svg {
   width: 18px;
   height: 18px;
-  fill: white;
+  fill: var(--nexowhite);
 }

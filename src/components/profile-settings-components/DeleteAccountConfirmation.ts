@@ -7,7 +7,8 @@ class DeleteAccountConfirmation extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setupEventListeners();
-    // Aplicar animación después de que el elemento se haya agregado al DOM
+
+    // Animates the dialog into view after a short delay
     setTimeout(() => {
       const dialog = this.shadowRoot!.querySelector(".confirmation-dialog") as HTMLElement;
       if (dialog) {
@@ -41,21 +42,24 @@ class DeleteAccountConfirmation extends HTMLElement {
         `;
   }
 
+  // Adds event listeners to the confirm and cancel buttons
   setupEventListeners() {
     const confirmBtn = this.shadowRoot!.querySelector(".confirm-btn");
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
+    // On confirm, animate out and dispatch a custom event (but this is static for now)
     confirmBtn?.addEventListener("click", () => {
       this.animateOut().then(() => {
         const confirmEvent = new CustomEvent("delete-account-confirmed", {
-          bubbles: true,
-          composed: true,
+          bubbles: true, // Allows the event to bubble up to the parent
+          composed: true, // Allows the event to be composed
         });
         this.dispatchEvent(confirmEvent);
         this.remove();
       });
     });
 
+    // On cancel, animate out and remove
     cancelBtn?.addEventListener("click", () => {
       this.animateOut().then(() => {
         this.remove();
@@ -63,6 +67,7 @@ class DeleteAccountConfirmation extends HTMLElement {
     });
   }
 
+  // Animates the dialog out of view
   animateOut() {
     return new Promise<void>((resolve) => {
       const dialog = this.shadowRoot!.querySelector(".confirmation-dialog") as HTMLElement;
@@ -73,6 +78,7 @@ class DeleteAccountConfirmation extends HTMLElement {
         dialog.style.transform = "translateY(20px) scale(0.95)";
       }
 
+      // Resolves the promise after the animation completes
       setTimeout(() => {
         resolve();
       }, 300);

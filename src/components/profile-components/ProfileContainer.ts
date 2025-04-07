@@ -9,6 +9,7 @@ class ProfileContainer extends HTMLElement {
     this.setupEventListeners();
   }
 
+  // This is static for now, but it will be dynamic in the future jiji
   render() {
     this.shadowRoot!.innerHTML = `
      <link rel="stylesheet" href="/styles/components/profile/ProfileContainer.css">
@@ -23,6 +24,7 @@ class ProfileContainer extends HTMLElement {
         `;
   }
 
+  // Sets up event listeners for the floating action button, but it's not working for now.
   setupEventListeners() {
     const fab = this.shadowRoot!.querySelector("floating-action-button");
     fab?.addEventListener("new-post-click", () => {

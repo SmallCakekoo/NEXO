@@ -1,10 +1,4 @@
-type Review = {
-  author: string;
-  date: string;
-  rating: number;
-  text: string;
-  image?: string;
-};
+import { Review } from "../../types/teacher-detail/TeacherReviewList.types";
 
 class TeacherReviewList extends HTMLElement {
   private reviews: Review[] = [];
@@ -14,6 +8,7 @@ class TeacherReviewList extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
 
+  // Static reviews for now (Mock data)
   connectedCallback() {
     this.reviews = [
       {
@@ -29,6 +24,7 @@ class TeacherReviewList extends HTMLElement {
     this.setupEventListeners();
   }
 
+  // Sets up event listeners for the review list
   setupEventListeners() {
     document.addEventListener("review-submitted", ((event: CustomEvent) => {
       this.reviews.unshift(event.detail);
@@ -36,6 +32,7 @@ class TeacherReviewList extends HTMLElement {
     }) as EventListener);
   }
 
+  // Public method to add a review from external code
   addReview(review: Review) {
     this.reviews.unshift(review);
     this.render();

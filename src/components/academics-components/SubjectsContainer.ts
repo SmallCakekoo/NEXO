@@ -1,17 +1,10 @@
-import subjectsJson from "../../data/subjects.json";
-
-export interface Subject {
-  name: string;
-  career: string;
-  credits: string;
-  image: string;
-  rating: string;
-}
+import { subjects, SubjectsResponse } from "../../types/academics/SubjectsContainer.types";
+import { fetchSubjects } from "../../services/Subject.services";
 
 class SubjectsContainer extends HTMLElement {
+  private subjects: subjects[] = [];
   private currentPage: number = 1;
   private itemsPerPage: number = 8;
-  private subjects: Subject[] = [];
 
   constructor() {
     super();
@@ -35,9 +28,10 @@ class SubjectsContainer extends HTMLElement {
         `;
   }
 
-  loadSubjects() {
+  async loadSubjects() {
     try {
-      this.subjects = subjectsJson.subjects;
+      const response = await fetchSubjects();
+      this.subjects = response.subjects;
       this.renderPage();
       this.renderPagination();
     } catch (error) {

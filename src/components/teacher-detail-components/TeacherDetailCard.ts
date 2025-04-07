@@ -1,10 +1,13 @@
+import { TeacherDetailCardAttributes } from "../../types/teacher-detail/TeacherDetailCard.types";
+
 class TeacherDetailCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  static get observedAttributes() {
+  // Specifies which attributes to observe for changes
+  static get observedAttributes(): (keyof TeacherDetailCardAttributes)[] {
     return ["name", "subject", "rating", "image", "nucleus"];
   }
 
@@ -12,11 +15,19 @@ class TeacherDetailCard extends HTMLElement {
     this.render();
   }
 
-  attributeChangedCallback() {
-    this.render();
+  // Called when one of the observed attributes is changed
+  attributeChangedCallback(
+    name: keyof TeacherDetailCardAttributes,
+    oldValue: string,
+    newValue: string
+  ) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
   }
 
   render() {
+    // Retrieves attribute values or assigns default values (bc this is static for now)
     const name = this.getAttribute("name") || "Jimmy Ramirez";
     const subject = this.getAttribute("subject") || "Logic & Argumentation";
     const rating = parseInt(this.getAttribute("rating") || "0");

@@ -1,3 +1,5 @@
+@import url("../colors.css");
+
 .reviews-title {
   top: -10;
   font-size: 18px;
@@ -15,12 +17,12 @@
   left: 0;
   width: 70px;
   height: 3px;
-  background-color: #5354ed;
+  background-color: var(--nexopurple);
   border-radius: 2px;
 }
 
 .review-item {
-  background-color: #eef0fd;
+  background-color: var(--nexolightwhite);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
@@ -57,28 +59,28 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid white;
+  border: 2px solid var(--nexowhite);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-  background-color: #f0f2fa;
+  background-color: var(--nexowhite);
 }
 
 .user-name {
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #000;
+  color: var(--nexoblack);
 }
 
 .review-date {
   font-size: 13px;
-  color: #5354ed;
+  color: var(--nexopurple);
 }
 
 .review-rating {
   display: flex;
   gap: 4px;
   padding: 5px 10px;
-  background-color: white;
+  background-color: var(--nexowhite);
   border-radius: 20px;
   box-shadow: 0 2px 6px rgba(83, 84, 237, 0.06);
 }
@@ -87,19 +89,19 @@
   margin: 0;
   font-size: 15px;
   line-height: 1.5;
-  color: #333;
+  color: var(--nexogray);
 }
 
 .empty-state {
   text-align: center;
   padding: 30px 16px;
-  color: #555;
+  color: var(--nexogray);
   font-size: 15px;
-  background-color: #f8f9fd;
+  background-color: var(--nexowhite);
   border-radius: 12px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 576px) {
   .reviews-container {
     padding: 0px 36px 36px 36px;
   }

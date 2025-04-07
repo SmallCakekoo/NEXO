@@ -11,7 +11,7 @@ class SubjectCommentsContainer extends HTMLElement {
   render() {
     if (this.shadowRoot) {
       this.shadowRoot.innerHTML = `
-                <link rel="stylesheet" href="/styles/components/SubjectCommentsContainer.css">
+                <link rel="stylesheet" href="/styles/components/subject-detail/SubjectCommentsContainer.css">
                 <subject-review-form></subject-review-form>
                 <div class="divider"></div>
                 <subject-review-list></subject-review-list>

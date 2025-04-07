@@ -36,33 +36,40 @@ class TabsComponent extends HTMLElement {
         `;
   }
 
+  // Sets up tab switching behavior by listening for button clicks
   setupTabs() {
     const triggerTabList = Array.from(
       this.shadowRoot!.querySelectorAll<HTMLElement>("[data-target]")
     );
     const navTabs = this.shadowRoot!.querySelector(".nav-tabs") as HTMLElement;
 
+    // Add click events to each tab button
     triggerTabList.forEach((triggerEl) => {
       triggerEl.addEventListener("click", (event: Event) => {
         event.preventDefault();
 
+        // Hide all tab panes
         const allPanes = this.shadowRoot!.querySelectorAll(".tab-pane");
         allPanes.forEach((pane) => {
           pane.classList.remove("show", "active");
         });
 
+        // Remove "active" class from all buttons
         const allButtons = this.shadowRoot!.querySelectorAll(".nav-link");
         allButtons.forEach((button) => {
           button.classList.remove("active");
         });
 
+        // Get the ID of the tab to show
         const targetId = triggerEl.getAttribute("data-target");
         if (targetId) {
           const targetPane = this.shadowRoot!.querySelector(`#${targetId}`);
           if (targetPane) {
+            // Mark a active
             targetPane.classList.add("show", "active");
           }
           triggerEl.classList.add("active");
+          // Update the active
           navTabs.setAttribute("data-active-tab", targetId);
         }
       });

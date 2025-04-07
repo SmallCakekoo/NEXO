@@ -1,10 +1,12 @@
+import { SubjectCardAttributes } from "../../types/academics/SubjectCard.types";
+
 class SubjectCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  static get observedAttributes() {
+  static get observedAttributes(): (keyof SubjectCardAttributes)[] {
     return ["name", "career", "credits", "id", "rating"];
   }
 
@@ -14,12 +16,10 @@ class SubjectCard extends HTMLElement {
     this.setupCardClickHandler();
   }
 
+  // Adds click event to the card for the navigation
   setupCardClickHandler() {
     const card = this.shadowRoot?.querySelector(".card");
     card?.addEventListener("click", () => {
-      const id = this.getAttribute("id") || "1";
-      const name = this.getAttribute("name") || "Name not specified";
-
       const customEvent = new CustomEvent("navigate", {
         bubbles: true,
         composed: true,
@@ -29,6 +29,7 @@ class SubjectCard extends HTMLElement {
     });
   }
 
+  // Adds hover interaction to the star icons to simulate rating behavior (only visual)
   setupStarInteraction() {
     const rating = parseInt(this.getAttribute("rating") || "3");
     const stars = this.shadowRoot?.querySelectorAll(".star-icon");
@@ -49,7 +50,7 @@ class SubjectCard extends HTMLElement {
     }
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(name: keyof SubjectCardAttributes, oldValue: string, newValue: string) {
     if (oldValue !== newValue) {
       this.render();
       this.setupStarInteraction();
@@ -63,7 +64,7 @@ class SubjectCard extends HTMLElement {
     const credits = this.getAttribute("credits") || "0";
     const rating = this.getAttribute("rating") || "3";
     const randomId = Math.floor(Math.random() * 100);
-    const image = `https://picsum.photos/id/${randomId}/250/150`;
+    const image = this.getAttribute("image") || `https://picsum.photos/id/${randomId}/250/150`;
 
     const stars = Array(5)
       .fill(0)

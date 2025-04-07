@@ -1,17 +1,11 @@
-import teachersJson from "../../data/teachers.json";
+import { teachers, TeachersResponse } from "../../types/academics/TeachersContainer.types";
+import { fetchTeachers } from "../../services/Teacher.services";
 
-export interface Teacher {
-  name: string;
-  subject: string;
-  nucleus: string;
-  rating: string;
-  image: string;
-}
 
 class TeachersContainer extends HTMLElement {
   private currentPage: number = 1;
   private itemsPerPage: number = 8;
-  private teachers: Teacher[] = [];
+  private teachers: teachers[] = [];
 
   constructor() {
     super();
@@ -23,9 +17,10 @@ class TeachersContainer extends HTMLElement {
     this.loadTeachers();
   }
 
-  loadTeachers() {
+  async loadTeachers() {
     try {
-      this.teachers = teachersJson.teachers;
+      const response = await fetchTeachers();
+      this.teachers = response.teachers;
       this.renderPage();
       this.renderPagination();
     } catch (error) {

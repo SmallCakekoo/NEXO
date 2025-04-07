@@ -217,7 +217,7 @@ input:focus, select:focus, textarea:focus {
     transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 576px) {
     .settings-container {
         max-width: 100%;
         padding: 15px;

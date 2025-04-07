@@ -1,3 +1,5 @@
+@import url('../colors.css');
+
 .subject-card {
   display: flex;
   flex-direction: column;
@@ -71,7 +73,7 @@
 .detail-icon {
   width: 20px;
   height: 20px;
-  fill: #5354ed;
+  fill: var(--nexopurple);
 }
 
 .rating {
@@ -81,10 +83,10 @@
 }
 
 .rating svg.filled {
-  fill: #5354ed;
+  fill: var(--nexopurple);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 576px) {
   .subject-card {
     flex-direction: row;
     gap: 28px;

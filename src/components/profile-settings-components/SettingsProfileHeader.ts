@@ -9,6 +9,7 @@ class SettingsProfileHeader extends HTMLElement {
     this.addEventListeners();
   }
 
+  // Adds event listeners to the close button and the image upload
   addEventListeners() {
     const xButton = this.shadowRoot!.querySelector(".x-button");
     xButton?.addEventListener("click", () => {
@@ -23,6 +24,7 @@ class SettingsProfileHeader extends HTMLElement {
       (fileInput as HTMLElement).click();
     });
 
+    // Handles the image upload (this is static and this is a simulation)
     fileInput?.addEventListener("change", () => {
       alert("Image uploaded successfully! (simulation)");
     });

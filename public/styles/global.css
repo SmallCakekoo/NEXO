@@ -1,3 +1,5 @@
+@import url("colors.css");
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -5,21 +7,21 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #e3e5ff;
+  background: var(--nexolightwhite);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #5354ed;
+  background: var(--nexopurple);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4445c9;
+  background: var(--nexodarkpurple);
   border-radius: 10px;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #5354ed #f1f1f1;
+  scrollbar-color: var(--nexopurple) var(--nexowhite);
 }

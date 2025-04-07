@@ -22,8 +22,8 @@ class SettingsProfileContainer extends HTMLElement {
                     </div>
                     
                     <div class="form-group">
-                        <label>Change career info</label>
-                        <select id="career">
+                        <label>Change Semester info</label>
+                        <select id="Semester">
                             <option selected>Select a semester</option>
                             <option>First semester</option>
                             <option>Second semester</option>
@@ -94,34 +94,41 @@ class SettingsProfileContainer extends HTMLElement {
     this.updateCharCounter();
   }
 
+  // Updates the character counter based on the bio text length
   updateCharCounter() {
     const bioText = this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement;
     const charCounter = this.shadowRoot!.querySelector(".char-counter");
 
     if (bioText && charCounter) {
       const count = bioText.value.length;
-      charCounter.textContent = `${count}/280 caracteres`;
+      charCounter.textContent = `${count}/400 caracteres`;
     }
   }
 
+  // This is static for now, but it will be dynamic in the future, again, jiji
+  // Sets up event listeners for form interaction
   setupEventListeners() {
     const saveBtn = this.shadowRoot!.querySelector(".save-btn");
     const unlogBtn = this.shadowRoot!.querySelector(".unlog-btn");
     const deleteAccount = this.shadowRoot!.querySelector(".delete-account");
     const bioText = this.shadowRoot!.querySelector(".bio-text");
 
+    // Updates the character counter when the bio text changes
     bioText?.addEventListener("input", () => {
       this.updateCharCounter();
     });
 
+    // Handles the save button click
     saveBtn?.addEventListener("click", () => {
       console.log("Save button clicked");
     });
 
+    // Handles the unlog button click
     unlogBtn?.addEventListener("click", () => {
       console.log("Unlog button clicked");
     });
 
+    // Handles the delete account button click
     deleteAccount?.addEventListener("click", () => {
       console.log("Delete account clicked");
       const confirmationDialog = document.createElement("delete-account-confirmation");

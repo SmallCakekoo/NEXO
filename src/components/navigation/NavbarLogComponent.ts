@@ -42,18 +42,20 @@ class NavBarLog extends HTMLElement {
         `;
   }
 
+  // Handles toggling the mobile menu and overlay using Bootstrap-like behavior
   addBootstrapFunctionality() {
     const toggleBtn = this.shadowRoot!.querySelector("#toggleBtn");
     const overlay = this.shadowRoot!.querySelector("#overlay");
     const mobileMenu = this.shadowRoot!.querySelector("#mobileMenu");
 
     if (toggleBtn && overlay && mobileMenu) {
+      // Toggle menu on button click
       toggleBtn.addEventListener("click", () => {
         const isExpanded = mobileMenu.classList.contains("show");
         mobileMenu.classList.toggle("show", !isExpanded);
         overlay.classList.toggle("show", !isExpanded);
       });
-
+      // Close menu when clicking outside
       overlay.addEventListener("click", () => {
         mobileMenu.classList.remove("show");
         overlay.classList.remove("show");
@@ -61,6 +63,7 @@ class NavBarLog extends HTMLElement {
     }
   }
 
+  // Sets up click listeners for navigation buttons and dispatches custom events
   setupNavigation() {
     const buttons = this.shadowRoot!.querySelectorAll("btn-feed, btn-academic, btn-profile");
 
@@ -68,6 +71,7 @@ class NavBarLog extends HTMLElement {
       btn.addEventListener("click", () => {
         let route = "";
 
+        // Determine route based on the button tag
         if (btn.tagName.toLowerCase() === "btn-feed") route = "/feed";
         if (btn.tagName.toLowerCase() === "btn-academic") route = "/academic";
         if (btn.tagName.toLowerCase() === "btn-profile") route = "/profile";
@@ -77,6 +81,7 @@ class NavBarLog extends HTMLElement {
     });
   }
 
+  // Dispatches a custom navigation event to notify the app of news route changes
   navigate(route: string) {
     const event = new CustomEvent("navigate", { detail: route });
     document.dispatchEvent(event);
