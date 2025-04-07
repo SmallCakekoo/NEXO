@@ -16,7 +16,6 @@
   border: 2px solid var(--nexolightwhite);
   border-radius: 50px;
   outline: none;
-  transition: all 0.3s ease;
   background-color: white;
   color: #2d3748;
   box-sizing: border-box;
