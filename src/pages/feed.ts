@@ -23,7 +23,7 @@ class FeedPage extends HTMLElement {
               }
                 
               
-              .post-container{
+              .post-card{
               justify-content: center;
               display:flex; 
               margin-top: 8%;
@@ -39,9 +39,8 @@ class FeedPage extends HTMLElement {
                <button-tags textbutton="Academics"></button-tags>
               </section> 
             
-            <div class ="post-container">
+            <div class ="post-card">
               <the-post 
-                
                 photo= "https://picsum.photos/800/450?random=1"
                 name = "Luis Carlos Bodoque"
                 date ="26/03/2025"
