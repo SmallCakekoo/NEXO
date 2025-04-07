@@ -1,3 +1,5 @@
+import ButtonsTags from "./components/buttons/ButtonTags";
+import thePost from "./components/Post/post";
 import PostContainer from "./components/PostContainer";
 
 
@@ -111,3 +113,7 @@ customElements.define("teacher-review-list", TeacherReviewList);
 // los contenedores de los comentarios
 customElements.define("teacher-comments-container", TeacherCommentsContainer);
 customElements.define("subject-comments-container", SubjectCommentsContainer);
+
+//botones y post (feed)
+customElements.define("button-tags", ButtonsTags);
+customElements.define('the-post', thePost);
