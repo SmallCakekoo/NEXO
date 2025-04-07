@@ -2,9 +2,9 @@ export enum Comments {
   photo = "photo",
   name = "name",
   date ="date",
-  degree = "degree",
+  career = "career",
   semestre = "semestre",
-  comment = "comment",
+  message = "message",
   tag = "tag",
   likes = "likes",
   share = "share",
@@ -16,9 +16,9 @@ class thePost extends HTMLElement {
   photo?: string;
   name?: string;
   date?:string;
-  degree?: string;
+  career?: string;
   semestre?: string;
-  comment?: string;
+  message?: string;
   tag?: string;
   likes?: number;
   share?: string;
@@ -73,11 +73,13 @@ class thePost extends HTMLElement {
       display: flex; 
       gap: 50px;
       justify-content: center; 
+      margin-bottom: 3%; 
     }
     .like-container{
       display: flex; 
       align-items: center; 
       gap: 10px;
+      align-items: flex-button;
       }
     .profile-picture{
          
@@ -127,7 +129,7 @@ class thePost extends HTMLElement {
           padding: 0;
           margin: 0;
       }
-      .degree{
+      .career{
        color: black;
       font-weight: bold;
       align-items: flex-start;
@@ -142,7 +144,7 @@ class thePost extends HTMLElement {
       margin: 0;
       }
 
-      .the-degree{
+      .the-career{
         display: flex;
         gap: 8px;
         justify-content: space-between;   
@@ -168,23 +170,28 @@ class thePost extends HTMLElement {
       .just-likes{
       font-weight: bold;
       font-size: 14px; 
+      margin-bottom: 3%; 
       }
       
       .just-share{
       font-weight: bold;
       font-size: 14px; 
+      margin-bottom: 3%; 
       }
 
-      .just-comments{
+      .just-message{
       font-weight: bold;
       font-size: 14px; 
+      margin-bottom: 3%; 
       }
 
       .attributes-container{
       margin: 5%;
+    }
+
+      hr{
+      margin: 1% 5%; 
       }
-
-
         </style>
 
       <div class="post">
@@ -200,14 +207,14 @@ class thePost extends HTMLElement {
                   </div>
               </div>
 
-              <div class ="the-degree">
-                <p class ="degree">${this.getAttribute("degree")}</p>
+              <div class ="the-career">
+                <p class ="career">${this.getAttribute("career")}</p>
                 <p class = "semestre" >${this.getAttribute("semestre")}</p>
               </div>
           </div>
 
-        <div class ="comment-container">
-         <p class = "comment">${this.getAttribute("comment")}</p>
+        <div class ="message-container">
+         <p class = "message">${this.getAttribute("message")}</p>
         </div>
         
       </div>
@@ -249,7 +256,7 @@ class thePost extends HTMLElement {
           <path fill-rule="evenodd" clip-rule="evenodd" d="M26.3691 13.0625C26.3691 12.6828 26.6769 12.375 27.0566 12.375H28.4316C30.3238 12.375 31.8691 13.9203 31.8691 15.8125V17.1875C31.8691 19.0797 30.3238 20.625 28.4316 20.625H27.0566C26.6769 20.625 26.3691 20.3172 26.3691 19.9375C26.3691 19.5578 26.6769 19.25 27.0566 19.25H28.4316C29.5644 19.25 30.4941 18.3203 30.4941 17.1875V15.8125C30.4941 14.6797 29.5644 13.75 28.4316 13.75H27.0566C26.6769 13.75 26.3691 13.4422 26.3691 13.0625Z" fill="#5354ED"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M9.18164 22C9.56134 22 9.86914 22.3078 9.86914 22.6875V25.4375C9.86914 25.6938 9.95156 25.8539 10.0459 25.9482C10.1402 26.0426 10.3004 26.125 10.5566 26.125H17.4316C17.6879 26.125 17.848 26.0426 17.9424 25.9482C18.0367 25.8539 18.1191 25.6938 18.1191 25.4375V24.0625C18.1191 23.6828 18.4269 23.375 18.8066 23.375C19.1863 23.375 19.4941 23.6828 19.4941 24.0625V25.4375C19.4941 26.0062 19.3016 26.5336 18.9147 26.9205C18.5277 27.3074 18.0004 27.5 17.4316 27.5H10.5566C9.98791 27.5 9.46054 27.3074 9.07363 26.9205C8.68672 26.5336 8.49414 26.0062 8.49414 25.4375V22.6875C8.49414 22.3078 8.80194 22 9.18164 22Z" fill="#5354ED"/>
           </svg>
-              <p class ="just-comments">${this.getAttribute("comments")} Comments</p>
+              <p class ="just-message">${this.getAttribute("comments")} Comments</p>
         </span>
 
         </div>
@@ -266,3 +273,4 @@ class thePost extends HTMLElement {
 }
 
 export default thePost;
+

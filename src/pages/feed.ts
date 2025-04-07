@@ -45,9 +45,9 @@ class FeedPage extends HTMLElement {
                 photo= "https://picsum.photos/800/450?random=1"
                 name = "Luis Carlos Bodoque"
                 date ="26/03/2025"
-                degree = "Engeneering System"
+                career = "Engeneering System"
                 semestre = "Seventh"
-                comment = "Did anyone else stump against a guy using boots in the stairs???"
+                message = "Did anyone else stump against a guy using boots in the stairs???"
                 tag = "Daily Life"
                 Likes = "100"
                 share = ""
@@ -56,7 +56,6 @@ class FeedPage extends HTMLElement {
                 </div>
             </div>
               
-
           `;
     }
   }
