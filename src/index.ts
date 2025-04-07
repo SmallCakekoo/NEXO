@@ -1,3 +1,7 @@
+import PostContainer from "./components/PostContainer";
+
+
+customElements.define("post-container", PostContainer);
 // botones de la navbar
 import BtnFeed from "./components/navbar-buttons/BtnFeed";
 import BtnAcademic from "./components/navbar-buttons/BtnAcademic";
