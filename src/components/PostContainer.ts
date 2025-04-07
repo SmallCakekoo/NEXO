@@ -1,4 +1,4 @@
-import { Post, PostsResponse } from '../types/feeds.types';
+import { Post } from '../types/feeds.types';
 import { fetchPosts } from '../services/feed.service';
 
 class PostContainer extends HTMLElement {
@@ -34,7 +34,7 @@ class PostContainer extends HTMLElement {
                         (post) => `
                             <div tag="${post.tag}">
                                 <img src="${post.photo}" alt="Foto de ${post.name}" />
-                                <p><strong>${post.name}</strong> (${post.degree} - ${post.semestre})</p>
+                                <p><strong>${post.name}</strong> (${post.career} - ${post.semestre})</p>
                                 <p>${post.message}</p>
                                 <span>Likes: ${post.likes}</span>
                             </div>`

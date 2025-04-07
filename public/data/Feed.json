@@ -3,7 +3,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=1",
         "name": "Pepito Fetch",
-        "degree": "Medicine",
+        "career": "Medicine",
         "semestre": "seventh",
         "message": "Does Chismes Icesi was reported?",
         "tag": "Daily Life",
@@ -12,13 +12,13 @@
         {   
         "photo": "https://picsum.photos/800/450?random=2",
         "name": "Carlin",
-        "degree": "DMI",
+        "career": "DMI",
         "message": "Not at all"
         },
         {   
             "photo": "https://picsum.photos/800/450?random=3",
             "name": "Elsa Ancocho",
-            "degree": "Marketing",
+            "career": "Marketing",
             "message": "WTF jajajajaja"
             }
     ]
@@ -26,7 +26,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=4",
         "name": "Carlos Méndez",
-        "degree": "Law",
+        "career": "Law",
         "semestre": "third",
         "message": "Is the library open during the holidays?",
         "tag": "Daily Life",
@@ -35,7 +35,7 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
-            "degree": "DMI",
+            "career": "DMI",
             "message": "Negative"
             }
         ]
@@ -43,7 +43,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=4",
         "name": "Andrea Gómez",
-        "degree": "Psychology",
+        "career": "Psychology",
         "semestre": "sixth",
         "message": "Who is the professor for Clinical Psychology this semester?",
         "tag": "Daily Life",
@@ -52,13 +52,13 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
-            "degree": "DMI",
+            "career": "DMI",
             "message": "Not at all"
             },
             {   
                 "photo": "https://picsum.photos/800/450?random=3",
                 "name": "Elsa Ancocho",
-                "degree": "Marketing",
+                "career": "Marketing",
                 "message": "WTF jajajajaja"
                 }
         ]
@@ -66,7 +66,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=5",
         "name": "Javier Ríos",
-        "degree": "Business Administration",
+        "career": "Business Administration",
         "semestre": "second",
         "message": "Offering 3 seats to Ciudad Pacifico",
         "tag": "Carpool",
@@ -75,13 +75,13 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
-            "degree": "DMI",
+            "career": "DMI",
             "message": "What is the cost?"
             },
             {   
                 "photo": "https://picsum.photos/800/450?random=3",
                 "name": "Elsa Ancocho",
-                "degree": "Marketing",
+                "career": "Marketing",
                 "message": "There's any seats available?"
                 }
         ]

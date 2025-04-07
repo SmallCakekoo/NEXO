@@ -2,7 +2,7 @@ import { PostsResponse } from '../types/feeds.types';
 
 export async function fetchPosts(): Promise<PostsResponse> {
     try {
-        const response = await fetch("/src/data/Feed.json");
+        const response = await fetch("/public/data/Feed.json");
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }

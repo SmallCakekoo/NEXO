@@ -1,14 +1,14 @@
 export interface Comment {
     photo: string;
     name: string;
-    degree: string;
+    career: string;
     message: string;
 }
 
 export interface Post {
     photo: string;
     name: string;
-    degree: string;
+    career: string;
     semestre: string;
     message: string;
     tag: string;
