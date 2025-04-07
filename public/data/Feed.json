@@ -8,7 +8,7 @@
         "message": "Does Chismes Icesi was reported?",
         "tag": "Daily Life",
         "likes": 3,
-        "coments": [
+        "comments": [
         {   
         "photo": "https://picsum.photos/800/450?random=2",
         "name": "Carlin",
@@ -31,7 +31,7 @@
         "message": "Is the library open during the holidays?",
         "tag": "Daily Life",
         "likes": 2,
-        "coments": [
+        "comments": [
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
@@ -48,7 +48,7 @@
         "message": "Who is the professor for Clinical Psychology this semester?",
         "tag": "Daily Life",
         "likes": 8,
-        "coments": [
+        "comments": [
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
@@ -71,7 +71,7 @@
         "message": "Offering 3 seats to Ciudad Pacifico",
         "tag": "Carpool",
         "likes": 4,
-        "coments": [
+        "comments": [
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
