@@ -1,10 +1,11 @@
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NEXO</title>
-    <link rel="icon" href="public/Icon.ico" type="image/x-icon" />
-
+    <link rel="stylesheet" href="./styles/global.css" />
+    <link rel="icon" href="Icon.ico" type="image/x-icon" />
     <!-- Metatags SEO -->
     <meta
       name="description"
@@ -36,18 +37,15 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
   </head>
 
   <body>
     <header id="navbar-container">
-      <!-- Aquí se inyectará la navbar correcta -->
+      <!-- Aquí se inyectará la navbar correcta dependiendo -->
     </header>
 
-    <main id="app">
-      <!-- Aquí se renderizará el contenido de cada página dinámicamente -->
-    </main>
+    <app-container></app-container>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script
@@ -55,9 +53,12 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    
     <script type="module" src="/bundle.js"></script>
     <script>
       AOS.init();
     </script>
+
+
   </body>
 </html>
