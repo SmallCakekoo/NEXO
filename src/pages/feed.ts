@@ -54,6 +54,8 @@ class FeedPage extends HTMLElement {
                 ></the-post>
                 </div>
             </div>
+
+            <floating-action-button></floating-action-button>
               
           `;
     }
