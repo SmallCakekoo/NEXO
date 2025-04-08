@@ -1,6 +1,17 @@
-import ButtonsTags from "./components/buttons/ButtonTags";
-import thePost from "./components/Post/post";
-import PostContainer from "./components/PostContainer";
+// El componente del new post
+import PostModal from "./components/feed-components/PostModal";
+// El componponente del boton que permite que aparezca el new post
+import FloatingButtonAdd from "./components/FloatingButtonAdd";
+
+
+// El componente del new post
+customElements.define("post-modal", PostModal);
+// El componponente del boton que permite que aparezca el new post
+customElements.define("floating-btn", FloatingButtonAdd);
+
+
+import ButtonsTags from "./components/feed-components/ButtonTags";
+import PostContainer from "./components/feed-components/PostContainer";
 
 
 customElements.define("post-container", PostContainer);
@@ -116,4 +127,9 @@ customElements.define("subject-comments-container", SubjectCommentsContainer);
 
 //botones y post (feed)
 customElements.define("button-tags", ButtonsTags);
-customElements.define('the-post', thePost);
+
+import TagFiltersBar from "./components/feed-components/TagFiltersBar";
+import FeedPost from "./components/feed-components/FeedPost";
+
+customElements.define("tag-filters-bar", TagFiltersBar);
+customElements.define("feed-post", FeedPost);

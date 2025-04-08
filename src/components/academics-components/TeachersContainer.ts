@@ -1,5 +1,5 @@
 import { teachers, TeachersResponse } from "../../types/academics/TeachersContainer.types";
-import { fetchTeachers } from "../../services/Teacher.services";
+import { fetchTeachers } from "../../services/Teacher.service";
 
 
 class TeachersContainer extends HTMLElement {

@@ -13,6 +13,9 @@ export interface Post {
     message: string;
     tag: string;
     likes: number;
+    date: string;
+    share: string;
+    comments: string;
 }
 
 export interface PostsResponse {

@@ -1,5 +1,5 @@
 import { subjects, SubjectsResponse } from "../../types/academics/SubjectsContainer.types";
-import { fetchSubjects } from "../../services/Subject.services";
+import { fetchSubjects } from "../../services/Subject.service";
 
 class SubjectsContainer extends HTMLElement {
   private subjects: subjects[] = [];
