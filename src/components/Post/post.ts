@@ -61,170 +61,8 @@ class thePost extends HTMLElement {
   render() {
     if (this.shadowRoot) {
       this.shadowRoot.innerHTML = `
-    
-     <style>
-    .post{
-    padding:1%;
-    border:2px solid rgba(0, 0, 0, 0.56);
-    width:45vw; 
-    border-radius: 13px;   
-    }
-    .footer{
-      display: flex; 
-      gap: 50px;
-      justify-content: justify; 
-      margin-bottom: 3%; 
-      margin-left: 3%
-    }
 
-    .message-container{
-    font-size: 0.95rem
-    }
-    .like-container{
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
-      align-items: flex-button;
-      border: none; 
-      background: none; 
-      }
-    .profile-picture{
-         
-         border-radius: 50%;
-         width: 50px;
-         height: 50px;
-         object-fit: cover;
-         }
-
-          .name{
-          color: black;
-          font-weight: bold;
-          magin: 0; 
-          font-size: 1rem;
-          display: inline-block;
-          }
-
-          .like-icon path {
-            color: #6b7280;
-            transition: fill 0.2s ease;
-            isplay: flex;
-            align-items: center;
-            background: none;
-            border: none;
-            color: #6b7280;
-            cursor: pointer;
-            font-size: 0.9rem;
-            padding: 5px 10px;
-
-          }
-          .liked path {
-            fill: #5354ED;
-          }
-          
-          .likes-count{
-          margin-bottom:0.5rem;
-          }
-          
-        .tag {
-        display: inline-block;
-        padding: 4px 12px;
-        border: 2px solid rgba(31, 31, 241, 0.57);
-        border-radius: 9999px;
-        color:  rgba(31, 31, 241, 0.57);
-        background-color:rgb(255, 255, 255);
-        font-weight: 500;
-        font-size: 0.70rem;
-        text-align: center;
-        margin-left: 5%;
-        }     
-        .user-container{
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          justify-content: space-between; 
-        }
-      .profile-container{
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 0;
-          margin: 0;
-      }
-      .career{
-       color: black;
-      font-weight: bold;
-      align-items: flex-start;
-      padding: 0;
-      margin: 0; 
-      }
-
-      .semestre{
-       color: black;
-      font-weight: bold;
-      padding: 0;
-      margin: 0;
-      }
-
-      .the-career{
-        display: flex;
-        gap: 8px;
-        justify-content: space-between;   
-        font-size: 14px;
-        margin-top: 1.5%; 
-      }
-
-      .name-container{
-        display: flex;
-        flex-direction: column;
-        line-height: 1%;
-        gap: 0; 
-        margin: 0; 
-        padding: 0; 
-        align-items: flex-start;
-            
-    }
-      .date{
-      display: inline-block;
-      transform: translateY(-10px);
-      font-size: 0.95rem;
-      color: #666;
-      }
-
-    
-     .just-likes {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      padding: 5px 10px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #6b7280;
-          }
-  
-    .just-share{
-      font-weight: bold;
-      font-size: 80%; 
-      margin-bottom: 3%; 
-      }
-
-      .just-message{
-      font-weight: bold;
-      font-size: 80%; 
-      margin-bottom: 3%; 
-      }
-
-      .attributes-container{
-      margin: 5%;
-    }
-
-      hr{
-      margin: 1% 5%; 
-      }
-        </style>
-
+      <link rel="stylesheet" href="/styles/components/poststyle/post.css">
       <div class="post">
 
         <div class = "attributes-container">
@@ -264,10 +102,32 @@ class thePost extends HTMLElement {
             <p class ="likes-count">${this.getAttribute("likes")} Likes</p>
           </button>
           </div>  
-        
 
-          
-        </div>
+    <div class="align-comments">
+      <button class="just-comments">
+        <svg class="comment-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 
+          1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+        </svg>
+        <p class="comments-count">${this.getAttribute("comments")} Comments</p>
+      </button>
+    </div>
+
+    <div class="align-share">
+      <button class="just-share">
+        <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 
+          1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 
+          1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 
+          9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 
+          1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 
+          0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 
+          2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+        </svg>
+        <p class="share-count">${this.getAttribute("share")} Shared</p>
+      </button>
+      </div>
+      </div>
       </div>
     `;
 
@@ -275,6 +135,15 @@ class thePost extends HTMLElement {
       likeIcon?.addEventListener("click", () => {
         this.liked = !this.liked;
         this.render();
+      });
+      const commentIcon = this.shadowRoot.querySelector(".comment-icon");
+      commentIcon?.addEventListener("click", () => {
+        commentIcon.classList.toggle("clicked");
+      });
+
+      const shareIcon = this.shadowRoot.querySelector(".share-icon");
+      shareIcon?.addEventListener("click", () => {
+        shareIcon.classList.toggle("clicked");
       });
     }
   }
