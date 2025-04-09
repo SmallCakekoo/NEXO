@@ -1,49 +1,50 @@
-export enum FeedPostAttributes {
-  photo = "photo",
-  name = "name",
-  date = "date",
-  career = "career",
-  semestre = "semestre",
-  message = "message",
-  tag = "tag",
-  likes = "likes",
-}
+import { Post } from '../../types/feed/feeds.types';
 
 class FeedPost extends HTMLElement {
-  photo?: string;
-  name?: string;
-  date?: string;
-  career?: string;
-  semestre?: string;
-  message?: string;
-  tag?: string;
-  likes?: number;
+  post: Post;
   liked: boolean = false;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.post = {
+      photo: '',
+      name: '',
+      career: '',
+      semestre: '',
+      message: '',
+      tag: '',
+      likes: 0,
+      date: '',
+      share: '',
+      comments: ''
+    };
   }
 
   static get observedAttributes(): string[] {
-    return Object.values(FeedPostAttributes);
+    return [
+      'photo',
+      'name',
+      'career',
+      'semestre',
+      'message',
+      'tag',
+      'likes',
+      'date',
+      'share',
+      'comments'
+    ];
   }
 
   attributeChangedCallback(
-    propName: FeedPostAttributes,
+    propName: keyof Post,
     oldValue: string | number,
     newValue: string | number
   ) {
-    switch (propName) {
-      case FeedPostAttributes.likes:
-        this.likes = newValue ? Number(newValue) : 0;
-        break;
-
-      default:
-        if (typeof newValue === "string") {
-          this[propName] = newValue;
-        }
-        break;
+    if (propName === 'likes') {
+      this.post.likes = newValue ? Number(newValue) : 0;
+    } else if (typeof newValue === "string") {
+      this.post[propName] = newValue;
     }
 
     this.render();
@@ -61,25 +62,25 @@ class FeedPost extends HTMLElement {
           <div class="attributes-container">
             <div class="user-container"> 
               <div class="profile-container">
-                <img class="profile-picture" src="${this.getAttribute("photo")}" alt="Profile Picture">
+                <img class="profile-picture" src="${this.post.photo}" alt="Profile Picture">
                 <div class="name-container">
-                  <p class="name">${this.getAttribute("name")}</p>
-                  <p class="date">${this.getAttribute("date")}</p>
+                  <p class="name">${this.post.name}</p>
+                  <p class="date">${this.post.date}</p>
                 </div>
               </div>
 
               <div class="the-career">
-                <p class="career">${this.getAttribute("career")}</p>
-                <p class="semestre">${this.getAttribute("semestre")}</p>
+                <p class="career">${this.post.career}</p>
+                <p class="semestre">${this.post.semestre}</p>
               </div>
             </div>
 
             <div class="message-container">
-              <p class="message">${this.getAttribute("message")}</p>
+              <p class="message">${this.post.message}</p>
             </div>
           </div>
 
-          <p class="tag">${this.getAttribute("tag")}</p>
+          <p class="tag">${this.post.tag}</p>
           
           <hr>
           <div class="footer">  
@@ -88,7 +89,7 @@ class FeedPost extends HTMLElement {
                 <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
-                <p class="likes-count">${this.getAttribute("likes")} Likes</p>
+                <p class="likes-count">${this.post.likes} Likes</p>
               </button>
             </div>  
 
