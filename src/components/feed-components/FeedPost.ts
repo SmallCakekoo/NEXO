@@ -8,7 +8,7 @@ export enum FeedPostAttributes {
   tag = "tag",
   likes = "likes",
   share = "share",
-  comments = "comments"
+  comments = "comments",
 }
 
 class FeedPost extends HTMLElement {
@@ -89,8 +89,8 @@ class FeedPost extends HTMLElement {
           <div class="footer">  
             <div class="align-likes">
               <button class="just-likes">
-                <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
                 <p class="likes-count">${this.getAttribute("likes")} Likes</p>
               </button>
@@ -117,23 +117,23 @@ class FeedPost extends HTMLElement {
         </div>
       `;
 
-      const likeIcon = this.shadowRoot.querySelector(".like-icon");
-      likeIcon?.addEventListener("click", () => {
+      const likeButton = this.shadowRoot.querySelector(".just-likes");
+      likeButton?.addEventListener("click", () => {
         this.liked = !this.liked;
         this.render();
       });
 
       const commentIcon = this.shadowRoot.querySelector(".comment-icon");
       commentIcon?.addEventListener("click", () => {
-        commentIcon.classList.toggle("clicked");
+        // Something to do
       });
 
       const shareIcon = this.shadowRoot.querySelector(".share-icon");
       shareIcon?.addEventListener("click", () => {
-        shareIcon.classList.toggle("clicked");
+        // Something to do
       });
     }
   }
 }
 
-export default FeedPost; 
+export default FeedPost;

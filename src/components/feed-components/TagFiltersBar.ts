@@ -10,17 +10,7 @@ class TagFiltersBar extends HTMLElement {
 
   render() {
     this.shadowRoot!.innerHTML = `
-      <style>
-        .section-buttons {
-          width: 100vw; 
-          display: flex; 
-          gap: 6%;
-          padding: 2% 0;
-          justify-self: center;
-          justify-content: center;
-        }
-      </style>
-
+     <link rel="stylesheet" href="/styles/components/feed/TagFiltersBar.css">
       <section class="section-buttons">
         <button-tags textbutton="All"></button-tags>
         <button-tags textbutton="Daily life"></button-tags>
@@ -31,4 +21,4 @@ class TagFiltersBar extends HTMLElement {
   }
 }
 
-export default TagFiltersBar; 
+export default TagFiltersBar;
