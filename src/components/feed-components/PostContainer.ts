@@ -3,6 +3,7 @@ import { fetchPosts } from "../../services/feed.service";
 
 class PostContainer extends HTMLElement {
   private posts: Post[] = [];
+  private filteredPosts: Post[] = [];
 
   constructor() {
     super();
@@ -12,6 +13,11 @@ class PostContainer extends HTMLElement {
   async connectedCallback() {
     console.log("PostContainer component mounted.");
     await this.loadPosts();
+    this.addEventListener('tagSelected', (event: Event) => {
+      const customEvent = event as CustomEvent<{ tag: string }>;
+      const selectedTag = customEvent.detail.tag;
+      this.filterPosts(selectedTag);
+    });
   }
 
   async loadPosts(): Promise<void> {
@@ -24,14 +30,19 @@ class PostContainer extends HTMLElement {
     }
   }
 
+  filterPosts(tag: string) {
+    this.filteredPosts = tag === 'All' ? this.posts : this.posts.filter(post => post.tag === tag);
+    this.render();
+  }
+
   render() {
-    console.log("Rendering posts:", this.posts);
+    console.log("Rendering posts:", this.filteredPosts);
     if (!this.shadowRoot) return;
     this.shadowRoot.innerHTML = `
             <div>
                 ${
-                  this.posts.length > 0
-                    ? this.posts
+                  this.filteredPosts.length > 0
+                    ? this.filteredPosts
                         .map(
                           (post) => `
                             <feed-post 

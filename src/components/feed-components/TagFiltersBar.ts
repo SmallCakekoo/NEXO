@@ -1,3 +1,5 @@
+import { Post } from '../../types/feed/feeds.types';
+
 class TagFiltersBar extends HTMLElement {
   constructor() {
     super();
@@ -6,6 +8,18 @@ class TagFiltersBar extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.addEventListeners();
+  }
+
+  addEventListeners() {
+    const buttons = this.shadowRoot!.querySelectorAll('button-tags');
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tag = button.getAttribute('textbutton');
+        console.log(`Tag selected: ${tag}`);
+        this.dispatchEvent(new CustomEvent('tagSelected', { detail: { tag }, bubbles: true, composed: true }));
+      });
+    });
   }
 
   render() {
@@ -23,12 +37,16 @@ class TagFiltersBar extends HTMLElement {
 
       <section class="section-buttons">
         <button-tags textbutton="All"></button-tags>
-        <button-tags textbutton="Daily life"></button-tags>
+        <button-tags textbutton="Daily Life"></button-tags>
         <button-tags textbutton="Carpool"></button-tags>
         <button-tags textbutton="Academics"></button-tags>
       </section>
     `;
   }
 }
+
+// if (!customElements.get('tag-filters-bar')) {
+//   customElements.define('tag-filters-bar', TagFiltersBar);
+// }
 
 export default TagFiltersBar; 
