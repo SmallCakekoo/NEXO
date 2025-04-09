@@ -3,6 +3,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=1",
         "name": "Pepito Fetch",
+        "date": "8/12/2024",
         "career": "Medicine",
         "semestre": "seventh",
         "message": "Does Chismes Icesi was reported?",
@@ -13,12 +14,14 @@
         "photo": "https://picsum.photos/800/450?random=2",
         "name": "Carlin",
         "career": "DMI",
+        "date": "9/12/2024",
         "message": "Not at all"
         },
         {   
             "photo": "https://picsum.photos/800/450?random=3",
             "name": "Elsa Ancocho",
             "career": "Marketing",
+            "date": "9/12/2024",
             "message": "WTF jajajajaja"
             }
     ]
@@ -26,6 +29,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=4",
         "name": "Carlos Méndez",
+        "date": "3/02/2025",
         "career": "Law",
         "semestre": "third",
         "message": "Is the library open during the holidays?",
@@ -35,6 +39,7 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
+            "date": "4/02/2025",
             "career": "DMI",
             "message": "Negative"
             }
@@ -43,6 +48,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=4",
         "name": "Andrea Gómez",
+        "date": "12/02/2025",
         "career": "Psychology",
         "semestre": "sixth",
         "message": "Who is the professor for Clinical Psychology this semester?",
@@ -52,12 +58,14 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
+            "date": "15/02/2025",
             "career": "DMI",
             "message": "Not at all"
             },
             {   
                 "photo": "https://picsum.photos/800/450?random=3",
                 "name": "Elsa Ancocho",
+                "date": "18/02/2025",
                 "career": "Marketing",
                 "message": "WTF jajajajaja"
                 }
@@ -66,6 +74,7 @@
     {
         "photo": "https://picsum.photos/800/450?random=5",
         "name": "Javier Ríos",
+        "date": "3/03/2025",
         "career": "Business Administration",
         "semestre": "second",
         "message": "Offering 3 seats to Ciudad Pacifico",
@@ -75,12 +84,14 @@
             {   
             "photo": "https://picsum.photos/800/450?random=2",
             "name": "Carlin",
+            "date": "3/03/2025",
             "career": "DMI",
             "message": "What is the cost?"
             },
             {   
                 "photo": "https://picsum.photos/800/450?random=3",
                 "name": "Elsa Ancocho",
+                "date": "3/03/2025",
                 "career": "Marketing",
                 "message": "There's any seats available?"
                 }

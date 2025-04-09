@@ -7,8 +7,6 @@ export enum FeedPostAttributes {
   message = "message",
   tag = "tag",
   likes = "likes",
-  share = "share",
-  comments = "comments"
 }
 
 class FeedPost extends HTMLElement {
@@ -20,8 +18,6 @@ class FeedPost extends HTMLElement {
   message?: string;
   tag?: string;
   likes?: number;
-  share?: string;
-  comments?: string;
   liked: boolean = false;
 
   constructor() {
@@ -101,7 +97,7 @@ class FeedPost extends HTMLElement {
                 <svg class="comment-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
                 </svg>
-                <p class="comments-count">${this.getAttribute("comments")} Comments</p>
+                <p class="comments-count">Comment</p>
               </button>
             </div>
 
@@ -110,7 +106,7 @@ class FeedPost extends HTMLElement {
                 <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
                 </svg>
-                <p class="share-count">${this.getAttribute("share")} Shared</p>
+                <p class="share-count"> Shared</p>
               </button>
             </div>
           </div>
