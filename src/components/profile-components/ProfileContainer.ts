@@ -19,7 +19,7 @@ class ProfileContainer extends HTMLElement {
                     <post-card></post-card>
                     <post-card></post-card>
                 </div>
-                <floating-action-button></floating-action-button>
+            <floating-btn></floating-btn>
             </div>
         `;
   }

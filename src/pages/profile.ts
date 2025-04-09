@@ -14,9 +14,8 @@ class ProfilePage extends HTMLElement {
                 h2 { color: #4f46e5; }
             </style>
             
-            <nav-bar></nav-bar>  
-            
-              <profile-header></profile-header>
+            <nav-bar></nav-bar>
+            <profile-header></profile-header>
             <profile-container></profile-container>
 
         `;
