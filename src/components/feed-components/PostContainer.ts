@@ -43,8 +43,6 @@ class PostContainer extends HTMLElement {
                                 message="${post.message}"
                                 tag="${post.tag}"
                                 likes="${post.likes}"
-                                share="${post.share}"
-                                comments="${post.comments}"
                             ></feed-post>`
                         )
                         .join("")
