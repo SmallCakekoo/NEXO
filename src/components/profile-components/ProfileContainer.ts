@@ -12,7 +12,37 @@ class ProfileContainer extends HTMLElement {
   // This is static for now, but it will be dynamic in the future jiji
   render() {
     this.shadowRoot!.innerHTML = `
-     <link rel="stylesheet" href="/styles/components/profile/ProfileContainer.css">
+     <style>
+     @import url("../colors.css");
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.posts-container {
+  border-radius: 30px;
+  padding: 20px;
+}
+
+@media (max-width: 576px) {
+  .profile-container {
+    max-width: 100%;
+  }
+
+  .posts-container {
+    margin: 0 10px;
+    padding: 10px;
+  }
+}
+
+     </style>
             <div class="profile-container">
                 <div class="posts-container">
                     <feed-post
@@ -26,17 +56,17 @@ class ProfileContainer extends HTMLElement {
                         likes="19"
                     ></feed-post>
                     <feed-post
-                        photo="https://picsum.photos/seed/random/200/300"
+                        photo="https://picsum.photos/seed/picsum/200/300"
                         name="Rosa Elvira"
                         date="Yesterday"
                         career="Medicine"
                         semestre="2nd"
                         message="Looking for study partners for the anatomy exam next week. DM me if interested!"
-                        tag="Study Group"
+                        tag="Daily Life"
                         likes="32"
                     ></feed-post>
                     <feed-post
-                        photo="https://picsum.photos/seed/user/200/300"
+                        photo="https://picsum.photos/seed/picsum/200/300"
                         name="Rosa Elvira"
                         date="Last week"
                         career="Medicine"
