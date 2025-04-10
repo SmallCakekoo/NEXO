@@ -63,8 +63,8 @@ class SubjectCard extends HTMLElement {
     const career = this.getAttribute("career") || "Career not specified";
     const credits = this.getAttribute("credits") || "0";
     const rating = this.getAttribute("rating") || "3";
-    const randomId = Math.floor(Math.random() * 100);
-    const image = this.getAttribute("image") || `https://picsum.photos/id/${randomId}/250/150`;
+    const randomId = Math.floor(Math.random() * 30);
+    const image = `https://picsum.photos/id/${randomId}/250/150`;
 
     const stars = Array(5)
       .fill(0)

@@ -1,4 +1,4 @@
-@import url('../colors.css');
+@import url("../colors.css");
 
 :host {
   display: block;
@@ -12,7 +12,6 @@
 }
 
 .posts-container {
-  background-color: var(--nexolightwhite);
   border-radius: 30px;
   padding: 20px;
 }

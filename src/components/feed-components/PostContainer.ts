@@ -47,7 +47,7 @@ class PostContainer extends HTMLElement {
             <div>
                 ${
                   this.filteredPosts.length > 0
-                    ? this.filteredPosts
+                    ? `${this.filteredPosts
                         .map(
                           (post) => `
                             <feed-post 
@@ -61,8 +61,37 @@ class PostContainer extends HTMLElement {
                                 likes="${post.likes}"
                             ></feed-post>`
                         )
-                        .join("")
-                    : "<p>There are no posts yet.</p>"
+                        .join("")}
+                        <div class="end-message">
+                          <p>No more posts to show</p>
+                          <style>
+                            .end-message {
+                              text-align: center;
+                              padding: 1.5rem;
+                              margin-top: 1rem;
+                              color: #6c757d;
+                              font-style: italic;
+                            }
+                          </style>
+                        </div>`
+                    : `<div class="empty-state"> 
+                        <h3>No posts yet</h3>
+                        <p>Be the first to share something interesting</p>
+                         <style>
+                           .empty-state {
+                             text-align: center;
+                             padding: 2rem;
+                             margin: 1rem 0;  
+                           } 
+                           .empty-state h3 {
+                             color: #495057;
+                             margin-bottom: 0.5rem;
+                           }
+                           .empty-state p {
+                             color: #6c757d;
+                           }
+                         </style>
+                       </div>`
                 }
             </div>
         `;

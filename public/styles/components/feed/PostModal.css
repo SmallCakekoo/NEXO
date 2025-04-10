@@ -23,43 +23,34 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: transparent;
   font-family: "Roboto", sans-serif;
   font-weight: 400;
   font-size: clamp(12px, 2vw, 16px);
-  overflow: hidden;
-}
-
-:host {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  visibility: hidden;
-  z-index: 1000;
-}
-
-:host(.visible) {
-  visibility: visible;
 }
 
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  z-index: 999;
-  animation: fadeIn 0.3s ease forwards;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(1px);
+}
+
+.overlay.visible {
+  opacity: 1;
 }
 
 .modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
   display: flex;
   flex-direction: column;
   background: white;
@@ -68,27 +59,21 @@ body {
   border-radius: 27px;
   overflow: hidden;
   text-align: center;
-  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
   opacity: 0;
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
-  margin: 0;
-  max-height: 90vh;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.modal.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.hidden {
+  display: none !important;
 }
 
 .floating-btn {
@@ -141,6 +126,11 @@ body {
   background: none;
   border: none;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: scale(1.1);
 }
 
 .publish-btn {
@@ -158,9 +148,17 @@ body {
   width: 137px;
   font-size: clamp(14px, 2vw, 14px);
   height: 34px;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 .publish-btn:hover {
   background-color: #ddddfb;
+  transform: translateY(-2px);
+}
+
+.publish-btn:active {
+  transform: translateY(0);
 }
 
 .publish-btn img {
@@ -180,6 +178,15 @@ textarea {
   border: 1px solid #000000;
   border-radius: 5px;
   font-size: clamp(12px, 2vw, 16px);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #5354ed;
+  box-shadow: 0 0 5px rgba(83, 84, 237, 0.5);
 }
 
 .categories {
@@ -195,6 +202,11 @@ textarea {
   font-weight: bold;
   cursor: pointer;
   font-size: clamp(12px, 2vw, 16px);
+  transition: transform 0.2s ease;
+}
+
+.category:hover {
+  transform: translateY(-2px);
 }
 
 .category input {
@@ -225,6 +237,9 @@ textarea {
   border: 2px solid #5354ed;
   border-radius: 50%;
   margin-right: 6px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .category input:checked + label::before::after {
@@ -253,12 +268,40 @@ textarea {
   font-family: "TTRoundsNeue", sans-serif;
   font-weight: 700;
   overflow: hidden;
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
-.hidden {
-  display: none !important;
+.upload-box:hover {
+  border-color: #bd02ff;
+  color: #9595ff;
+  transform: translateY(-3px);
 }
 
 input[type="file"] {
   display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
 }

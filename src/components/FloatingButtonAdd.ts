@@ -7,10 +7,8 @@ class FloatingButtonAdd extends HTMLElement {
   connectedCallback() {
     this.shadowRoot!.innerHTML = `
       <link rel="stylesheet" href="/styles/components/FloatingActionButton.css">
-      <button class="fab" title="Crear publicación" aria-label="Crear publicación">
-        <svg viewBox="0 0 24 24">
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
+      <button class="fab" title="Crear Publicación">
+        <img src="https://api.iconify.design/lucide:plus.svg?color=white" alt="Plus Icon">
       </button>
     `;
 

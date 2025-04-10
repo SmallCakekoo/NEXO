@@ -3,16 +3,13 @@ import PostModal from "./components/feed-components/PostModal";
 // El componponente del boton que permite que aparezca el new post
 import FloatingButtonAdd from "./components/FloatingButtonAdd";
 
-
 // El componente del new post
 customElements.define("post-modal", PostModal);
 // El componponente del boton que permite que aparezca el new post
 customElements.define("floating-btn", FloatingButtonAdd);
 
-
 import ButtonsTags from "./components/feed-components/ButtonTags";
 import PostContainer from "./components/feed-components/PostContainer";
-
 
 customElements.define("post-container", PostContainer);
 // botones de la navbar
@@ -25,7 +22,6 @@ import NavBarLog from "./components/navigation/NavbarLogComponent";
 
 // el boton de regreso y el boton de flotante
 import BackButton from "./components/BackButton";
-import FloatingActionButton from "./components/FloatingActionButton";
 
 // las paginas
 import FeedPage from "./pages/feed";
@@ -47,7 +43,6 @@ import TeacherCard from "./components/academics-components/TeacherCard";
 import TeachersContainer from "./components/academics-components/TeachersContainer";
 
 // los componentes del perfil
-import PostCard from "./components/profile-components/PostCard";
 import ProfileContainer from "./components/profile-components/ProfileContainer";
 import ProfileHeader from "./components/profile-components/ProfileHeader";
 
@@ -80,7 +75,6 @@ customElements.define("nav-bar", NavBarLog);
 
 // el boton de regreso y el boton de flotante
 customElements.define("back-button", BackButton);
-customElements.define("floating-action-button", FloatingActionButton);
 
 // las paginas
 customElements.define("feed-page", FeedPage);
@@ -102,7 +96,6 @@ customElements.define("teacher-card", TeacherCard);
 customElements.define("teachers-container", TeachersContainer);
 
 // los componentes del perfil
-customElements.define("post-card", PostCard);
 customElements.define("profile-container", ProfileContainer);
 customElements.define("profile-header", ProfileHeader);
 

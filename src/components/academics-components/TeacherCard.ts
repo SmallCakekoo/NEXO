@@ -63,8 +63,8 @@ class TeacherCard extends HTMLElement {
     const subject = this.getAttribute("subject") || "Subject not specified";
     const nucleus = this.getAttribute("nucleus") || "Nucleus not specified";
     const rating = parseInt(this.getAttribute("rating") || "0");
-    const randomId = Math.floor(Math.random() * 100);
-    const image = this.getAttribute("image") || `https://picsum.photos/id/${randomId}/250/150`;
+    const randomId = Math.floor(Math.random() * 30);
+    const image = `https://picsum.photos/id/${randomId}/250/150`;
 
     const stars = Array(5)
       .fill(0)

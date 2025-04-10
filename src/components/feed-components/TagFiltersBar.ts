@@ -1,4 +1,6 @@
 class TagFiltersBar extends HTMLElement {
+  private activeTag: string = "All";
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -8,6 +10,7 @@ class TagFiltersBar extends HTMLElement {
     this.render();
     setTimeout(() => {
       this.addEventListeners();
+      this.updateActiveButton();
     }, 0);
   }
 
@@ -17,6 +20,9 @@ class TagFiltersBar extends HTMLElement {
       button.addEventListener("click", () => {
         const tag = button.getAttribute("textbutton");
         console.log(`Tag selected in filter bar: ${tag}`);
+        this.activeTag = tag || "All";
+        this.updateActiveButton();
+
         const event = new CustomEvent("tagSelected", {
           detail: { tag },
           bubbles: true,
@@ -27,19 +33,21 @@ class TagFiltersBar extends HTMLElement {
     });
   }
 
+  updateActiveButton() {
+    const buttons = this.shadowRoot!.querySelectorAll("button-tags");
+    buttons.forEach((button) => {
+      const buttonTag = button.getAttribute("textbutton");
+      if (buttonTag === this.activeTag) {
+        button.setAttribute("active", "true");
+      } else {
+        button.removeAttribute("active");
+      }
+    });
+  }
+
   render() {
     this.shadowRoot!.innerHTML = `
-      <style>
-        .section-buttons {
-          width: 100vw; 
-          display: flex; 
-          gap: 6%;
-          padding: 2% 0;
-          justify-self: center;
-          justify-content: center;
-        }
-      </style>
-
+    <link rel="stylesheet" href="/styles/components/feed/TagFiltersBar.css">
       <section class="section-buttons">
         <button-tags textbutton="All"></button-tags>
         <button-tags textbutton="Daily Life"></button-tags>
