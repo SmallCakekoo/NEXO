@@ -295,6 +295,46 @@ hr {
   stroke: #5354ed;
 }
 
+.notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #5354ed;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: notification-enter 0.5s forwards;
+}
+
+@keyframes notification-enter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes notification-exit {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+}
+
+.notification-exit {
+  animation: notification-exit 0.8s forwards;
+}
+
 @media (max-width: 576px) {
   .post {
     width: 90%;
@@ -424,16 +464,92 @@ hr {
         this.render();
       });
 
-      const commentIcon = this.shadowRoot.querySelector(".comment-icon");
-      commentIcon?.addEventListener("click", () => {
-        // Something to do
+      const commentButton = this.shadowRoot.querySelector(".just-comments");
+      commentButton?.addEventListener("click", () => {
+        const navigateEvent = new CustomEvent("navigate", {
+          detail: "/comments-detail",
+          bubbles: true,
+          composed: true,
+        });
+        this.dispatchEvent(navigateEvent);
       });
 
-      const shareIcon = this.shadowRoot.querySelector(".share-icon");
-      shareIcon?.addEventListener("click", () => {
-        // Something to do
+      const shareButton = this.shadowRoot.querySelector(".just-share");
+      shareButton?.addEventListener("click", () => {
+        navigator.clipboard
+          .writeText("https://www.icesi.edu.co/")
+          .then(() => {
+            this.showNotification("Link copied to clipboard");
+          })
+          .catch((err) => {
+            console.error("Error, sorry :c: ", err);
+          });
       });
     }
+  }
+
+  showNotification(message: string) {
+    // Create a style element for the notification styles because they were not loading
+    const style = document.createElement("style");
+    style.textContent = `
+      .feed-post-notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #5354ed;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: notification-enter 0.5s forwards;
+      }
+      
+      @keyframes notification-enter {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+      
+      @keyframes notification-exit {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, 20px);
+        }
+      }
+      
+      .notification-exit {
+        animation: notification-exit 0.8s forwards;
+      }
+    `;
+
+    // Create the notification
+    const notification = document.createElement("div");
+    notification.className = "feed-post-notification";
+    notification.textContent = message;
+
+    // Add the styles and the notification to the body
+    document.head.appendChild(style);
+    document.body.appendChild(notification);
+
+    // Configure the disappearance
+    setTimeout(() => {
+      notification.classList.add("notification-exit");
+      setTimeout(() => {
+        document.body.removeChild(notification);
+        document.head.removeChild(style);
+      }, 800);
+    }, 2000);
   }
 }
 
