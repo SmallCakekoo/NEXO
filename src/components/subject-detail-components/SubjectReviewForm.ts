@@ -100,7 +100,7 @@ class SubjectReviewForm extends HTMLElement {
       .join("");
 
     this.shadowRoot!.innerHTML = `
-           <style>
+          <style>
 @import url('../colors.css');
 
 .form-title {

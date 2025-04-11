@@ -323,27 +323,27 @@ input[type="file"] {
             <img src="https://api.iconify.design/lucide:x.svg?color=white" alt="X">
           </button>
           <p class="titulo">New Post</p>
-          <button class="publish-btn">
+          <button class="publish-btn" id="publish-btn">
               Publish
               <img src="https://api.iconify.design/lucide:send.svg" alt="Send">
           </button>
         </div>
 
         <div class="modal-body">
-          <textarea placeholder="Write something" rows="8"></textarea>
+          <textarea id="post-content" placeholder="Write something" rows="8"></textarea>
 
           <div class="categories">
             <div class="category">
-                <input type="radio" id="daily-life" name="category" checked>
-                <label for="daily-life">Daily Life</label>
+                <input type="radio" id="Daily Life" name="category" checked>
+                <label for="Daily Life">Daily Life</label>
             </div>
             <div class="category">
-                <input type="radio" id="carpool" name="category">
-                <label for="carpool">Carpool</label>
+                <input type="radio" id="Carpool" name="category">
+                <label for="Carpool">Carpool</label>
             </div>
             <div class="category">
-                <input type="radio" id="monitoring" name="category">
-                <label for="monitoring">Monitoring</label>
+                <input type="radio" id="Academics" name="category">
+                <label for="Academics">Academics</label>
             </div>
           </div>
 
@@ -358,6 +358,8 @@ input[type="file"] {
     const closeBtn = this.shadowRoot!.getElementById("close-btn")!;
     const uploadBox = this.shadowRoot!.getElementById("upload-box")!;
     const imageInput = this.shadowRoot!.getElementById("image-input") as HTMLInputElement;
+    const publishButton = this.shadowRoot!.getElementById("publish-btn")!;
+    const textarea = this.shadowRoot!.getElementById("post-content") as HTMLTextAreaElement;
 
     // Por defecto, ocultar el modal y el overlay
     modal.style.display = "none";
@@ -385,6 +387,47 @@ input[type="file"] {
 
     // Cerrar modal al hacer clic en el overlay
     overlay.addEventListener("click", () => {
+      this.closeModal();
+    });
+    
+    // Add event listener for the publish button
+    publishButton.addEventListener("click", () => {
+      const content = textarea.value.trim();
+    
+      if (!content) {
+        alert("Post content cannot be empty.");
+        return;
+      }
+    
+      // Get selected category
+      const selectedCategory = this.shadowRoot!.querySelector<HTMLInputElement>(
+        'input[name="category"]:checked'
+      )?.id || "Daily Life";
+    
+      // Get uploaded image (if any)
+      const imageFile = imageInput.files?.[0] || null;
+    
+      const newPost = {
+        content,
+        category: selectedCategory,
+        image: imageFile,
+        createdAt: new Date().toISOString(),
+      };
+    
+      // Dispatch event to send post elsewhere
+      document.dispatchEvent(new CustomEvent("post-published", {
+        detail: newPost,
+        bubbles: true,
+        composed: true,
+      }));
+    
+      // Reset and close modal
+      textarea.value = "";
+      imageInput.value = "";
+      uploadBox.textContent = "Upload Image";
+      uploadBox.style.color = "#b9b9ff";
+      uploadBox.style.fontStyle = "italic";
+    
       this.closeModal();
     });
   }
