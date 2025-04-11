@@ -30,6 +30,7 @@ import ProfilePage from "./pages/profile";
 import ProfileSettingsPage from "./pages/profilesettings";
 import TeacherDetailPage from "./pages/teacherdetail";
 import SubjectDetailPage from "./pages/subjectdetail";
+import CommentsDetailPage from "./pages/comments-detail";
 
 // el contenedor de la app
 import AppContainer from "./layouts/AppContainer";
@@ -83,6 +84,7 @@ customElements.define("profile-page", ProfilePage);
 customElements.define("profile-settings-page", ProfileSettingsPage);
 customElements.define("teacher-detail-page", TeacherDetailPage);
 customElements.define("subject-detail-page", SubjectDetailPage);
+customElements.define("comments-detail-page", CommentsDetailPage);
 
 // el contenedor de la app
 customElements.define("app-container", AppContainer);

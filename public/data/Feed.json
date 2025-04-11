@@ -1,18 +1,6 @@
 {
   "posts": [
     {
-      "photo": "https://picsum.photos/800/450?random=10",
-      "name": "Academic User",
-      "date": "5/15/2024",
-      "career": "Computer Science",
-      "semestre": "fifth",
-      "message": "Does anyone have notes from the Algorithms class?",
-      "tag": "Academics",
-      "likes": 1,
-      "share": "0",
-      "comments": "0"
-    },
-    {
       "photo": "https://picsum.photos/800/450?random=1",
       "name": "Pepito Fetch",
       "date": "8/12/2024",
