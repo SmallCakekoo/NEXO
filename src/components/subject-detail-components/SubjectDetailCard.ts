@@ -17,7 +17,7 @@ class SubjectDetailCard extends HTMLElement {
 
   // Called when one of the observed attributes is changed
   attributeChangedCallback(
-    name: keyof SubjectDetailCardAttributes,
+    _name: keyof SubjectDetailCardAttributes,
     oldValue: string,
     newValue: string
   ) {

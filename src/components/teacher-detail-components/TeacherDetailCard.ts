@@ -17,7 +17,7 @@ class TeacherDetailCard extends HTMLElement {
 
   // Called when one of the observed attributes is changed
   attributeChangedCallback(
-    name: keyof TeacherDetailCardAttributes,
+    _name: keyof TeacherDetailCardAttributes,
     oldValue: string,
     newValue: string
   ) {
