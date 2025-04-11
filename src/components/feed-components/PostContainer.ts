@@ -14,32 +14,42 @@ declare global {
 class PostContainer extends HTMLElement {
   private posts: Post[] = [];
   private filteredPosts: Post[] = [];
-  private currentFilter: string = "All"; // Track the current filter
+  private currentFilter: string = "All"; 
   private tagSelectedListener: ((event: Event) => void) | null = null;
   private postPublishedListener: ((event: Event) => void) | null = null;
-  private isListenerAttached: boolean = false; // Flag to track if listener is attached
+  private isListenerAttached: boolean = false; 
+  private lastPostTimestamp: number = 0; 
+  private processingPost: boolean = false;
+  private processedPostIds: Set<string> = new Set();
+  private static instance: PostContainer | null = null; 
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    
+    // Implement singleton pattern to ensure only one instance exists
+    if (PostContainer.instance) {
+      return PostContainer.instance;
+    }
+    PostContainer.instance = this;
   }
 
   async connectedCallback() {
     console.log("PostContainer component mounted.");
     await this.loadPosts();
     
-    // Only set up event listeners if they're not already attached
+    
     if (!this.isListenerAttached) {
       // Create the tagSelected event listener
       this.tagSelectedListener = (event: Event) => {
         const customEvent = event as CustomEvent<{ tag: string }>;
         const selectedTag = customEvent.detail.tag;
         console.log("Post container received tag:", selectedTag);
-        this.currentFilter = selectedTag; // Update the current filter
+        this.currentFilter = selectedTag; 
         this.filterPosts(selectedTag);
       };
       
-      // Create the post-published event listener
+      // Post-published event listener
       this.postPublishedListener = (event: Event) => {
         const customEvent = event as CustomEvent<{
           content: string;
@@ -49,14 +59,26 @@ class PostContainer extends HTMLElement {
         }>;
         const newPostData = customEvent.detail;
         console.log("New post received:", newPostData);
+        
+     
+        const postId = this.generatePostId(newPostData);
+        
+
+        if (this.processedPostIds.has(postId)) {
+          console.log("Post already processed, ignoring:", postId);
+          return;
+        }
+        
+
+        this.processedPostIds.add(postId);
+        
+        // Post added to the feed
         this.addNewPost(newPostData);
       };
       
-      // Add the event listeners
       document.addEventListener("tagSelected", this.tagSelectedListener);
       document.addEventListener("post-published", this.postPublishedListener);
       
-      // Mark listeners as attached
       this.isListenerAttached = true;
       console.log("Event listeners attached");
     }
@@ -64,37 +86,31 @@ class PostContainer extends HTMLElement {
   
   disconnectedCallback() {
     console.log("PostContainer component unmounted.");
-    // Remove the event listeners when the component is removed from the DOM
-    if (this.tagSelectedListener && this.isListenerAttached) {
-      document.removeEventListener("tagSelected", this.tagSelectedListener);
-      this.tagSelectedListener = null;
-    }
-    
-    if (this.postPublishedListener && this.isListenerAttached) {
-      document.removeEventListener("post-published", this.postPublishedListener);
-      this.postPublishedListener = null;
-    }
-    
-    // Reset the flag
-    this.isListenerAttached = false;
-    console.log("Event listeners removed");
   }
 
   async loadPosts(): Promise<void> {
     try {
-      // Only fetch posts from server if we don't have any posts yet
       if (this.posts.length === 0) {
         const data = await fetchPosts();
         this.posts = data.posts;
-        // Initialize filteredPosts with all posts
+        // Initialized filteredPosts with all posts
         this.filteredPosts = [...this.posts];
       }
       this.render();
-      // Inicializar las animaciones después de renderizar
       this.initAnimations();
     } catch (error) {
       console.error("Error loading posts:", error);
     }
+  }
+
+  // Unique ID for a post
+  private generatePostId(postData: {
+    content: string;
+    category: string;
+    image: File | null;
+    createdAt: string;
+  }): string {
+    return `${postData.content}-${postData.category}-${postData.createdAt}`;
   }
 
   addNewPost(postData: {
@@ -103,67 +119,91 @@ class PostContainer extends HTMLElement {
     image: File | null;
     createdAt: string;
   }): void {
-    // Create a new post object with the data from the modal
-    const newPost: Post = {
-      photo: postData.image 
-        ? URL.createObjectURL(postData.image) 
-        : "https://picsum.photos/800/450?random=" + Math.floor(Math.random() * 100),
-      name: "Current User", // This would come from user context in a real app
-      date: new Date().toLocaleDateString(),
-      career: "Student", // This would come from user context in a real app
-      semestre: "Current", // This would come from user context in a real app
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: "0"
-    };
-
-    console.log("Adding new post with tag:", newPost.tag);
-    console.log("Current filter:", this.currentFilter);
-
-    // Generate a unique ID for this post based on content and timestamp
-    const postId = `${newPost.message}-${postData.createdAt}`;
+    // Prevent multiple rapid calls to addNewPost
+    const now = Date.now();
+    if (now - this.lastPostTimestamp < 500) { 
+      console.log("Ignoring rapid post creation attempt");
+      return;
+    }
     
-    // Check if this post already exists to prevent duplicates
-    // We'll check multiple properties to ensure uniqueness
-    const isDuplicate = this.posts.some(post => {
-      // Check if the message content and date match
-      const contentMatch = post.message === newPost.message;
-      const dateMatch = post.date === newPost.date;
-      
-      // If both match, it's likely a duplicate
-      return contentMatch && dateMatch;
-    });
+    // Prevent concurrent processing of posts
+    if (this.processingPost) {
+      console.log("Already processing a post, ignoring this one");
+      return;
+    }
     
-    if (!isDuplicate) {
-      console.log("Adding new post to feed");
+    this.processingPost = true;
+    this.lastPostTimestamp = now;
+    
+    try {
+      // Create a new post object with the data from the modal
+      const newPost: Post = {
+        photo: postData.image 
+          ? URL.createObjectURL(postData.image) 
+          : "https://picsum.photos/800/450?random=" + Math.floor(Math.random() * 100),
+        name: "Current User", 
+        date: new Date().toLocaleDateString(),
+        career: "Student",
+        semestre: "Current",
+        message: postData.content,
+        tag: postData.category,
+        likes: 0,
+        share: "0",
+        comments: "0"
+      };
+
+      console.log("Adding new post with tag:", newPost.tag);
+      console.log("Current filter:", this.currentFilter);
+
       
-      // Add the new post to the beginning of the posts array
-      this.posts.unshift(newPost);
+      const postId = this.generatePostId(postData);
+      const isDuplicate = this.posts.some(post => {
+        const contentMatch = post.message === newPost.message;
+        const dateMatch = post.date === newPost.date;
+        
+        // If both match, it's likely a duplicate
+        return contentMatch && dateMatch;
+      });
       
-      // Apply the current filter to determine if the new post should be shown
-      if (this.currentFilter === "All" || this.currentFilter === newPost.tag) {
-        // Add to filtered posts if it matches the current filter
-        this.filteredPosts.unshift(newPost);
-        console.log("New post added to filtered posts");
+      if (!isDuplicate) {
+        console.log("Adding new post to feed");
+      
+        this.posts.unshift(newPost);
+        
+        // Apply the current filter to determine if the new post should be shown
+        if (this.currentFilter === "All" || this.currentFilter === newPost.tag) {
+          this.filteredPosts.unshift(newPost);
+          console.log("New post added to filtered posts");
+          
+          if (this.currentFilter === "All") {
+            console.log("All filter active, adding post ID to processed set");
+            this.processedPostIds.add(postId);
+          }
+        } else {
+          console.log("New post not added to filtered posts due to filter mismatch");
+        }
+
+        this.render();
+        
+        setTimeout(() => this.initAnimations(), 50);
       } else {
-        console.log("New post not added to filtered posts due to filter mismatch");
+        console.log("Duplicate post detected, not adding to feed");
       }
-      
-      // Re-render the component
-      this.render();
-      
-      // Initialize animations for the new post
-      setTimeout(() => this.initAnimations(), 50);
-    } else {
-      console.log("Duplicate post detected, not adding to feed");
+    } finally {
+      this.processingPost = false;
     }
   }
 
   filterPosts(tag: string) {
     console.log("Filtering posts by tag:", tag);
-    this.currentFilter = tag; // Update the current filter
+    
+    // Special handling for "All" filter to prevent duplicate posts
+    if (tag === "All" && this.currentFilter !== "All") {
+      console.log("Switching to All filter, clearing processed post IDs to prevent duplicates");
+      this.processedPostIds.clear();
+    }
+    
+    this.currentFilter = tag; 
     
     // Log all posts and their tags for debugging
     console.log("All posts and their tags:");
@@ -329,7 +369,7 @@ class PostContainer extends HTMLElement {
             </div>
         `;
 
-    // Inicializar animaciones después de renderizar
+    // Start animations after the loading of the posts
     setTimeout(() => this.initAnimations(), 50);
   }
 }

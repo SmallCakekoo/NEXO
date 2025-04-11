@@ -1,7 +1,20 @@
 class PostModal extends HTMLElement {
+  private isPublishing: boolean = false; // Flag to track if we're currently publishing
+  private lastPublishTime: number = 0; // Track the timestamp of the last publish
+  private lastPublishedContent: string = ""; // Track the last published content
+  private publishButton: HTMLElement | null = null; // Reference to the publish button
+  private static instance: PostModal | null = null; // Singleton instance
+  private isListenerAttached: boolean = false; // Flag to track if event listeners are attached
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    
+    // Implement singleton pattern to ensure only one instance exists
+    if (PostModal.instance) {
+      return PostModal.instance;
+    }
+    PostModal.instance = this;
   }
 
   connectedCallback() {
@@ -358,47 +371,87 @@ input[type="file"] {
     const closeBtn = this.shadowRoot!.getElementById("close-btn")!;
     const uploadBox = this.shadowRoot!.getElementById("upload-box")!;
     const imageInput = this.shadowRoot!.getElementById("image-input") as HTMLInputElement;
-    const publishButton = this.shadowRoot!.getElementById("publish-btn")!;
+    this.publishButton = this.shadowRoot!.getElementById("publish-btn")!;
     const textarea = this.shadowRoot!.getElementById("post-content") as HTMLTextAreaElement;
 
     // Por defecto, ocultar el modal y el overlay
     modal.style.display = "none";
     overlay.style.display = "none";
 
-    closeBtn.addEventListener("click", () => {
-      this.closeModal();
-    });
+    // Only set up event listeners if they're not already attached
+    if (!this.isListenerAttached) {
+      closeBtn.addEventListener("click", () => {
+        this.closeModal();
+      });
 
-    uploadBox.addEventListener("click", () => {
-      imageInput.click();
-    });
+      uploadBox.addEventListener("click", () => {
+        imageInput.click();
+      });
 
-    imageInput.addEventListener("change", () => {
-      if (imageInput.files && imageInput.files.length > 0) {
-        uploadBox.textContent = `Selected: ${imageInput.files[0].name}`;
-        uploadBox.style.color = "#5c5cff";
-        uploadBox.style.fontStyle = "normal";
-      }
-    });
+      imageInput.addEventListener("change", () => {
+        if (imageInput.files && imageInput.files.length > 0) {
+          uploadBox.textContent = `Selected: ${imageInput.files[0].name}`;
+          uploadBox.style.color = "#5c5cff";
+          uploadBox.style.fontStyle = "normal";
+        }
+      });
 
-    window.addEventListener("open-modal", () => {
-      this.openModal();
-    });
+      window.addEventListener("open-modal", () => {
+        this.openModal();
+      });
 
-    // Cerrar modal al hacer clic en el overlay
-    overlay.addEventListener("click", () => {
-      this.closeModal();
-    });
+      // Cerrar modal al hacer clic en el overlay
+      overlay.addEventListener("click", () => {
+        this.closeModal();
+      });
+      
+      // Add event listener for the publish button
+      this.publishButton.addEventListener("click", () => {
+        this.handlePublish(textarea, imageInput, uploadBox);
+      });
+      
+      // Mark listeners as attached
+      this.isListenerAttached = true;
+      console.log("PostModal event listeners attached");
+    }
+  }
+
+  // Handle the publish action
+  private handlePublish(
+    textarea: HTMLTextAreaElement,
+    imageInput: HTMLInputElement,
+    uploadBox: HTMLElement
+  ): void {
+    // Prevent multiple rapid clicks
+    const now = Date.now();
+    if (now - this.lastPublishTime < 500) { // 500ms debounce
+      console.log("Ignoring rapid publish attempt");
+      return;
+    }
     
-    // Add event listener for the publish button
-    publishButton.addEventListener("click", () => {
+    // Prevent concurrent publishing
+    if (this.isPublishing) {
+      console.log("Already publishing a post, ignoring this click");
+      return;
+    }
+    
+    this.isPublishing = true;
+    this.lastPublishTime = now;
+    
+    try {
       const content = textarea.value.trim();
     
       if (!content) {
         alert("Post content cannot be empty.");
         return;
       }
-    
+      
+      // Check if this is the same content as the last published post
+      if (content === this.lastPublishedContent) {
+        console.log("Same content as last published post, ignoring");
+        return;
+      }
+      
       // Get selected category
       const selectedCategory = this.shadowRoot!.querySelector<HTMLInputElement>(
         'input[name="category"]:checked'
@@ -414,22 +467,30 @@ input[type="file"] {
         createdAt: new Date().toISOString(),
       };
     
+      console.log("Dispatching post-published event");
+      
+      // Store the content of this post
+      this.lastPublishedContent = content;
+      
       // Dispatch event to send post elsewhere
       document.dispatchEvent(new CustomEvent("post-published", {
         detail: newPost,
         bubbles: true,
         composed: true,
       }));
-    
+      
       // Reset and close modal
       textarea.value = "";
       imageInput.value = "";
       uploadBox.textContent = "Upload Image";
       uploadBox.style.color = "#b9b9ff";
       uploadBox.style.fontStyle = "italic";
-    
+      
       this.closeModal();
-    });
+    } finally {
+      // Always reset the publishing flag
+      this.isPublishing = false;
+    }
   }
 
   openModal() {
