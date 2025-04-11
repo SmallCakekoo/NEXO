@@ -160,7 +160,7 @@ class SubjectReviewForm extends HTMLElement {
   font-size: 15px;
   margin-bottom: 20px;
   resize: vertical;
-  background-color: var(--nexowhite);
+  background-color: white;
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -185,7 +185,7 @@ class SubjectReviewForm extends HTMLElement {
   outline: none;
   border-color: var(--nexopurple);
   box-shadow: 0 0 0 3px rgba(83, 84, 237, 0.15);
-  background-color: var(--nexowhite);
+  background-color: white;
 }
 
 .button-container {

@@ -1,5 +1,3 @@
-import DeleteAccountConfirmation from "./DeleteAccountConfirmation";
-
 class SettingsProfileContainer extends HTMLElement {
   constructor() {
     super();

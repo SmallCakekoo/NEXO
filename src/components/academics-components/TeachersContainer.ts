@@ -1,5 +1,5 @@
-import { teachers, TeachersResponse } from "../../types/academics/TeachersContainer.types";
-import { fetchTeachers } from "../../services/Teacher.service";
+import { teachers } from "../../types/academics/TeachersContainer.types";
+import { fetchTeachers } from "../../services/TeacherService";
 
 class TeachersContainer extends HTMLElement {
   private currentPage: number = 1;
@@ -32,7 +32,6 @@ class TeachersContainer extends HTMLElement {
     if (row) {
       row.innerHTML = "";
 
-      const totalPages = Math.ceil(this.teachers.length / this.itemsPerPage);
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = Math.min(startIndex + this.itemsPerPage, this.teachers.length);
 

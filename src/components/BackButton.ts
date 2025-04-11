@@ -27,7 +27,7 @@ class BackButton extends HTMLElement {
     });
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(_name: string, oldValue: string, newValue: string) {
     if (oldValue !== newValue) {
       this.render();
       this.addEventListeners();

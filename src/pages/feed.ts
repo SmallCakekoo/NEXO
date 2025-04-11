@@ -1,16 +1,15 @@
-
 class FeedPage extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({ mode: "open" });
-    }
-  
-    connectedCallback() {
-      this.render();
-    }
-  
-    render() {
-      this.shadowRoot!.innerHTML = `
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    this.shadowRoot!.innerHTML = `
         <style>
           :host {
             display: block;
@@ -25,7 +24,7 @@ class FeedPage extends HTMLElement {
         <floating-btn></floating-btn>
         <post-modal></post-modal>
       `;
-    }
   }
-  
-  export default FeedPage;
+}
+
+export default FeedPage;
