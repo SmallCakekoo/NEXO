@@ -128,3 +128,11 @@ import FeedPost from "./components/feed-components/FeedPost";
 
 customElements.define("tag-filters-bar", TagFiltersBar);
 customElements.define("feed-post", FeedPost);
+
+// los componentes de signup y login
+
+import LoginComponent from "./pages/login";
+import SignUpComponent from "./pages/singup";
+
+customElements.define("", SignUpComponent)
+customElements.define("", LoginComponent)
