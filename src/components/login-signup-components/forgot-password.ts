@@ -1,8 +1,16 @@
 class ForgotPasswordLink extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
-      <div style="text-align: right; margin-bottom: 16px;">
-        <a href="#" style="color: #4f46e5; font-size: 0.9rem;">Forgot password?</a>
+      <div style="width: 245px; margin-top: -18px; margin-bottom: 16px; text-align: right;">
+        <a href="#" style="
+          font-family: Roboto, sans-serif;
+          font-size: 14px;
+          font-style: italic;
+          color: #535353;
+          text-decoration: underline;
+        ">
+          Forgot password?
+        </a>
       </div>
     `;
   }
