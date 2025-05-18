@@ -7,37 +7,37 @@ class SignUpFormFields extends HTMLElement {
           -webkit-appearance: none;
           -moz-appearance: none;
           background-color: white;
-          background-image: url("data:image/svg+xml,%3Csvg fill='%234F46E5' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg fill='%234F46E5' height='0.75rem' viewBox='0 0 24 24' width='0.75rem' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
-          background-position: right 7px center;
-          background-size: 33px;
+          background-position: right 0.4375rem center; /* 7px */
+          background-size: 2.0625rem; /* 33px */
           color: rgb(167, 167, 167);
-          width: 265px;
-          padding: 5px 16px;
-          margin-bottom: 23px;
-          border: 2px solid #5354ED;
-          border-radius: 30px;
+          width: 16.5625rem; /* 265px */
+          padding: 0.3125rem 1rem; /* 5px 16px */
+          margin-bottom: 1.4375rem; /* 23px */
+          border: 0.125rem solid #5354ED; /* 2px */
+          border-radius: 1.875rem; /* 30px */
           outline: none;
-          font-size: 14px;
+          font-size: 0.875rem; /* 14px */
           font-family: Roboto, sans-serif;
           transition: border-color 0.3s ease;
           cursor: pointer;
         }
 
         select:focus {
-          background-image: url("data:image/svg+xml,%3Csvg fill='%23BD02FF' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg fill='%23BD02FF' height='1rem' viewBox='0 0 24 24' width='1rem' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
           border-color: #BD02FF;
           color: black;
         }
 
         input {
-          width: 265px;
-          padding: 5px 16px;
-          margin-bottom: 23px;
-          border: 2px solid #5354ED;
-          border-radius: 30px;
+          width: 16.5625rem;
+          padding: 0.3125rem 1rem;
+          margin-bottom: 1.4375rem;
+          border: 0.125rem solid #5354ED;
+          border-radius: 1.875rem;
           outline: none;
-          font-size: 14px;
+          font-size: 0.875rem;
           font-family: Roboto, sans-serif;
           transition: border-color 0.3s ease;
           cursor: pointer;
@@ -48,9 +48,18 @@ class SignUpFormFields extends HTMLElement {
         select:focus {
           border-color: #BD02FF;
         }
+
+        @media (max-width: 35.875rem) {
+          input,
+          select {
+            width: 100%;
+            font-size: 0.8125rem;
+            padding: 0.3125rem 0.75rem;
+          }
+        }
       </style>
 
-      <form id="signup-form" style="display: flex; flex-direction: column; gap: 12px;">
+      <form id="signup-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
         <input type="text" placeholder="Username" name="username" />
         <input type="email" placeholder="Email" name="email" />
         <input type="tel" placeholder="Phone number" name="phone" />
@@ -125,3 +134,4 @@ class SignUpFormFields extends HTMLElement {
 customElements.define('signup-form-fields', SignUpFormFields);
 
 export default SignUpFormFields;
+

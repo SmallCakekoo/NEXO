@@ -134,5 +134,5 @@ customElements.define("feed-post", FeedPost);
 import LoginComponent from "./pages/login";
 import SignUpComponent from "./pages/singup";
 
-customElements.define("", SignUpComponent)
-customElements.define("", LoginComponent)
+customElements.define("sign-up-component", SignUpComponent)
+customElements.define("login-component", LoginComponent)

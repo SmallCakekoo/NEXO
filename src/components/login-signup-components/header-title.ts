@@ -2,47 +2,68 @@ class HeaderTitle extends HTMLElement {
   connectedCallback() {
     const title = this.getAttribute('title') || '';
     const subtitle = this.getAttribute('subtitle') || '';
-    this.innerHTML = `
+    
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `
       <style>
-    @font-face {
-      font-family: 'TTRounds';
-      src: url('/assets/ttround/TTRoundsNeue-Regular.woff2') format('woff2');
-      font-weight: normal;
-      font-style: normal;
-    }
+        @font-face {
+          font-family: 'TTRounds';
+          src: url('/assets/ttround/TTRoundsNeue-Regular.woff2') format('woff2');
+          font-weight: normal;
+          font-style: normal;
+        }
 
-    @font-face {
-      font-family: 'TTRounds';
-      src: url('/assets/fonts/ttround/TT ROUNDS NEUE BOLD.TTF') format('woff2');
-      font-weight: bold;
-      font-style: normal;
-    }
+        @font-face {
+          font-family: 'TTRounds';
+          src: url('/assets/fonts/ttround/TT ROUNDS NEUE BOLD.TTF') format('woff2');
+          font-weight: bold;
+          font-style: normal;
+        }
 
-      @font-face {
-      font-family: 'TTRounds2';
-      src: url('/assets/fonts/ttround/TT ROUNDS NEUE BOLD ITALIC.TTF') format('woff2');
-      font-weight: bold;
-      font-style: normal;
-    }
+        @font-face {
+          font-family: 'TTRounds2';
+          src: url('/assets/fonts/ttround/TT ROUNDS NEUE BOLD ITALIC.TTF') format('woff2');
+          font-weight: bold;
+          font-style: normal;
+        }
 
-    .container {
-    text-align: center;
-    }
+        .container {
+          text-align: center;
+        }
 
-    .text {
-      font-family: 'TTRounds', sans-serif !important;
-      font-size: 48px;
-      margin-top: 25px;
-    }
-      
-    .subtitle {
-      font-family: 'TTRounds2', sans-serif !important;
-      font-size: 18px;
-      color: #666666;
-      margin-bottom: 40px;
-    }
+        .text {
+          font-family: 'TTRounds', sans-serif;
+          font-size: 3rem; /* 48px */
+          margin-top: 1.563rem; /* 25px */
+          margin-bottom: 0.625rem; /* 10px */
+          color: #000;
+        }
 
+        .subtitle {
+          font-family: 'TTRounds2', sans-serif;
+          font-size: 1.125rem; /* 18px */
+          color: #666666;
+          margin-top: 0;
+          margin-bottom: 2.5rem; /* 40px */
+        }
+
+        @media (max-width: 35.875rem) {
+          .text {
+            font-size: 3rem; /* Mantiene 48px para diseño mobile según original */
+            color: #5a48f3;
+            font-family: 'TTRounds2', sans-serif;
+          }
+
+          .subtitle {
+            display: none;
+          }
+
+          .container {
+            text-align: left;
+          }
+        }
       </style>
+
       <div class="container">
         <h2 class="text">${title}</h2>
         <p class="subtitle">${subtitle}</p>
@@ -50,6 +71,6 @@ class HeaderTitle extends HTMLElement {
     `;
   }
 }
-customElements.define('header-title', HeaderTitle);
 
+customElements.define('header-title', HeaderTitle);
 export default HeaderTitle;
