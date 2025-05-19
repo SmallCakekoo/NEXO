@@ -37,6 +37,7 @@ class NavBarLog extends HTMLElement {
                     <btn-feed></btn-feed>
                     <btn-academic></btn-academic>
                     <btn-profile></btn-profile>
+                    
                 </div>
             </div>
         `;
