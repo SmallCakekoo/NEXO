@@ -9,16 +9,16 @@ class SignUpFormFields extends HTMLElement {
           background-color: white;
           background-image: url("data:image/svg+xml,%3Csvg fill='%234F46E5' height='0.75rem' viewBox='0 0 24 24' width='0.75rem' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
-          background-position: right 0.4375rem center; /* 7px */
-          background-size: 2.0625rem; /* 33px */
+          background-position: right 0.4375rem center; 
+          background-size: 2.0625rem; 
           color: rgb(167, 167, 167);
-          width: 16.5625rem; /* 265px */
-          padding: 0.3125rem 1rem; /* 5px 16px */
-          margin-bottom: 1.4375rem; /* 23px */
-          border: 0.125rem solid #5354ED; /* 2px */
-          border-radius: 1.875rem; /* 30px */
+          width: 16.5625rem; 
+          padding: 0.3125rem 1rem; 
+          margin-bottom: 1.4375rem; 
+          border: 0.125rem solid #5354ED; 
+          border-radius: 1.875rem; 
           outline: none;
-          font-size: 0.875rem; /* 14px */
+          font-size: 0.875rem; 
           font-family: Roboto, sans-serif;
           transition: border-color 0.3s ease;
           cursor: pointer;
@@ -49,7 +49,7 @@ class SignUpFormFields extends HTMLElement {
           border-color: #BD02FF;
         }
 
-        @media (max-width: 35.875rem) {
+        @media (max-width: 430px) {
           input,
           select {
             width: 100%;
@@ -116,16 +116,15 @@ class SignUpFormFields extends HTMLElement {
     const degreeSelect = this.querySelector('select[name="degree"]') as HTMLSelectElement;
     const semesterSelect = this.querySelector('select[name="semester"]') as HTMLSelectElement;
     
-    // Comprobación de null y tipo de select
     if (degreeSelect) {
       degreeSelect.addEventListener("change", () => {
-        degreeSelect.style.color = "black"; // Cambiar el color del texto a negro al seleccionar una opción
+        degreeSelect.style.color = "black"; 
       });
     }
 
     if (semesterSelect) {
       semesterSelect.addEventListener("change", () => {
-        semesterSelect.style.color = "black"; // Cambiar el color del texto a negro al seleccionar una opción
+        semesterSelect.style.color = "black"; 
       });
     }
   }

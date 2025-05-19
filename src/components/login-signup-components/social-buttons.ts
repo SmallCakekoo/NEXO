@@ -10,7 +10,7 @@ class SocialButtons extends HTMLElement {
       }  
     
       .social {
-        height: 3.33rem; /* 53.31px */
+        height: 3.33rem; 
         width: 3.33rem;
         background-color: #5354ed;
         color: white;
@@ -25,16 +25,16 @@ class SocialButtons extends HTMLElement {
       }
 
       .social img {
-        width: 1.875rem; /* 30px */
+        width: 1.875rem; 
         height: 1.875rem;
       }
 
       .social-text {
-        margin-top: 1.563rem; /* 25px */
+        margin-top: 1.563rem; 
         margin-bottom: 1.563rem;
         text-align: center;
         font-family: 'TTRounds2', sans-serif !important;
-        font-size: 0.875rem; /* 14px */
+        font-size: 0.875rem; 
         color: #666666;
       }
 
@@ -54,24 +54,24 @@ class SocialButtons extends HTMLElement {
         display: none;
       }
 
-      @media (max-width: 35.875rem) { /* 428px */
+      @media (max-width: 430px) {
         .social-container {
-          gap: 1.25rem; /* 20px */
+          gap: 1.25rem; 
         }
 
         .social {
-          width: 2.188rem; /* 35px */
+          width: 2.188rem; 
           height: 2.188rem;
         }
 
         .social img {
-          width: 1.25rem; /* 20px */
+          width: 1.25rem; 
           height: 1.25rem;
         }
 
         .social-text {
-          font-size: 0.813rem; /* 13px */
-          margin-top: 2.188rem; /* 35px */
+          font-size: 0.813rem; 
+          margin-top: 2.188rem; 
         }
 
         .mobile-only {

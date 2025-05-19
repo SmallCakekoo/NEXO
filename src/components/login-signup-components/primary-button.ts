@@ -6,17 +6,17 @@ class PrimaryButton extends HTMLElement {
       .primary {
         background-color: #5354ed;
         color: white;
-        font-size: 0.875rem; /* 14px */
-        border: 0.125rem solid black; /* 2px */
-        padding: 0.4375rem 2.9375rem; /* 7px 47px */
-        border-radius: 3.125rem; /* 50px */
+        font-size: 0.875rem; 
+        border: 0.125rem solid black; 
+        padding: 0.4375rem 2.9375rem; 
+        border-radius: 3.125rem;
         cursor: pointer;
         outline: none;
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 1.563rem; /* 25px */
-        margin-bottom: 0.625rem; /* 10px */
+        margin-top: 1.563rem; 
+        margin-bottom: 0.625rem; 
         transition: all 0.3s ease;
       }
 
@@ -32,10 +32,10 @@ class PrimaryButton extends HTMLElement {
         filter: brightness(0.8);
       }
 
-      @media (max-width: 35.875rem) { /* 768px */
+      @media (max-width: 430px) { 
         .primary {
-          padding: 0.375rem 1.875rem; /* 6px 30px */
-          font-size: 0.8125rem; /* 13px */
+          padding: 0.375rem 1.875rem; 
+          font-size: 0.8125rem; 
           width: 100%;
         }
       }

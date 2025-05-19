@@ -3,21 +3,21 @@ class ForgotPasswordLink extends HTMLElement {
     this.innerHTML = `
       <style>
         .container {
-          width: 16.5625rem; /* 265px */
-          margin-top: -1.125rem; /* -18px */
-          margin-bottom: 1rem; /* 16px */
+          width: 16.5625rem; 
+          margin-top: -1.125rem; 
+          margin-bottom: 1rem; 
           text-align: right;
         }
 
         a {
           font-family: Roboto, sans-serif;
-          font-size: 0.875rem; /* 14px */
+          font-size: 0.875rem; 
           font-style: italic;
           color: #535353;
           text-decoration: underline;
         }
 
-        @media (max-width: 35.875rem) {
+        @media (max-width: 430px) {
           .container {
             width: 100%;
             text-align: left;
@@ -25,7 +25,7 @@ class ForgotPasswordLink extends HTMLElement {
           }
 
           a {
-            font-size: 0.8125rem; /* 13px */
+            font-size: 0.8125rem; 
           }
         }
       </style>

@@ -4,13 +4,13 @@ class FormFields extends HTMLElement {
       <style>
         input[type="text"],
         input[type="password"] {
-          width: 16.56rem; /* 265px */
-          padding: 0.3125rem 1rem; /* 5px 16px */
-          margin-bottom: 1.4375rem; /* 23px */
-          border: 0.125rem solid #5354ED; /* 2px */
-          border-radius: 1.875rem; /* 30px */
+          width: 16.56rem; 
+          padding: 0.3125rem 1rem; 
+          margin-bottom: 1.4375rem; 
+          border: 0.125rem solid #5354ED; 
+          border-radius: 1.875rem; 
           outline: none;
-          font-size: 0.875rem; /* 14px */
+          font-size: 0.875rem; 
           font-family: Roboto, sans-serif;
           transition: border-color 0.3s ease;
           color: black;
@@ -20,12 +20,12 @@ class FormFields extends HTMLElement {
           border-color: #BD02FF;
         }
 
-        @media (max-width: 35.875rem) {
+        @media (max-width: 430px) {
           input[type="text"],
           input[type="password"] {
             width: 100%;
-            font-size: 0.8125rem; /* 13px */
-            padding: 0.3125rem 0.75rem; /* 5px 12px */
+            font-size: 0.8125rem; 
+            padding: 0.3125rem 0.75rem; 
           }
         }
       </style>

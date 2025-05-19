@@ -6,23 +6,23 @@ class Divider extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 1.3125rem 0; /* 21px */
+          margin: 1.3125rem 0; 
           width: 100%;
         }
 
         .divider hr {
           flex-grow: 1;
-          min-width: 9.375rem; /* 150px */
+          min-width: 9.375rem; 
           border: none;
-          height: 0.09375rem; /* 1.5px */
+          height: 0.09375rem; 
           background-color: rgb(77, 77, 77);
         }
 
         .divider span {
-          margin: 0 0.75rem; /* 12px */
+          margin: 0 0.75rem; 
           font-family: 'TTRounds2', sans-serif !important;
           color: #666666;
-          font-size: 1rem; /* 16px */
+          font-size: 1rem; 
         }
 
         @font-face {
@@ -32,13 +32,13 @@ class Divider extends HTMLElement {
           font-style: normal;
         }
 
-        @media (max-width: 35.875rem) {
+        @media (max-width: 430px) {
           .divider hr {
-            min-width: 5rem; /* 80px */
+            min-width: 5rem; 
           }
 
           .divider span {
-            font-size: 0.875rem; /* 14px */
+            font-size: 0.875rem; 
           }
         }
       </style>

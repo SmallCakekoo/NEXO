@@ -6,17 +6,17 @@ class CustomCheckbox extends HTMLElement {
           display: flex;
           align-items: center;
           font-family: Roboto, sans-serif;
-          font-size: 0.75rem; /* 12px */
+          font-size: 0.75rem; 
           color: #666666;
-          gap: 0.625rem; /* 10px */
-          margin-bottom: 0.3125rem; /* 5px */
-          margin-top: 0.5rem; /* 8px */
-          margin-left: 0.625rem; /* 10px */
+          gap: 0.625rem; 
+          margin-bottom: 0.3125rem; 
+          margin-top: 0.5rem;
+          margin-left: 0.625rem;
         }
 
         input[type="checkbox"] {
           all: unset;
-          width: 1.125rem; /* 18px */
+          width: 1.125rem;
           aspect-ratio: 1;
           box-sizing: border-box;
           border: 1px solid #5a48f3;
@@ -30,9 +30,9 @@ class CustomCheckbox extends HTMLElement {
 
         input[type="checkbox"]::before {
           content: "";
-          width: 0.28125rem; /* 4.5px */
-          height: 0.5625rem; /* 9px */
-          border-right: 0.125rem solid white; /* 2px */
+          width: 0.28125rem; 
+          height: 0.5625rem; 
+          border-right: 0.125rem solid white; 
           border-bottom: 0.125rem solid white;
           transform: rotate(45deg) scale(0);
           transition: transform 0.2s ease-in-out;
@@ -53,14 +53,14 @@ class CustomCheckbox extends HTMLElement {
           cursor: pointer;
         }
 
-        @media (max-width: 35.875rem) {
+        @media (max-width: 430px) {
           .checkbox-container {
-            font-size: 0.6875rem; /* 11px */
-            gap: 0.5rem; /* 8px */
+            font-size: 0.6875rem; 
+            gap: 0.5rem; 
           }
 
           input[type="checkbox"] {
-            width: 1rem; /* 16px */
+            width: 1rem; 
           }
         }
       </style>
