@@ -34,7 +34,7 @@ class LandingPage extends HTMLElement {
       }
 
       .hero h4 {
-        font-size: 1rem;
+        font-size: 0.90rem;
         font-weight: 400;
         margin: 0 0 32px;
       }
@@ -48,12 +48,18 @@ class LandingPage extends HTMLElement {
         margin-bottom: 32px;
       }
 
+      
       .cards-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); 
-        gap: 20px;                              
-}
+      display: grid;
+      grid-template-columns: repeat(4, 0fr);
+      gap: 15px; 
+      padding: 0;
+      margin: 0;
+      max-width: 1200px;
+      margin: 0 auto; 
+      padding: 0 24px;
       }
+
     </style>
 
     <nav-bar></nav-bar>
