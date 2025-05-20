@@ -25,4 +25,22 @@
           margin-right: 1.2rem;
         }
 
-        
+      @media (max-width: 480px) {
+
+      :host {
+        width: 90%;
+        padding: 12px;
+      }
+
+      img {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      p {
+        text-align: center;
+        margin: 20px 36px 40px;
+        font-size: 1rem;
+      }
+    }
+
