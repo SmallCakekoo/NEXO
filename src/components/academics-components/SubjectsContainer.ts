@@ -1,5 +1,5 @@
-import { subjects, SubjectsResponse } from "../../types/academics/SubjectsContainer.types";
-import { fetchSubjects } from "../../services/Subject.services";
+import { subjects } from "../../types/academics/SubjectsContainer.types";
+import { fetchSubjects } from "../../services/SubjectService";
 
 class SubjectsContainer extends HTMLElement {
   private subjects: subjects[] = [];
@@ -18,14 +18,90 @@ class SubjectsContainer extends HTMLElement {
 
   render() {
     this.shadowRoot!.innerHTML = `
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-            <link rel="stylesheet" href="/styles/components/academics/SubjectsContainer.css">
-            <div class="container">
-                <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-2">
-                </div>
-                <div class="pagination"></div>
-            </div>
-        `;
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    @import url('../colors.css');
+
+    .container {
+      padding: 20px;
+    }
+
+    .row {
+      margin: 0 -10px;
+    }
+
+    .col {
+      padding: 10px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      border: 1px solid var(--nexolightwhite);
+      background-color: var(--nexolightwhite);
+      cursor: pointer;
+      border-radius: 8px;
+      color: var(--nexopurple);
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .pagination button:hover {
+      background-color: var(--nexolightwhite);
+      transform: translateY(-2px);
+    }
+
+    .pagination button.active {
+      background-color: var(--nexopurple);
+      color: var(--nexolightwhite);
+      border-color: var(--nexopurple);
+    }
+
+    .pagination button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding: 0;
+        font-size: 0.7rem;
+      }
+
+      .row {
+        margin: 0 -2px;
+      }
+
+      .col {
+        padding: 2px;
+      }
+
+      :host {
+        font-size: 0.7rem;
+      }
+
+      .g-4 {
+        gap: 0.5rem !important;
+      }
+
+      .pagination button {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+  <div class="container">
+    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-2">
+    </div>
+    <div class="pagination"></div>
+  </div>
+`;
   }
 
   async loadSubjects() {
@@ -44,7 +120,6 @@ class SubjectsContainer extends HTMLElement {
     if (row) {
       row.innerHTML = "";
 
-      const totalPages = Math.ceil(this.subjects.length / this.itemsPerPage);
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = Math.min(startIndex + this.itemsPerPage, this.subjects.length);
 

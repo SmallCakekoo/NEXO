@@ -17,7 +17,7 @@ class TeacherDetailCard extends HTMLElement {
 
   // Called when one of the observed attributes is changed
   attributeChangedCallback(
-    name: keyof TeacherDetailCardAttributes,
+    _name: keyof TeacherDetailCardAttributes,
     oldValue: string,
     newValue: string
   ) {
@@ -49,7 +49,114 @@ class TeacherDetailCard extends HTMLElement {
     const nucleusText = nucleus === "basic" ? "Núcleo Básico" : "Núcleo Profesional";
 
     this.shadowRoot!.innerHTML = `
-           <link rel="stylesheet" href="/styles/components/teacher-detail/TeacherDetailCard.css">
+           <style>
+                @import url("../colors.css");
+
+.teacher-card {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 16px;
+  padding: 30px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(83, 84, 237, 0.1);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.teacher-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(83, 84, 237, 0.15);
+}
+
+.teacher-image {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 24px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+  background-color: #f0f2fa;
+}
+
+.teacher-name {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #000;
+}
+
+.teacher-subject {
+  font-size: 18px;
+  margin: 0 0 16px 0;
+  color: var(--nexopurple);
+  font-weight: 500;
+}
+
+.subject-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  background-color: var(--nexolightwhite);
+  padding: 10px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--nexopurple);
+  box-shadow: 0 3px 8px rgba(83, 84, 237, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.detail-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(83, 84, 237, 0.1);
+}
+
+.detail-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--nexopurple);
+}
+
+.rating {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rating svg.filled {
+  fill: var(--nexopurple);
+}
+
+@media (min-width: 576px) {
+  .teacher-card {
+    flex-direction: row;
+    gap: 28px;
+    padding: 36px;
+  }
+
+  .teacher-image {
+    width: 280px;
+    height: 200px;
+    margin-bottom: 0;
+  }
+
+  .teacher-info {
+    flex: 1;
+  }
+}
+
+                </style>
             <div class="teacher-card">
                 <img class="teacher-image" src="${image}" alt="${name}" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22400%22%20height%3D%22300%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%22200%22%20y%3D%22150%22%20font-size%3D%2240%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${name.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E';">
                 <div class="teacher-info">

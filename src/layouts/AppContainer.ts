@@ -40,6 +40,9 @@ class AppContainer extends HTMLElement {
       case "/subject-detail":
         newComponent = "<subject-detail-page></subject-detail-page>";
         break;
+      case "/comments-detail":
+        newComponent = "<comments-detail-page></comments-detail-page>";
+        break;
       default:
         newComponent = "<feed-page></feed-page>";
     }

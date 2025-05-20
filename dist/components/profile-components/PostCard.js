@@ -1,15 +1,13 @@
 class PostCard extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
-  connectedCallback() {
-    this.render();
-  }
-
-  render() {
-    this.shadowRoot!.innerHTML = `
+    constructor() {
+        super();
+        this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
+        this.render();
+    }
+    render() {
+        this.shadowRoot.innerHTML = `
             <link rel="stylesheet" href="/styles/components/profile/PostCard.css">
             <div class="post-card">
                 <div class="post-header">
@@ -47,7 +45,7 @@ class PostCard extends HTMLElement {
                 </div>
             </div>
         `;
-  }
+    }
 }
-
 export default PostCard;
+//# sourceMappingURL=PostCard.js.map

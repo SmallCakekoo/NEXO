@@ -10,15 +10,20 @@ class FeedPage extends HTMLElement {
 
   render() {
     this.shadowRoot!.innerHTML = `
-            <style>
-                h2 { color: #4f46e5; }
-            </style>
-
-            <nav-bar></nav-bar>  
-            <h2>Feed Section</h2>
-            <p>Contenido del feed...</p>
-            <teacher-oldcard></teacher-oldcard>
-        `;
+        <style>
+          :host {
+            display: block;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+          }
+        </style>
+        <nav-bar></nav-bar> 
+        <tag-filters-bar></tag-filters-bar>
+        <post-container></post-container>
+        <floating-btn></floating-btn>
+        <post-modal></post-modal>
+      `;
   }
 }
 
