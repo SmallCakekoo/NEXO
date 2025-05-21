@@ -31,6 +31,8 @@ import ProfileSettingsPage from "./pages/profilesettings";
 import TeacherDetailPage from "./pages/teacherdetail";
 import SubjectDetailPage from "./pages/subjectdetail";
 import LandingPage from "./pages/landingpage";
+import CommentsDetailPage from "./pages/comments-detail";
+
 
 
 //componentes de la landing
