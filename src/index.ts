@@ -30,10 +30,17 @@ import ProfilePage from "./pages/profile";
 import ProfileSettingsPage from "./pages/profilesettings";
 import TeacherDetailPage from "./pages/teacherdetail";
 import SubjectDetailPage from "./pages/subjectdetail";
-import CommentsDetailPage from "./pages/comments-detail";
+import LandingPage from "./pages/landingpage";
+
+
+//componentes de la landing
+import StartButton from "./components/landing-components/StartButton";
+import LandingCards from "./components/landing-components/LandingCards";
+
 
 // el contenedor de la app
 import AppContainer from "./layouts/AppContainer";
+
 
 // los componentes de los academicos
 import SearchBar from "./components/academics-components/SearchBar";
@@ -65,6 +72,8 @@ import TeacherReviewList from "./components/teacher-detail-components/TeacherRev
 // los contenedores de los comentarios
 import TeacherCommentsContainer from "./components/teacher-detail-components/TeacherCommentsContainer";
 import SubjectCommentsContainer from "./components/subject-detail-components/SubjectCommentsContainer";
+
+
 
 // botones de la navbar
 customElements.define("btn-feed", BtnFeed);
@@ -120,11 +129,8 @@ customElements.define("teacher-review-list", TeacherReviewList);
 customElements.define("teacher-comments-container", TeacherCommentsContainer);
 customElements.define("subject-comments-container", SubjectCommentsContainer);
 
-//botones y post (feed)
-customElements.define("button-tags", ButtonsTags);
+//landingpage
 
-import TagFiltersBar from "./components/feed-components/TagFiltersBar";
-import FeedPost from "./components/feed-components/FeedPost";
-
-customElements.define("tag-filters-bar", TagFiltersBar);
-customElements.define("feed-post", FeedPost);
+customElements.define("landing-page", LandingPage);
+customElements.define ("start-button", StartButton);
+customElements.define ("landing-cards", LandingCards);
