@@ -136,3 +136,22 @@ customElements.define("subject-comments-container", SubjectCommentsContainer);
 customElements.define("landing-page", LandingPage);
 customElements.define ("start-button", StartButton);
 customElements.define ("landing-cards", LandingCards);
+import TagFiltersBar from "./components/feed-components/TagFiltersBar";
+import FeedPost from "./components/feed-components/FeedPost";
+
+customElements.define("tag-filters-bar", TagFiltersBar);
+customElements.define("feed-post", FeedPost);
+
+// los componentes de signup/login y su navbar
+
+import LoginComponent from "./pages/login";
+import SignUpComponent from "./pages/signup";
+import NavBarLoginSignup from "./components/navigation/NavBarLoginSignupComponent"
+import BtnLogin from "./components/navbar-buttons/BtnLogin"
+import BtnSignup from "./components/navbar-buttons/BtnSignup"
+
+customElements.define("sign-up-component", SignUpComponent)
+customElements.define("login-component", LoginComponent)
+customElements.define("nav-bar-login-signup", NavBarLoginSignup)
+customElements.define("btn-login", BtnLogin)
+customElements.define("btn-signup", BtnSignup)
