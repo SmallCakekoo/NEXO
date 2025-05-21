@@ -5,7 +5,7 @@ export default {
       2,
       "always",
       [
-        "feat", // Nueva funcionalidad
+        "feat", // Nueva funcionalidad :)
         "fix", // Corrección de errores o bugs
         "refactor", // Mejora de código sin cambiar funcionalidad
         "style", // Cambios en el estilo, formato, espacios

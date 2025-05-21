@@ -7,7 +7,8 @@
     "start": "webpack serve --mode=development --stats-error-details",
     "lint": "eslint src/ --ext .ts,.js --report-unused-disable-directives",
     "lint:fix": "eslint src/ --ext .ts,.js --report-unused-disable-directives --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "format": "prettier --write \"src/**/*.{js,ts,html}\""
   },
   "type": "module",
   "keywords": [],
