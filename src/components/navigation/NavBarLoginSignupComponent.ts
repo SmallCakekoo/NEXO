@@ -25,6 +25,7 @@ class NavBarLoginSignup extends HTMLElement {
   img {
     width: 150px;
     margin-left: 20px;
+    cursor: pointer;
   }
   .navbar-toggler {
     border: 1px solid #5354ed;
@@ -134,7 +135,7 @@ class NavBarLoginSignup extends HTMLElement {
       </style>
       <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">
+          <a class="navbar-brand" id="logo">
             <img src="/assets/images/logonexobig.webp" alt="Logo">
           </a>
           <span class="back-arrow">&lt;</span> <!-- NUEVO: flechita -->
@@ -163,6 +164,7 @@ class NavBarLoginSignup extends HTMLElement {
     const toggleBtn = this.shadowRoot!.querySelector("#toggleBtn");
     const overlay = this.shadowRoot!.querySelector("#overlay");
     const mobileMenu = this.shadowRoot!.querySelector("#mobileMenu");
+    const logo = this.shadowRoot!.querySelector("#logo");
 
     if (toggleBtn && overlay && mobileMenu) {
       toggleBtn.addEventListener("click", () => {
@@ -175,6 +177,15 @@ class NavBarLoginSignup extends HTMLElement {
         overlay.classList.remove("show");
       });
     }
+
+    logo?.addEventListener("click", () => {
+      const event = new CustomEvent("navigate", {
+        detail: "/",
+        bubbles: true,
+        composed: true,
+      });
+      document.dispatchEvent(event);
+    });
   }
 
   setupNavigation() {

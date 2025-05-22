@@ -8,8 +8,8 @@ class LandingPage extends HTMLElement {
     this.render();
   }
 
- render() {
-  this.shadowRoot!.innerHTML = `
+  render() {
+    this.shadowRoot!.innerHTML = `
     <style>
       :host {
         display: block;
@@ -81,70 +81,62 @@ class LandingPage extends HTMLElement {
       }
 
     @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "image"
+          "text";
+        text-align: center;
+        padding: 0 16px;
+        gap: 24px;
+      }
 
-    nav-bar {
-    display: none;
+      .hero .text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hero h1 {
+        font-size: 1.5rem;
+      }
+
+      .hero h4 {
+        font-size: 0.95rem;
+      }
+
+      .hero img {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .cards-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        padding: 0 16px;
+        margin-top: 32px;
+      }
+
+      landing-cards {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      start-button {
+        margin-bottom: 16px;
+      }
+
+      .logo {
+        display: block;
+        margin-top: 16px;
+        margin-bottom: -60px
+      }
     }
-
-    .hero {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "image"
-        "text";
-      text-align: center;
-      padding: 0 16px;
-      gap: 24px;
-    }
-
-  .hero .text {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hero h1 {
-    font-size: 1.5rem;
-  }
-
-  .hero h4 {
-    font-size: 0.95rem;
-  }
-
-  .hero img {
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .cards-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    padding: 0 16px;
-    margin-top: 32px;
-  }
-
-  landing-cards {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  start-button {
-    margin-bottom: 16px;
-  }
-
-  .logo {
-    display: block;
-    margin-top: 16px;
-    margin-bottom: -60px
-  }
-}
-
-
     </style>
-    <nav-bar></nav-bar>
-
-     <div class="logo">
+ <nav-bar-login-signup></nav-bar-login-signup>
+    <div class="logo">
       <img src="/assets/images/logonexobig.png" alt="Nexo Logo" />
     </div>
     
@@ -157,7 +149,6 @@ class LandingPage extends HTMLElement {
 
       <img src="/assets/images/Science.png" alt="Science illustration"/>
     </section>
-
 
     <div class="cards-row">
       <landing-cards
@@ -180,12 +171,8 @@ class LandingPage extends HTMLElement {
         text="Post questions, share ideas, and learn from others in a collaborative environment.">
       </landing-cards>
     </div>
-
-
-    
-
   `;
-}
+  }
 }
 
 export default LandingPage;

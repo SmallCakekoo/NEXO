@@ -14,8 +14,8 @@ class AppContainer extends HTMLElement {
 
   render() {
     this.shadowRoot!.innerHTML = `
-            <landing-page></landing-page>
-        `;
+      <landing-page></landing-page>
+    `;
   }
 
   updateView(route: string) {
@@ -43,8 +43,17 @@ class AppContainer extends HTMLElement {
       case "/comments-detail":
         newComponent = "<comments-detail-page></comments-detail-page>";
         break;
+      case "./login":
+        newComponent = "<login-component></login-component>";
+        break;
+      case "./signup":
+        newComponent = "<sign-up-component></sign-up-component>";
+        break;
+      case "/":
+        newComponent = "<landing-page></landing-page>";
+        break;
       default:
-        newComponent = "<feed-page></feed-page>";
+        newComponent = "<landing-page></landing-page>";
     }
 
     this.shadowRoot!.innerHTML = newComponent;

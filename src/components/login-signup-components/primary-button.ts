@@ -1,7 +1,12 @@
 class PrimaryButton extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+
   connectedCallback() {
-    const text = this.getAttribute('text') || 'Submit';
-    this.innerHTML = `
+    const text = this.getAttribute("text") || "Submit";
+    this.shadowRoot!.innerHTML = `
     <style>
       .primary {
         background-color: #5354ed;
@@ -42,8 +47,17 @@ class PrimaryButton extends HTMLElement {
     </style>
     <button class="primary">${text}</button>
     `;
+
+    this.shadowRoot!.querySelector(".primary")?.addEventListener("click", () => {
+      const event = new CustomEvent("navigate", {
+        detail: "/feed",
+        bubbles: true,
+        composed: true,
+      });
+      document.dispatchEvent(event);
+    });
   }
 }
 
-customElements.define('primary-button', PrimaryButton);
+customElements.define("primary-button", PrimaryButton);
 export default PrimaryButton;

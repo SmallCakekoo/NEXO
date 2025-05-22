@@ -9,7 +9,7 @@ customElements.define("post-modal", PostModal);
 customElements.define("floating-btn", FloatingButtonAdd);
 
 import ButtonsTags from "./components/feed-components/ButtonTags";
-customElements.define("buttons-tags", ButtonsTags);
+customElements.define("button-tags", ButtonsTags);
 import PostContainer from "./components/feed-components/PostContainer";
 
 customElements.define("post-container", PostContainer);

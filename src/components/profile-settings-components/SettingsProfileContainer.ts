@@ -362,7 +362,12 @@ input:focus, select:focus, textarea:focus {
 
     // Handles the unlog button click
     unlogBtn?.addEventListener("click", () => {
-      console.log("Unlog button clicked");
+      const event = new CustomEvent("navigate", {
+        detail: "/",
+        bubbles: true,
+        composed: true,
+      });
+      document.dispatchEvent(event);
     });
 
     // Handles the delete account button click
