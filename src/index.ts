@@ -9,6 +9,7 @@ customElements.define("post-modal", PostModal);
 customElements.define("floating-btn", FloatingButtonAdd);
 
 import ButtonsTags from "./components/feed-components/ButtonTags";
+customElements.define("buttons-tags", ButtonsTags);
 import PostContainer from "./components/feed-components/PostContainer";
 
 customElements.define("post-container", PostContainer);
@@ -24,25 +25,21 @@ import NavBarLog from "./components/navigation/NavbarLogComponent";
 import BackButton from "./components/BackButton";
 
 // las paginas
-import FeedPage from "./pages/feed";
-import AcademicsPage from "./pages/academics";
-import ProfilePage from "./pages/profile";
-import ProfileSettingsPage from "./pages/profilesettings";
-import TeacherDetailPage from "./pages/teacherdetail";
-import SubjectDetailPage from "./pages/subjectdetail";
-import LandingPage from "./pages/landingpage";
-import CommentsDetailPage from "./pages/comments-detail";
-
-
+import FeedPage from "./pages/FeedPage";
+import AcademicsPage from "./pages/AcademicsPage";
+import ProfilePage from "./pages/ProfilePage";
+import ProfileSettingsPage from "./pages/ProfileSettingsPage";
+import TeacherDetailPage from "./pages/TeacherDetailPage";
+import SubjectDetailPage from "./pages/SubjectDetailPage";
+import LandingPage from "./pages/LandingPages";
+import CommentsDetailPage from "./pages/CommentsDetailPage";
 
 //componentes de la landing
 import StartButton from "./components/landing-components/StartButton";
 import LandingCards from "./components/landing-components/LandingCards";
 
-
 // el contenedor de la app
 import AppContainer from "./layouts/AppContainer";
-
 
 // los componentes de los academicos
 import SearchBar from "./components/academics-components/SearchBar";
@@ -74,8 +71,6 @@ import TeacherReviewList from "./components/teacher-detail-components/TeacherRev
 // los contenedores de los comentarios
 import TeacherCommentsContainer from "./components/teacher-detail-components/TeacherCommentsContainer";
 import SubjectCommentsContainer from "./components/subject-detail-components/SubjectCommentsContainer";
-
-
 
 // botones de la navbar
 customElements.define("btn-feed", BtnFeed);
@@ -134,8 +129,8 @@ customElements.define("subject-comments-container", SubjectCommentsContainer);
 //landingpage
 
 customElements.define("landing-page", LandingPage);
-customElements.define ("start-button", StartButton);
-customElements.define ("landing-cards", LandingCards);
+customElements.define("start-button", StartButton);
+customElements.define("landing-cards", LandingCards);
 import TagFiltersBar from "./components/feed-components/TagFiltersBar";
 import FeedPost from "./components/feed-components/FeedPost";
 
@@ -146,12 +141,12 @@ customElements.define("feed-post", FeedPost);
 
 import LoginComponent from "./pages/login";
 import SignUpComponent from "./pages/signup";
-import NavBarLoginSignup from "./components/navigation/NavBarLoginSignupComponent"
-import BtnLogin from "./components/navbar-buttons/BtnLogin"
-import BtnSignup from "./components/navbar-buttons/BtnSignup"
+import NavBarLoginSignup from "./components/navigation/NavBarLoginSignupComponent";
+import BtnLogin from "./components/navbar-buttons/BtnLogin";
+import BtnSignup from "./components/navbar-buttons/BtnSignup";
 
-customElements.define("sign-up-component", SignUpComponent)
-customElements.define("login-component", LoginComponent)
-customElements.define("nav-bar-login-signup", NavBarLoginSignup)
-customElements.define("btn-login", BtnLogin)
-customElements.define("btn-signup", BtnSignup)
+customElements.define("sign-up-component", SignUpComponent);
+customElements.define("login-component", LoginComponent);
+customElements.define("nav-bar-login-signup", NavBarLoginSignup);
+customElements.define("btn-login", BtnLogin);
+customElements.define("btn-signup", BtnSignup);
