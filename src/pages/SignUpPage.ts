@@ -1,16 +1,9 @@
-import '../components/login-signup-components/header-title';
-import '../components/login-signup-components/form-field-signup';
-import '../components/login-signup-components/primary-button';
-import '../components/login-signup-components/divider';
-import '../components/login-signup-components/social-buttons';
-import '../components/login-signup-components/checkbox';
-
 class SignUpComponent extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
       <style>
         section {
-          width: 90%;
+          width: 80%;
           max-width: 35.625rem; 
           margin: 3rem auto;
           padding: 1.5rem;
@@ -26,7 +19,7 @@ class SignUpComponent extends HTMLElement {
 
         @media (max-width: 430px) { 
           section {
-            width: 100%;
+            width: 80%;
             height: auto;
             margin: 3.0625rem auto; 
             padding: 0;

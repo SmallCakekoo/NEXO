@@ -81,6 +81,10 @@ class LandingPage extends HTMLElement {
         margin: 0 auto;
       }
 
+      nav-bar-login-signup {
+        display: block;
+      }
+
     @media (max-width: 768px) {
       .hero {
         grid-template-columns: 1fr;
@@ -133,6 +137,10 @@ class LandingPage extends HTMLElement {
         display: block;
         margin-top: 16px;
         margin-bottom: -60px
+      }
+
+      nav-bar-login-signup {
+        display: none;
       }
     }
     </style>

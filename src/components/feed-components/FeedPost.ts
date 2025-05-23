@@ -466,6 +466,9 @@ class FeedPost extends HTMLElement {
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
+        // Guardar el ID del post actual (usando la URL de la foto como ID)
+        sessionStorage.setItem("currentPostId", this.post.photo);
+        
         const navigateEvent = new CustomEvent("navigate", {
           detail: "/comments-detail",
           bubbles: true,

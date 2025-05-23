@@ -1,8 +1,9 @@
 interface Comment {
-  author: string;
+  photo: string;
+  name: string;
+  career: string;
   date: string;
-  text: string;
-  image?: string;
+  message: string;
 }
 
 class CommentsList extends HTMLElement {
@@ -13,64 +14,52 @@ class CommentsList extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
 
-  connectedCallback() {
-    // Example data
-    this.comments = [
-      {
-        author: "Juan Telón",
-        date: "16/03/25",
-        text: "Excellent post! It has helped me a lot with my studies.",
-        image: "https://i.pravatar.cc/150?img=3",
-      },
-      {
-        author: "María López",
-        date: "15/03/25",
-        text: "Very interesting topic. Does anyone know where I can find more information about this?",
-        image: "https://i.pravatar.cc/150?img=5",
-      },
-      {
-        author: "Carlos Rodríguez",
-        date: "14/03/25",
-        text: "I had the same experience. It's important to share this kind of information so others don't make the same mistakes.",
-        image: "https://i.pravatar.cc/150?img=8",
-      },
-      {
-        author: "Steven Bater",
-        date: "18/03/25",
-        text: "How strange, right? I never thought about that before.",
-        image: "https://i.pravatar.cc/150?img=7",
-      },
-    ];
-
-    this.render();
-    this.setupEventListeners();
+  static get observedAttributes(): string[] {
+    return ["comments"];
   }
 
-  setupEventListeners() {
-    document.addEventListener("comment-submitted", ((event: CustomEvent) => {
-      this.comments.unshift(event.detail); // Adds the new comment to the top of the list
-      this.render();
-    }) as EventListener);
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "comments" && newValue !== oldValue) {
+      try {
+        this.comments = JSON.parse(newValue);
+        this.render();
+      } catch (error) {
+        console.error("Error parsing comments:", error);
+        this.comments = [];
+      }
+    }
+  }
+
+  connectedCallback() {
+    this.render();
   }
 
   render() {
     const commentsHTML = this.comments
       .map((comment) => {
-        const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${comment.author.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
-        const userImage = comment.image || defaultAvatar;
+        // Asegurarse de que todos los campos tengan valores por defecto
+        const name = comment.name || "Usuario";
+        const photo = comment.photo || "https://picsum.photos/seed/default/200/300";
+        const date = comment.date || new Date().toLocaleDateString();
+        const career = comment.career || "";
+        const message = comment.message || "";
+
+        const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${name.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
+        const userImage = photo || defaultAvatar;
 
         return `
           <div class="comment-item">
             <div class="comment-header">
               <div class="user-info">
-                <img src="${userImage}" alt="${comment.author}" class="user-avatar" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                <img src="${userImage}" alt="${name}" class="user-avatar" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                 <div>
-                  <h4 class="user-name">${comment.author}</h4>
-                  <div class="comment-date">${comment.date}</div>
+                  <h4 class="user-name">${name}</h4>
+                  <div class="comment-date">${date}</div>
                 </div>
               </div>
+              ${career ? `<div class="comment-career">${career}</div>` : ""}
             </div>
-            <p class="comment-text">${comment.text}</p>
+            <p class="comment-text">${message}</p>
           </div>
         `;
       })
@@ -159,6 +148,14 @@ class CommentsList extends HTMLElement {
         .comment-date {
           font-size: 13px;
           color: #5354ed;
+        }
+        
+        .comment-career {
+          font-size: 12px;
+          color: #6b7280;
+          background-color: #f0f2fa;
+          padding: 4px 8px;
+          border-radius: 12px;
         }
         
         .comment-text {

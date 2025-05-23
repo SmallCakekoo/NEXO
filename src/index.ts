@@ -149,12 +149,24 @@ customElements.define("feed-post", FeedPost);
 
 // los componentes de signup/login y su navbar
 
-import LoginComponent from "./pages/login";
-import SignUpComponent from "./pages/signup";
+import LoginComponent from "./pages/LoginPage";
+import SignUpComponent from "./pages/SignUpPage";
 import NavBarLoginSignup from "./components/navigation/NavBarLoginSignupComponent";
 import BtnLogin from "./components/navbar-buttons/BtnLogin";
 import BtnSignup from "./components/navbar-buttons/BtnSignup";
 
+// Importaciones existentes de LoginPage.ts
+import './components/login-signup-components/header-title';
+import './components/login-signup-components/form-fields';
+import './components/login-signup-components/primary-button';
+import './components/login-signup-components/divider';
+import './components/login-signup-components/social-buttons';
+import './components/login-signup-components/forgot-password';
+import './components/navigation/NavbarLogComponent';
+
+// Nuevas importaciones de signup.ts
+import './components/login-signup-components/form-field-signup';
+import './components/login-signup-components/checkbox';
 customElements.define("sign-up-component", SignUpComponent);
 customElements.define("login-component", LoginComponent);
 customElements.define("nav-bar-login-signup", NavBarLoginSignup);

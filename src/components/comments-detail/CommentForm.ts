@@ -21,25 +21,25 @@ class CommentForm extends HTMLElement {
         return;
       }
 
-      // Fallback avatar if user doesn't have one
-      const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3EU%3C%2Ftext%3E%3C%2Fsvg%3E`;
-
-      // Reset form
-      if (commentInput) commentInput.value = "";
-
-      // Dispatch a custom event with comment data
-      this.dispatchEvent(
-        new CustomEvent("comment-submitted", {
-          detail: {
-            text: commentText,
-            date: new Date().toLocaleDateString("en-US"),
-            author: "Current User",
-            image: defaultAvatar,
-          },
-          bubbles: true,
-          composed: true,
-        })
-      );
+      // Crear un objeto de comentario con datos completos
+      const newComment = {
+        photo: "https://picsum.photos/seed/user/200/300", // URL de foto por defecto
+        name: "Rosa Elvira", // Nombre del usuario actual
+        career: "Medicine", // Carrera del usuario actual
+        date: new Date().toLocaleDateString(), // Fecha actual
+        message: commentText // El texto del comentario
+      };
+      
+      // Disparar un evento con los datos del comentario
+      const commentEvent = new CustomEvent("comment-submitted", {
+        detail: newComment,
+        bubbles: true,
+        composed: true
+      });
+      
+      this.dispatchEvent(commentEvent);
+      commentInput.value = "";
+      this.showNotification("¡Comentario publicado con éxito!");
     });
   }
 
@@ -146,6 +146,38 @@ class CommentForm extends HTMLElement {
         </button>
       </div>
     `;
+  }
+
+  showNotification(message: string) {
+    // Create notification element
+    const notification = document.createElement("div");
+    notification.className = "comment-notification";
+    notification.textContent = message;
+    
+    // Style the notification
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.left = "50%";
+    notification.style.transform = "translateX(-50%)";
+    notification.style.backgroundColor = "#5354ed";
+    notification.style.color = "white";
+    notification.style.padding = "10px 20px";
+    notification.style.borderRadius = "5px";
+    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    notification.style.zIndex = "1000";
+    
+    // Add to document
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.opacity = "0";
+      notification.style.transition = "opacity 0.5s ease";
+      
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 500);
+    }, 3000);
   }
 }
 
