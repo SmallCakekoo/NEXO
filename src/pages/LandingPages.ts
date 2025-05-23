@@ -64,6 +64,7 @@ class LandingPage extends HTMLElement {
       max-width: 1200px;
       margin: 0 auto; 
       padding: 0 24px;
+      margin-bottom: 40px;
       }
 
       .logo {

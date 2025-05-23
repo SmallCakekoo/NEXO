@@ -72,6 +72,11 @@ import TeacherReviewList from "./components/teacher-detail-components/TeacherRev
 import TeacherCommentsContainer from "./components/teacher-detail-components/TeacherCommentsContainer";
 import SubjectCommentsContainer from "./components/subject-detail-components/SubjectCommentsContainer";
 
+// los componentes de detalle de comentarios
+import CommentForm from "./components/comments-detail/CommentForm";
+import CommentsList from "./components/comments-detail/CommentsList";
+import CommentsContainer from "./components/comments-detail/CommentsContainer";
+
 // botones de la navbar
 customElements.define("btn-feed", BtnFeed);
 customElements.define("btn-academic", BtnAcademic);
@@ -125,6 +130,11 @@ customElements.define("teacher-review-list", TeacherReviewList);
 // los contenedores de los comentarios
 customElements.define("teacher-comments-container", TeacherCommentsContainer);
 customElements.define("subject-comments-container", SubjectCommentsContainer);
+
+// los componentes de detalle de comentarios
+customElements.define("comment-form", CommentForm);
+customElements.define("comments-list", CommentsList);
+customElements.define("comments-container", CommentsContainer);
 
 //landingpage
 

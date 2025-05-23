@@ -23,6 +23,7 @@ class StartButton extends HTMLElement {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s ease;
 }
 
 #start:hover {
@@ -39,6 +40,7 @@ class StartButton extends HTMLElement {
   -moz-box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
   box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
   filter: brightness(0.8);
+  transition: all 0.1s ease;
 }
       </style>
       <button id="start">Start Now</button>
