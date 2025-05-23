@@ -49,7 +49,7 @@ class StartButton extends HTMLElement {
     this.shadowRoot!.querySelector("#start")?.addEventListener("click", () => {
       const event = new CustomEvent("navigate", {
         detail: "./login",
-        bubbles: true,
+
         composed: true,
       });
       document.dispatchEvent(event);

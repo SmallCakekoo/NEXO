@@ -48,7 +48,7 @@ button:active {
     `;
 
     this.shadowRoot!.querySelector("#academic-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "academic", bubbles: true }));
+      this.dispatchEvent(new CustomEvent("navigate", { detail: "academic" }));
     });
   }
 }

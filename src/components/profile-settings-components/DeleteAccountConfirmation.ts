@@ -198,7 +198,7 @@ class DeleteAccountConfirmation extends HTMLElement {
         this.animateOut().then(() => {
           const event = new CustomEvent("navigate", {
             detail: "/",
-            bubbles: true,
+
             composed: true,
           });
           document.dispatchEvent(event);

@@ -471,10 +471,10 @@ class FeedPost extends HTMLElement {
         
         const navigateEvent = new CustomEvent("navigate", {
           detail: "/comments-detail",
-          bubbles: true,
+
           composed: true,
         });
-        this.dispatchEvent(navigateEvent);
+        document.dispatchEvent(navigateEvent);
       });
 
       const shareButton = this.shadowRoot.querySelector(".just-share");

@@ -21,8 +21,7 @@ class SubjectCard extends HTMLElement {
     const card = this.shadowRoot?.querySelector(".card");
     card?.addEventListener("click", () => {
       const customEvent = new CustomEvent("navigate", {
-        bubbles: true,
-        composed: true,
+
         detail: "/subject-detail",
       });
       document.dispatchEvent(customEvent);

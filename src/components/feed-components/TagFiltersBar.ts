@@ -25,7 +25,7 @@ class TagFiltersBar extends HTMLElement {
 
         const event = new CustomEvent("tagSelected", {
           detail: { tag },
-          bubbles: true,
+
           composed: true,
         });
         document.dispatchEvent(event);

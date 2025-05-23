@@ -51,7 +51,7 @@ class PrimaryButton extends HTMLElement {
     this.shadowRoot!.querySelector(".primary")?.addEventListener("click", () => {
       const event = new CustomEvent("navigate", {
         detail: "/feed",
-        bubbles: true,
+
         composed: true,
       });
       document.dispatchEvent(event);

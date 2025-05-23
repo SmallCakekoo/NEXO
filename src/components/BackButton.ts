@@ -23,11 +23,7 @@ class BackButton extends HTMLElement {
         sessionStorage.setItem("returnToFeed", "true");
       }
 
-      const customEvent = new CustomEvent("navigate", {
-        bubbles: true,
-        composed: true,
-        detail: target,
-      });
+      const customEvent = new CustomEvent("navigate", { detail: target });
       document.dispatchEvent(customEvent);
     });
   }

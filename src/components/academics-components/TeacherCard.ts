@@ -21,8 +21,7 @@ class TeacherCard extends HTMLElement {
     const card = this.shadowRoot?.querySelector(".card");
     card?.addEventListener("click", () => {
       const customEvent = new CustomEvent("navigate", {
-        bubbles: true,
-        composed: true,
+
         detail: "/teacher-detail",
       });
       document.dispatchEvent(customEvent);

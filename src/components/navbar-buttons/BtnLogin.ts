@@ -48,7 +48,7 @@ button:active {
     `;
 
     this.shadowRoot!.querySelector("#login-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "login", bubbles: true }));
+      this.dispatchEvent(new CustomEvent("navigate", { detail: "login" }));
     });
   }
 }

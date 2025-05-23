@@ -46,7 +46,7 @@ class BtnProfile extends HTMLElement {
     `;
 
     this.shadowRoot!.querySelector("#profile-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "profile", bubbles: true }));
+      this.dispatchEvent(new CustomEvent("navigate", { detail: "profile" }));
     });
   }
 }

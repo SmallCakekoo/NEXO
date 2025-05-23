@@ -364,7 +364,7 @@ input:focus, select:focus, textarea:focus {
     unlogBtn?.addEventListener("click", () => {
       const event = new CustomEvent("navigate", {
         detail: "/",
-        bubbles: true,
+
         composed: true,
       });
       document.dispatchEvent(event);

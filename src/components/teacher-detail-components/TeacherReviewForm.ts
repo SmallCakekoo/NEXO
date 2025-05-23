@@ -63,7 +63,7 @@ class TeacherReviewForm extends HTMLElement {
       this.updateStars();
 
       // Dispatch a custom event with review data to parent component
-      this.dispatchEvent(
+      document.dispatchEvent(
         new CustomEvent("review-submitted", {
           detail: {
             rating: oldRating,
@@ -72,7 +72,7 @@ class TeacherReviewForm extends HTMLElement {
             author: "Current User",
             image: defaultAvatar,
           },
-          bubbles: true,
+
           composed: true,
         })
       );

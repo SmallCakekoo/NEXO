@@ -72,7 +72,7 @@ class SubjectReviewForm extends HTMLElement {
             author: "Current User",
             image: defaultAvatar,
           },
-          bubbles: true,
+
           composed: true,
         })
       );
