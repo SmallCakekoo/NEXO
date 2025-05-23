@@ -16,7 +16,12 @@ class BackButton extends HTMLElement {
   addEventListeners() {
     const button = this.shadowRoot?.querySelector(".back-button");
     button?.addEventListener("click", () => {
-      const target = this.getAttribute("target") || "/academic";
+      const target = this.getAttribute("target") || "/feed";
+
+      // Set flag to maintain scroll position when returning to feed
+      if (target === "/feed") {
+        sessionStorage.setItem("returnToFeed", "true");
+      }
 
       const customEvent = new CustomEvent("navigate", {
         bubbles: true,

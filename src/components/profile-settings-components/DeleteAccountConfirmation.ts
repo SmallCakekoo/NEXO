@@ -193,16 +193,19 @@ class DeleteAccountConfirmation extends HTMLElement {
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
     // On confirm, animate out and dispatch a custom event (but this is static for now)
-    confirmBtn?.addEventListener("click", () => {
-      this.animateOut().then(() => {
-        const confirmEvent = new CustomEvent("delete-account-confirmed", {
-          bubbles: true, // Allows the event to bubble up to the parent
-          composed: true, // Allows the event to be composed
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        this.animateOut().then(() => {
+          const event = new CustomEvent("navigate", {
+            detail: "/",
+            bubbles: true,
+            composed: true,
+          });
+          document.dispatchEvent(event);
+          this.remove();
         });
-        this.dispatchEvent(confirmEvent);
-        this.remove();
       });
-    });
+    }
 
     // On cancel, animate out and remove
     cancelBtn?.addEventListener("click", () => {

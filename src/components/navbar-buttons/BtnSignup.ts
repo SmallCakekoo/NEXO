@@ -44,7 +44,7 @@ button:active {
 }
 
      </style>
-      <button id="signup-button">Signup</button>
+      <button id="signup-button">Sign Up</button>
     `;
 
     this.shadowRoot!.querySelector("#signup-button")?.addEventListener("click", () => {
