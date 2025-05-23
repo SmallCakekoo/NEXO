@@ -1,4 +1,4 @@
-import { Post } from "../../types/feed/feeds.types";
+import { Post, Comment } from "../../types/feed/feeds.types";
 
 class FeedPost extends HTMLElement {
   post: Post;
@@ -17,7 +17,7 @@ class FeedPost extends HTMLElement {
       likes: 0,
       date: "",
       share: "",
-      comments: "",
+      comments: [],
     };
   }
 
@@ -43,6 +43,12 @@ class FeedPost extends HTMLElement {
   ) {
     if (propName === "likes") {
       this.post.likes = newValue ? Number(newValue) : 0;
+    } else if (propName === "comments") {
+      try {
+        this.post.comments = JSON.parse(newValue as string);
+      } catch {
+        this.post.comments = [];
+      }
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
     }
@@ -468,7 +474,7 @@ class FeedPost extends HTMLElement {
       commentButton?.addEventListener("click", () => {
         // Guardar el ID del post actual (usando la URL de la foto como ID)
         sessionStorage.setItem("currentPostId", this.post.photo);
-        
+
         const navigateEvent = new CustomEvent("navigate", {
           detail: "/comments-detail",
 

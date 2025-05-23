@@ -111,12 +111,14 @@ import SubjectCommentsContainer from "./components/subject-detail-components/Sub
 import CommentForm from "./components/comments-detail/CommentForm";
 import CommentsList from "./components/comments-detail/CommentsList";
 import CommentsContainer from "./components/comments-detail/CommentsContainer";
+import CommentsDetailFeedPage from "./pages/CommentsDetailFeedPage";
 
 customElements.define("teacher-comments-container", TeacherCommentsContainer);
 customElements.define("subject-comments-container", SubjectCommentsContainer);
 customElements.define("comment-form", CommentForm);
 customElements.define("comments-list", CommentsList);
 customElements.define("comments-container", CommentsContainer);
+customElements.define("comments-detail-feed-page", CommentsDetailFeedPage);
 
 // Componentes de Login/Signup
 import "./components/login-signup-components/header-title";

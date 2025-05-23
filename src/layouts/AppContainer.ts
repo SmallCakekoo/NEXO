@@ -15,11 +15,11 @@ class AppContainer extends HTMLElement {
   connectedCallback() {
     store.load();
     this.render();
-    
+
     // Manejar navegación a través de Flux
     document.addEventListener("navigate", (event: Event) => {
       const route = (event as CustomEvent).detail;
-      if (typeof route === 'string') {
+      if (typeof route === "string") {
         NavigationActions.updateRoute(route);
       }
     });
@@ -79,7 +79,7 @@ class AppContainer extends HTMLElement {
       default:
         newComponent = "<landing-page></landing-page>";
     }
-
+    // falta la ruta de comments-detail-feed-page
     this.shadowRoot!.innerHTML = newComponent;
     window.scrollTo(0, 0);
   }

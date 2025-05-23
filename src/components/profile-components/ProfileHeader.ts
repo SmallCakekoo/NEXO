@@ -15,7 +15,6 @@ class ProfileHeader extends HTMLElement {
     editButton?.addEventListener("click", () => {
       const navigationEvent = new CustomEvent("navigate", {
         detail: "/profile-settings",
-
       });
       document.dispatchEvent(navigationEvent);
     });

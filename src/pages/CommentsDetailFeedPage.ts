@@ -1,4 +1,4 @@
-class CommentsDetailPage extends HTMLElement {
+class CommentsDetailFeedPage extends HTMLElement {
   private liked: boolean = false;
   private postData: any = null;
   private postId: string = "";
@@ -13,7 +13,7 @@ class CommentsDetailPage extends HTMLElement {
     // Obtener el ID del post de la URL o sessionStorage
     this.postId = sessionStorage.getItem("currentPostId") || "";
     this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
-    
+
     // Cargar los datos del post
     this.loadPostData();
   }
@@ -22,10 +22,10 @@ class CommentsDetailPage extends HTMLElement {
     try {
       const response = await fetch("/data/Feed.json");
       const data = await response.json();
-      
+
       if (this.postId && data.posts) {
         this.postData = data.posts.find((post: any) => post.photo === this.postId);
-        
+
         if (!this.postData && data.posts.length > 0) {
           // Si no se encuentra el post, usar el primero como fallback
           this.postData = data.posts[0];
@@ -36,17 +36,16 @@ class CommentsDetailPage extends HTMLElement {
         this.postData = data.posts[0];
         this.postId = this.postData.photo;
       }
-      
+
       // Asegurarse de que los comentarios estén en formato array
       if (this.postData && this.postData.comments) {
-        this.postData.comments = Array.isArray(this.postData.comments) 
-          ? this.postData.comments 
+        this.postData.comments = Array.isArray(this.postData.comments)
+          ? this.postData.comments
           : JSON.parse(this.postData.comments);
       }
-      
+
       this.render();
       this.setupEventListeners();
-      
     } catch (error) {
       console.error("Error loading post data:", error);
       this.render(); // Renderizar con datos por defecto
@@ -63,16 +62,10 @@ class CommentsDetailPage extends HTMLElement {
     backButton?.addEventListener("click", () => {
       if (this.fromProfile) {
         sessionStorage.setItem("returnToProfile", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/profile"
-        });
-        document.dispatchEvent(navigationEvent);
+        window.history.back();
       } else {
         sessionStorage.setItem("returnToFeed", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed"
-        });
-        document.dispatchEvent(navigationEvent);
+        window.history.back();
       }
     });
 
@@ -104,7 +97,7 @@ class CommentsDetailPage extends HTMLElement {
       semestre: "Semester 6",
       message: "Did anyone else stumble against a guy using boots in the stairs???",
       tag: "Daily Life",
-      likes: 19
+      likes: 19,
     };
 
     this.shadowRoot!.innerHTML = `
@@ -444,4 +437,4 @@ class CommentsDetailPage extends HTMLElement {
   }
 }
 
-export default CommentsDetailPage;
+export default CommentsDetailFeedPage;

@@ -1,54 +1,12 @@
 import { Post } from "../../types/feed/feeds.types";
+import { fetchProfilePosts } from "../../services/ProfileService";
 
 class ProfileContainer extends HTMLElement {
   private posts: Post[] = [];
-  private defaultPosts: Post[] = [
-    {
-      id: "default-1",
-      photo: "https://picsum.photos/seed/picsum/200/300",
-      name: "Rosa Elvira",
-      date: "2 hours ago",
-      career: "Medicine",
-      semestre: "2nd",
-      message: "Did anyone else stump against a guy using boots in the stairs???",
-      tag: "Daily Life",
-      likes: 19,
-      share: "0",
-      comments: "0",
-    },
-    {
-      id: "default-2",
-      photo: "https://picsum.photos/seed/picsum/200/300",
-      name: "Rosa Elvira",
-      date: "Yesterday",
-      career: "Medicine",
-      semestre: "2nd",
-      message: "Looking for study partners for the anatomy exam next week. DM me if interested!",
-      tag: "Daily Life",
-      likes: 32,
-      share: "0",
-      comments: "0",
-    },
-    {
-      id: "default-3",
-      photo: "https://picsum.photos/seed/picsum/200/300",
-      name: "Rosa Elvira",
-      date: "Last week",
-      career: "Medicine",
-      semestre: "2nd",
-      message: "Just finished my first lab session! So excited to continue learning.",
-      tag: "Academic",
-      likes: 45,
-      share: "0",
-      comments: "0",
-    },
-  ];
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    // Inicializar posts con los posts por defecto
-    this.posts = [...this.defaultPosts];
   }
 
   connectedCallback() {
@@ -58,22 +16,13 @@ class ProfileContainer extends HTMLElement {
 
   async loadPosts() {
     try {
-      const response = await fetch("/data/Feed.json");
-      const data = await response.json();
-
+      const data = await fetchProfilePosts();
       if (data.posts) {
-        // Filtrar solo los posts del usuario actual (Rosa Elvira en este caso)
-        const loadedPosts = data.posts.filter((post: any) => post.name === "Rosa Elvira");
-        // Combinar los posts cargados con los posts por defecto
-        this.posts = [...loadedPosts, ...this.defaultPosts];
+        this.posts = data.posts;
         this.render();
       }
     } catch (error) {
       console.error("Error loading posts:", error);
-      // Si hay un error, asegurarse de que al menos tengamos los posts por defecto
-      if (this.posts.length === 0) {
-        this.posts = [...this.defaultPosts];
-      }
       this.render();
     }
   }
@@ -104,7 +53,7 @@ class ProfileContainer extends HTMLElement {
         tag: newPostData.category,
         likes: 0,
         share: "0",
-        comments: "0",
+        comments: [],
       };
 
       // Añadir el nuevo post al inicio del array
@@ -128,7 +77,7 @@ class ProfileContainer extends HTMLElement {
         tag="${post.tag}"
         likes="${post.likes}"
         share="${post.share}"
-        comments="${post.comments}"
+        comments="${JSON.stringify(post.comments)}"
       ></feed-post>
     `
       )
