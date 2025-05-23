@@ -1,28 +1,42 @@
 import { AppDispatcher, Action } from "./Dispatcher";
-import { CounterActionTypes, UserActionTypes } from "./Actions";
+import { NavigateActionsType } from "./NavigationActions";
 
-export type User = {
-  name: string;
-  age: number;
-};
-
-export type State = {
-  count: number;
-  user: User | null;
-};
+export interface State {
+  currentPath: string;
+  history: string[];
+}
 
 type Listener = (state: State) => void;
 
 class Store {
   private _myState: State = {
-    count: 0,
-    user: null,
+    currentPath: "",
+    history: []
   };
+
   // Los componentes
   private _listeners: Listener[] = [];
 
-  constructor() {
-    AppDispatcher.register(this._handleActions.bind(this)); // Bind the context of this method to the Store instance
+  private static instance: Store;
+
+  private constructor() {
+    this._listeners = [];
+    AppDispatcher.register(this._handleActions.bind(this));
+
+    // Manejar cambios en el historial del navegador
+    window.addEventListener('popstate', () => {
+      const newPath = window.location.pathname;
+      this._handleRouteChange(newPath);
+    });
+  }
+
+  private _handleRouteChange(newPath: string) {
+    this._myState = {
+      ...this._myState,
+      currentPath: newPath,
+      history: [...this._myState.history, newPath]
+    };
+    this._emitChange();
   }
 
   getState() {
@@ -31,34 +45,21 @@ class Store {
 
   _handleActions(action: Action): void {
     switch (action.type) {
-      case CounterActionTypes.INCREMENT_COUNT:
-        if (typeof action.payload === "number") {
-          this._myState = {
-            ...this._myState,
-            count: this._myState.count + action.payload,
-          };
+      case NavigateActionsType.NAVIGATE:
+        if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
+          const newPath = String(action.payload.path);
+          // Actualizar el historial del navegador
+          window.history.pushState({}, '', newPath);
+          this._handleRouteChange(newPath);
         }
-        this._emitChange();
         break;
-
-      case CounterActionTypes.DECREMENT_COUNT:
-        if (typeof action.payload === "number") {
-          this._myState = {
-            ...this._myState,
-            count: this._myState.count - action.payload,
-          };
+      case NavigateActionsType.UPDATE_ROUTE:
+        if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
+          const newPath = String(action.payload.path);
+          // Actualizar la URL sin agregar una nueva entrada al historial
+          window.history.replaceState({}, '', newPath);
+          this._handleRouteChange(newPath);
         }
-        this._emitChange();
-        break;
-
-      case UserActionTypes.SAVE_USER:
-        if (typeof action.payload === "object") {
-          this._myState = {
-            ...this._myState,
-            user: action.payload as User,
-          };
-        }
-        this._emitChange();
         break;
     }
   }
@@ -80,6 +81,22 @@ class Store {
   unsubscribe(listener: Listener): void {
     this._listeners = this._listeners.filter((l) => l !== listener);
   }
+
+  load(): void {
+    const persistedState = localStorage.getItem("flux:state");
+    if (persistedState) {
+      this._myState = JSON.parse(persistedState);
+      this._emitChange(); // Emitir el nuevo estado
+    }
+  }
+
+  static getInstance(): Store {
+    if (!Store.instance) {
+      Store.instance = new Store();
+    }
+    return Store.instance;
+  }
 }
 
-export const store = new Store();
+export const store = Store.getInstance();
+export default store;
