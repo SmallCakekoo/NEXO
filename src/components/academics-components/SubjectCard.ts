@@ -20,8 +20,26 @@ class SubjectCard extends HTMLElement {
   setupCardClickHandler() {
     const card = this.shadowRoot?.querySelector(".card");
     card?.addEventListener("click", () => {
-      const customEvent = new CustomEvent("navigate", {
+      const name = this.getAttribute("name") || "";
+      const career = this.getAttribute("career") || "";
+      const credits = this.getAttribute("credits") || "";
+      const rating = this.getAttribute("rating") || "";
+      const id = this.getAttribute("id") || "";
 
+      // Crear un objeto con los datos de la asignatura
+      const subjectData = {
+        name,
+        career,
+        credits,
+        rating,
+        id,
+      };
+
+      // Guardar los datos en sessionStorage para recuperarlos en la página de detalles
+      sessionStorage.setItem("selectedSubject", JSON.stringify(subjectData));
+
+      // Navegar a la página de detalles
+      const customEvent = new CustomEvent("navigate", {
         detail: "/subject-detail",
       });
       document.dispatchEvent(customEvent);
@@ -80,7 +98,7 @@ class SubjectCard extends HTMLElement {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
 />
 <style>
-  @import url("../colors.css");
+ 
 
   .card {
     max-width: 300px;

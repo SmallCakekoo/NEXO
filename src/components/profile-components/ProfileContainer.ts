@@ -85,7 +85,7 @@ class ProfileContainer extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
      <style>
-     @import url("../colors.css");
+    
 
 :host {
   display: block;

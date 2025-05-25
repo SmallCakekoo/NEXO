@@ -22,7 +22,7 @@ class DeleteAccountConfirmation extends HTMLElement {
   render() {
     this.shadowRoot!.innerHTML = `
             <style>
-@import url('../colors.css');
+ 
 
 :host {
   display: block;

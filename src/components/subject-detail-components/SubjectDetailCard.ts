@@ -49,7 +49,7 @@ class SubjectDetailCard extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
            <style>
-@import url('../colors.css');
+ 
 
 .subject-card {
   display: flex;

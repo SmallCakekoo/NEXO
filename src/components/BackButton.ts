@@ -42,8 +42,7 @@ class BackButton extends HTMLElement {
     const buttonText = this.getAttribute("text") || "Back";
 
     this.shadowRoot!.innerHTML = `
-    <style>
-    @import url("colors.css");
+    <style> 
 
 .back-button {
     display: flex;

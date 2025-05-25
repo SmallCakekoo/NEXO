@@ -5,140 +5,600 @@
       "subject": "Logic & Argumentation",
       "nucleus": "Basic Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Michael Anderson",
+          "date": "20/03/25",
+          "rating": 4,
+          "text": "The professor has great patience and explains complex concepts very clearly. His examples make difficult topics easy to understand.",
+          "image": "https://i.pravatar.cc/150?img=12"
+        },
+        {
+          "author": "Isabella Thompson",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Classes are very dynamic and the debates help a lot in understanding the topics. Great teaching approach.",
+          "image": "https://i.pravatar.cc/150?img=13"
+        },
+        {
+          "author": "Robert Mitchell",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "Excellent methodology. The practical exercises really help reinforce the theoretical concepts.",
+          "image": "https://i.pravatar.cc/150?img=14"
+        }
+      ]
     },
     {
       "name": "Sarah Johnson",
       "subject": "Programming I",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Lucas Garcia",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Best programming professor ever. She explains step by step and resolves all doubts with great patience.",
+          "image": "https://i.pravatar.cc/150?img=15"
+        },
+        {
+          "author": "Caroline Harrison",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Her examples are very practical and current. She's always available to help students understand.",
+          "image": "https://i.pravatar.cc/150?img=16"
+        },
+        {
+          "author": "Daniel Parker",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The coding exercises are well designed. You learn a lot in her classes.",
+          "image": "https://i.pravatar.cc/150?img=17"
+        }
+      ]
     },
     {
       "name": "Michael Brown",
       "subject": "Database Systems",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Andrea Rodriguez",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "Great professor. His explanations about database design are excellent and very practical.",
+          "image": "https://i.pravatar.cc/150?img=18"
+        },
+        {
+          "author": "George Castro",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The practical projects are very useful for real-world applications. Good balance of theory and practice.",
+          "image": "https://i.pravatar.cc/150?img=19"
+        },
+        {
+          "author": "Sophie Williams",
+          "date": "14/03/25",
+          "rating": 4,
+          "text": "His SQL workshops are very helpful. The database optimization techniques are well explained.",
+          "image": "https://i.pravatar.cc/150?img=20"
+        }
+      ]
     },
     {
       "name": "Emily Davis",
       "subject": "Web Development",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Frank Lopez",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent professor. She's very up-to-date with the latest web technologies and frameworks.",
+          "image": "https://i.pravatar.cc/150?img=21"
+        },
+        {
+          "author": "Patricia Gomez",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Her projects are challenging and very relevant to the current job market. Great hands-on experience.",
+          "image": "https://i.pravatar.cc/150?img=22"
+        },
+        {
+          "author": "Richard Vargas",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "You learn modern frameworks and best development practices. The course structure is excellent.",
+          "image": "https://i.pravatar.cc/150?img=23"
+        }
+      ]
     },
     {
       "name": "David Wilson",
       "subject": "Computer Networks",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Monica Soto",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "Very good explanations of complex network concepts. The practical examples are very helpful.",
+          "image": "https://i.pravatar.cc/150?img=24"
+        },
+        {
+          "author": "Alexander White",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The lab practices are very useful for understanding networking concepts. Great hands-on experience.",
+          "image": "https://i.pravatar.cc/150?img=25"
+        },
+        {
+          "author": "Emma Clark",
+          "date": "14/03/25",
+          "rating": 4,
+          "text": "His troubleshooting workshops are excellent. Really helps understand network diagnostics.",
+          "image": "https://i.pravatar.cc/150?img=26"
+        }
+      ]
     },
     {
       "name": "Lisa Anderson",
       "subject": "Software Engineering",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Thomas Wright",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent approach to software development methodologies. The team projects are very well organized.",
+          "image": "https://i.pravatar.cc/150?img=27"
+        },
+        {
+          "author": "Sarah Miller",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Her industry experience really shows in the practical cases. Great insights into real-world development.",
+          "image": "https://i.pravatar.cc/150?img=28"
+        },
+        {
+          "author": "James Wilson",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The agile development practices we learn are very valuable. Excellent project management guidance.",
+          "image": "https://i.pravatar.cc/150?img=29"
+        }
+      ]
     },
     {
       "name": "Robert Taylor",
       "subject": "Operating Systems",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Laura Bennett",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "Complex concepts are explained very clearly. The Linux labs are particularly helpful.",
+          "image": "https://i.pravatar.cc/150?img=30"
+        },
+        {
+          "author": "David Chen",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Great balance between theory and practice. The system programming exercises are very educational.",
+          "image": "https://i.pravatar.cc/150?img=31"
+        },
+        {
+          "author": "Anna Thompson",
+          "date": "14/03/25",
+          "rating": 4,
+          "text": "His examples of process management and scheduling are excellent. Very practical approach.",
+          "image": "https://i.pravatar.cc/150?img=32"
+        }
+      ]
     },
     {
       "name": "Jennifer White",
       "subject": "Artificial Intelligence",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Mark Davis",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of AI concepts. The practical implementations really help understand the theory.",
+          "image": "https://i.pravatar.cc/150?img=33"
+        },
+        {
+          "author": "Rachel Green",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Her machine learning projects are challenging but very rewarding. Great learning experience.",
+          "image": "https://i.pravatar.cc/150?img=34"
+        },
+        {
+          "author": "Kevin Martinez",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The neural network implementations are fascinating. She explains complex algorithms very well.",
+          "image": "https://i.pravatar.cc/150?img=35"
+        }
+      ]
     },
     {
       "name": "William Martinez",
       "subject": "Computer Architecture",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Oliver Brown",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "Very thorough explanations of computer architecture. The assembly programming exercises are very helpful.",
+          "image": "https://i.pravatar.cc/150?img=36"
+        },
+        {
+          "author": "Sophia Lee",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "His explanations of processor design are excellent. The hardware labs are very educational.",
+          "image": "https://i.pravatar.cc/150?img=37"
+        },
+        {
+          "author": "Nathan Cooper",
+          "date": "14/03/25",
+          "rating": 4,
+          "text": "Good balance of theory and practical work. The microarchitecture concepts are well explained.",
+          "image": "https://i.pravatar.cc/150?img=38"
+        }
+      ]
     },
     {
       "name": "Maria Garcia",
       "subject": "Mobile Development",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "William Scott",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Great Android development course. The app projects are very practical and well-structured.",
+          "image": "https://i.pravatar.cc/150?img=39"
+        },
+        {
+          "author": "Emily Turner",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "She's very knowledgeable about both iOS and Android. The cross-platform development section is excellent.",
+          "image": "https://i.pravatar.cc/150?img=40"
+        },
+        {
+          "author": "Daniel Ross",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The UI/UX principles for mobile are very well taught. Excellent coverage of modern frameworks.",
+          "image": "https://i.pravatar.cc/150?img=41"
+        }
+      ]
     },
     {
       "name": "James Lee",
       "subject": "Cloud Computing",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Peter Hamilton",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Great introduction to cloud services. The AWS and Azure practical sessions are very valuable.",
+          "image": "https://i.pravatar.cc/150?img=42"
+        },
+        {
+          "author": "Linda Morgan",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The containerization and orchestration sections are excellent. Very practical knowledge.",
+          "image": "https://i.pravatar.cc/150?img=43"
+        },
+        {
+          "author": "Chris Walker",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "Good coverage of cloud architecture principles. The scalability exercises are very instructive.",
+          "image": "https://i.pravatar.cc/150?img=44"
+        }
+      ]
     },
     {
       "name": "Patricia Clark",
       "subject": "Cybersecurity",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Brian Foster",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of security principles. The penetration testing labs are very well designed.",
+          "image": "https://i.pravatar.cc/150?img=45"
+        },
+        {
+          "author": "Helen Carter",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Her expertise in network security is impressive. The incident response scenarios are very realistic.",
+          "image": "https://i.pravatar.cc/150?img=46"
+        },
+        {
+          "author": "Jason Phillips",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The cryptography section is particularly strong. Great hands-on experience with security tools.",
+          "image": "https://i.pravatar.cc/150?img=47"
+        }
+      ]
     },
     {
       "name": "Thomas Wright",
       "subject": "Digital Marketing",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Alice Cooper",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Very current content on digital marketing trends. The social media campaigns projects are excellent.",
+          "image": "https://i.pravatar.cc/150?img=48"
+        },
+        {
+          "author": "Ryan Baker",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Great insights into SEO and analytics. The practical case studies are very valuable.",
+          "image": "https://i.pravatar.cc/150?img=49"
+        },
+        {
+          "author": "Diana Ward",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "His experience in the industry adds real value. The content marketing strategies are well explained.",
+          "image": "https://i.pravatar.cc/150?img=50"
+        }
+      ]
     },
     {
       "name": "Sofia Rodriguez",
       "subject": "Business Analytics",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Martin Hughes",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Excellent approach to data analysis. The business intelligence projects are very practical.",
+          "image": "https://i.pravatar.cc/150?img=51"
+        },
+        {
+          "author": "Grace Turner",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Her expertise in predictive analytics is outstanding. Great real-world applications.",
+          "image": "https://i.pravatar.cc/150?img=52"
+        },
+        {
+          "author": "Paul Anderson",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The data visualization techniques are very well taught. Excellent use of modern analytics tools.",
+          "image": "https://i.pravatar.cc/150?img=53"
+        }
+      ]
     },
     {
       "name": "Daniel Kim",
       "subject": "Data Science",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Lucy Martinez",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Great introduction to data science concepts. The Python programming exercises are very helpful.",
+          "image": "https://i.pravatar.cc/150?img=54"
+        },
+        {
+          "author": "Eric Nelson",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of statistical analysis. The machine learning projects are well structured.",
+          "image": "https://i.pravatar.cc/150?img=55"
+        },
+        {
+          "author": "Olivia Reed",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "His explanations of complex algorithms are very clear. Good balance of theory and practice.",
+          "image": "https://i.pravatar.cc/150?img=56"
+        }
+      ]
     },
     {
       "name": "Emma Thompson",
       "subject": "Project Management",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Victor Price",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of agile methodologies. The team project simulations are very effective.",
+          "image": "https://i.pravatar.cc/150?img=57"
+        },
+        {
+          "author": "Sophia King",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Her real-world project management experience is invaluable. Great practical insights.",
+          "image": "https://i.pravatar.cc/150?img=58"
+        },
+        {
+          "author": "Andrew Collins",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The risk management and planning sessions are particularly useful. Very well-structured course.",
+          "image": "https://i.pravatar.cc/150?img=59"
+        }
+      ]
     },
     {
       "name": "Carlos Ruiz",
       "subject": "Machine Learning",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Michelle Stewart",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Very thorough coverage of ML algorithms. The practical implementations are very helpful.",
+          "image": "https://i.pravatar.cc/150?img=60"
+        },
+        {
+          "author": "Benjamin Hayes",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "His deep learning projects are challenging but rewarding. Excellent technical expertise.",
+          "image": "https://i.pravatar.cc/150?img=61"
+        },
+        {
+          "author": "Sarah Watson",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "Good balance of theory and application. The TensorFlow workshops are particularly valuable.",
+          "image": "https://i.pravatar.cc/150?img=62"
+        }
+      ]
     },
     {
       "name": "Anna Schmidt",
       "subject": "UI/UX Design",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Thomas Brooks",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Excellent approach to user-centered design. The prototyping workshops are very practical.",
+          "image": "https://i.pravatar.cc/150?img=63"
+        },
+        {
+          "author": "Laura Palmer",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Her industry experience really shows in the case studies. Great insights into modern design trends.",
+          "image": "https://i.pravatar.cc/150?img=64"
+        },
+        {
+          "author": "Michael Ross",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The usability testing sessions are very valuable. Excellent coverage of design principles.",
+          "image": "https://i.pravatar.cc/150?img=65"
+        }
+      ]
     },
     {
       "name": "Lucas Silva",
       "subject": "Blockchain Technology",
       "nucleus": "Professional Core",
       "rating": "4",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "Emma Wilson",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Great introduction to blockchain concepts. The smart contract exercises are very practical.",
+          "image": "https://i.pravatar.cc/150?img=66"
+        },
+        {
+          "author": "David Clark",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of cryptocurrency technologies. The DeFi projects are very interesting.",
+          "image": "https://i.pravatar.cc/150?img=67"
+        },
+        {
+          "author": "Rachel Adams",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "His explanations of consensus mechanisms are very clear. Good practical examples.",
+          "image": "https://i.pravatar.cc/150?img=68"
+        }
+      ]
     },
     {
       "name": "Isabella Chen",
       "subject": "DevOps & CI/CD",
       "nucleus": "Professional Core",
       "rating": "5",
-      "image": "https://picsum.photos/250/150"
+      "image": "https://picsum.photos/250/150",
+      "reviews": [
+        {
+          "author": "James Morgan",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Excellent coverage of DevOps practices. The pipeline automation projects are very practical.",
+          "image": "https://i.pravatar.cc/150?img=69"
+        },
+        {
+          "author": "Catherine White",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Her expertise in continuous integration is impressive. Great hands-on experience with tools.",
+          "image": "https://i.pravatar.cc/150?img=70"
+        },
+        {
+          "author": "Robert Fisher",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The infrastructure as code sessions are particularly valuable. Excellent practical approach.",
+          "image": "https://i.pravatar.cc/150?img=71"
+        }
+      ]
     }
   ]
 }
