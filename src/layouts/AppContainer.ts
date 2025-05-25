@@ -67,6 +67,9 @@ class AppContainer extends HTMLElement {
       case "/comments-detail":
         newComponent = "<comments-detail-page></comments-detail-page>";
         break;
+      case "/comments-detail-profile":
+        newComponent = "<comments-detail-profile></comments-detail-profile>";
+        break;
       case "./login":
         newComponent = "<login-component></login-component>";
         break;
@@ -79,7 +82,6 @@ class AppContainer extends HTMLElement {
       default:
         newComponent = "<landing-page></landing-page>";
     }
-    // falta la ruta de comments-detail-feed-page
     this.shadowRoot!.innerHTML = newComponent;
     window.scrollTo(0, 0);
   }

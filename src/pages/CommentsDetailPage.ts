@@ -13,7 +13,7 @@ class CommentsDetailPage extends HTMLElement {
     // Obtener el ID del post de la URL o sessionStorage
     this.postId = sessionStorage.getItem("currentPostId") || "";
     this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
-    
+
     // Cargar los datos del post
     this.loadPostData();
   }
@@ -22,10 +22,10 @@ class CommentsDetailPage extends HTMLElement {
     try {
       const response = await fetch("/data/Feed.json");
       const data = await response.json();
-      
+
       if (this.postId && data.posts) {
         this.postData = data.posts.find((post: any) => post.photo === this.postId);
-        
+
         if (!this.postData && data.posts.length > 0) {
           // Si no se encuentra el post, usar el primero como fallback
           this.postData = data.posts[0];
@@ -36,17 +36,16 @@ class CommentsDetailPage extends HTMLElement {
         this.postData = data.posts[0];
         this.postId = this.postData.photo;
       }
-      
+
       // Asegurarse de que los comentarios estén en formato array
       if (this.postData && this.postData.comments) {
-        this.postData.comments = Array.isArray(this.postData.comments) 
-          ? this.postData.comments 
+        this.postData.comments = Array.isArray(this.postData.comments)
+          ? this.postData.comments
           : JSON.parse(this.postData.comments);
       }
-      
+
       this.render();
       this.setupEventListeners();
-      
     } catch (error) {
       console.error("Error loading post data:", error);
       this.render(); // Renderizar con datos por defecto
@@ -64,13 +63,13 @@ class CommentsDetailPage extends HTMLElement {
       if (this.fromProfile) {
         sessionStorage.setItem("returnToProfile", "true");
         const navigationEvent = new CustomEvent("navigate", {
-          detail: "/profile"
+          detail: "/feed",
         });
         document.dispatchEvent(navigationEvent);
       } else {
         sessionStorage.setItem("returnToFeed", "true");
         const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed"
+          detail: "/feed",
         });
         document.dispatchEvent(navigationEvent);
       }
@@ -104,7 +103,7 @@ class CommentsDetailPage extends HTMLElement {
       semestre: "Semester 6",
       message: "Did anyone else stumble against a guy using boots in the stairs???",
       tag: "Daily Life",
-      likes: 19
+      likes: 19,
     };
 
     this.shadowRoot!.innerHTML = `
@@ -230,7 +229,7 @@ class CommentsDetailPage extends HTMLElement {
         
         .footer {
           display: flex;
-          justify-content: space-between;
+          justify-content: center;
           padding-top: 0.75rem;
           border-top: 1px solid #f0f0f0;
         }
@@ -430,7 +429,7 @@ class CommentsDetailPage extends HTMLElement {
             <div class="align-share">
               <button class="just-share">
                 <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
                 </svg>
                 <p class="share-count">Share</p>
               </button>

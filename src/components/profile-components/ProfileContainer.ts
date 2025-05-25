@@ -66,7 +66,7 @@ class ProfileContainer extends HTMLElement {
     const postsHTML = this.posts
       .map(
         (post: Post) => `
-      <feed-post
+      <profile-post
         ${post.id ? `id="${post.id}"` : ""}
         photo="${post.photo}"
         name="${post.name}"
@@ -78,7 +78,7 @@ class ProfileContainer extends HTMLElement {
         likes="${post.likes}"
         share="${post.share}"
         comments="${JSON.stringify(post.comments)}"
-      ></feed-post>
+      ></profile-post>
     `
       )
       .join("");

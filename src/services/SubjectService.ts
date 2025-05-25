@@ -2,7 +2,7 @@ import { SubjectsResponse } from "../types/academics/SubjectsContainer.types";
 
 export async function fetchSubjects(): Promise<SubjectsResponse> {
   try {
-    const response = await fetch("/data/subjects.json");
+    const response = await fetch("/data/SubjectsReviews.json");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

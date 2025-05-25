@@ -9,9 +9,6 @@ class TeacherDetailPage extends HTMLElement {
   }
 
   render() {
-    // In a real application, you would get teacher details from URL or state
-    // const teacherId = new URLSearchParams(window.location.search).get('id') || '1';
-
     this.shadowRoot!.innerHTML = `
             <style>
                 :host {

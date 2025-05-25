@@ -1,3 +1,5 @@
+import { NavigationActions } from "../flux/NavigationActions";
+
 class BackButton extends HTMLElement {
   constructor() {
     super();
@@ -21,10 +23,11 @@ class BackButton extends HTMLElement {
       // Set flag to maintain scroll position when returning to feed
       if (target === "/feed") {
         sessionStorage.setItem("returnToFeed", "true");
+      } else if (target === "/profile") {
+        sessionStorage.setItem("returnToProfile", "true");
       }
 
-      const customEvent = new CustomEvent("navigate", { detail: target });
-      document.dispatchEvent(customEvent);
+      NavigationActions.navigate(target);
     });
   }
 

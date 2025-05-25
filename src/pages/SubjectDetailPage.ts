@@ -9,9 +9,6 @@ class SubjectDetailPage extends HTMLElement {
   }
 
   render() {
-    // In a real application, you would get subject details from URL or state
-    // const subjectId = new URLSearchParams(window.location.search).get('id') || '1';
-
     this.shadowRoot!.innerHTML = `
             <style>
                 :host {
