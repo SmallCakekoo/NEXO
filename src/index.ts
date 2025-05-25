@@ -47,6 +47,7 @@ import ButtonsTags from "./components/feed-components/ButtonTags";
 import PostContainer from "./components/feed-components/PostContainer";
 import TagFiltersBar from "./components/feed-components/TagFiltersBar";
 import FeedPost from "./components/feed-components/FeedPost";
+import ProfilePost from "./components/profile-components/ProfilePost";
 
 customElements.define("post-modal", PostModal);
 customElements.define("floating-btn", FloatingButtonAdd);
@@ -54,6 +55,7 @@ customElements.define("button-tags", ButtonsTags);
 customElements.define("post-container", PostContainer);
 customElements.define("tag-filters-bar", TagFiltersBar);
 customElements.define("feed-post", FeedPost);
+customElements.define("profile-post", ProfilePost);
 
 // Componentes de Landing
 import StartButton from "./components/landing-components/StartButton";
@@ -111,12 +113,14 @@ import SubjectCommentsContainer from "./components/subject-detail-components/Sub
 import CommentForm from "./components/comments-detail/CommentForm";
 import CommentsList from "./components/comments-detail/CommentsList";
 import CommentsContainer from "./components/comments-detail/CommentsContainer";
+import CommentsDetailProfilePage from "./pages/CommentsDetailProfilePage";
 
 customElements.define("teacher-comments-container", TeacherCommentsContainer);
 customElements.define("subject-comments-container", SubjectCommentsContainer);
 customElements.define("comment-form", CommentForm);
 customElements.define("comments-list", CommentsList);
 customElements.define("comments-container", CommentsContainer);
+customElements.define("comments-detail-profile", CommentsDetailProfilePage);
 
 // Componentes de Login/Signup
 import "./components/login-signup-components/header-title";

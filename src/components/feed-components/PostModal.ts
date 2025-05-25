@@ -417,7 +417,7 @@ class PostModal extends HTMLElement {
       document.dispatchEvent(
         new CustomEvent("post-published", {
           detail: newPost,
-          bubbles: true,
+
           composed: true,
         })
       );

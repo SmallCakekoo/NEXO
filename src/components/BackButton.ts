@@ -1,3 +1,5 @@
+import { NavigationActions } from "../flux/NavigationActions";
+
 class BackButton extends HTMLElement {
   constructor() {
     super();
@@ -21,14 +23,11 @@ class BackButton extends HTMLElement {
       // Set flag to maintain scroll position when returning to feed
       if (target === "/feed") {
         sessionStorage.setItem("returnToFeed", "true");
+      } else if (target === "/profile") {
+        sessionStorage.setItem("returnToProfile", "true");
       }
 
-      const customEvent = new CustomEvent("navigate", {
-        bubbles: true,
-        composed: true,
-        detail: target,
-      });
-      document.dispatchEvent(customEvent);
+      NavigationActions.navigate(target);
     });
   }
 
@@ -43,8 +42,7 @@ class BackButton extends HTMLElement {
     const buttonText = this.getAttribute("text") || "Back";
 
     this.shadowRoot!.innerHTML = `
-    <style>
-    @import url("colors.css");
+    <style> 
 
 .back-button {
     display: flex;

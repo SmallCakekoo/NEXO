@@ -1,44 +1,139 @@
 import { Review } from "../../types/teacher-detail/TeacherReviewList.types";
+import { fetchTeachers } from "../../services/TeacherService";
+import { teachers } from "../../types/academics/TeachersContainer.types";
+
+// Cache estática para almacenar las reseñas por profesor
+const reviewsCache: Record<string, Review[]> = {};
+// Tiempo de vida de la caché en milisegundos (5 minutos)
+const CACHE_TTL = 5 * 60 * 1000;
+// Último tiempo de actualización por profesor
+const lastFetchTime: Record<string, number> = {};
 
 class TeacherReviewList extends HTMLElement {
   private reviews: Review[] = [];
+  private teacherName: string = "";
+  private isLoading: boolean = false;
+  private abortController: AbortController | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  // Static reviews for now (Mock data)
-  connectedCallback() {
-    this.reviews = [
-      {
-        author: "Juan Telón",
-        date: "16/03/25",
-        rating: 4,
-        text: "Make sure to assist to all his monitorings",
-        image: "https://i.pravatar.cc/150?img=1",
-      },
-    ];
-
-    this.render();
-    this.setupEventListeners();
+  static get observedAttributes() {
+    return ["teacher-name"];
   }
 
-  // Sets up event listeners for the review list
-  setupEventListeners() {
-    document.addEventListener("review-submitted", ((event: CustomEvent) => {
-      this.reviews.unshift(event.detail);
-      this.render();
-    }) as EventListener);
+  private shouldFetchFromNetwork(teacherName: string): boolean {
+    // Si no está en caché o ha pasado más tiempo que el TTL
+    return !reviewsCache[teacherName] || 
+           !lastFetchTime[teacherName] || 
+           (Date.now() - lastFetchTime[teacherName] > CACHE_TTL);
+  }
+
+  private async fetchFromNetwork(): Promise<Review[]> {
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+    
+    this.abortController = new AbortController();
+    
+    try {
+      const data = await fetchTeachers();
+      const teacher = data.teachers.find((t: teachers) => t.name === this.teacherName);
+      
+      if (teacher && teacher.reviews) {
+        // Actualizar caché
+        reviewsCache[this.teacherName] = teacher.reviews;
+        lastFetchTime[this.teacherName] = Date.now();
+        return teacher.reviews;
+      }
+      return [];
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error fetching reviews:', error);
+      }
+      return [];
+    } finally {
+      this.abortController = null;
+    }
+  }
+
+  private updateReviews(reviews: Review[]) {
+    this.reviews = reviews;
+    this.render();
+  }
+
+  private async fetchReviews() {
+    if (!this.teacherName || this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    
+    try {
+      // Usar caché si está disponible y es reciente
+      if (!this.shouldFetchFromNetwork(this.teacherName) && reviewsCache[this.teacherName]) {
+        console.log('Using cached reviews for teacher:', this.teacherName);
+        this.updateReviews(reviewsCache[this.teacherName]);
+        return;
+      }
+
+      console.log('Fetching fresh reviews for teacher:', this.teacherName);
+      const reviews = await this.fetchFromNetwork();
+      this.updateReviews(reviews);
+    } catch (error) {
+      console.error('Error in fetchReviews:', error);
+      this.updateReviews([]);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "teacher-name" && oldValue !== newValue) {
+      this.teacherName = newValue;
+      this.fetchReviews();
+    }
+  }
+
+  connectedCallback() {
+    this.teacherName = this.getAttribute('teacher-name') || '';
+    if (this.teacherName) {
+      this.fetchReviews();
+    }
+  }
+
+  disconnectedCallback() {
+    // Limpiar el controlador de aborto si existe
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
   }
 
   // Public method to add a review from external code
   addReview(review: Review) {
+    // Agregar a las reseñas locales
     this.reviews.unshift(review);
+    
+    // Actualizar la caché
+    if (reviewsCache[this.teacherName]) {
+      reviewsCache[this.teacherName].unshift(review);
+    } else {
+      reviewsCache[this.teacherName] = [review];
+    }
+    
+    // Actualizar el tiempo de la última modificación
+    lastFetchTime[this.teacherName] = Date.now();
+    
+    // Renderizar
     this.render();
   }
 
   render() {
+    if (!this.shadowRoot) return;
+
     const reviewsHTML = this.reviews
       .map((review) => {
         const stars = Array(5)
@@ -53,17 +148,17 @@ class TeacherReviewList extends HTMLElement {
           )
           .join("");
 
-        const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${review.author.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E`;
+        const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3E${review.author?.charAt(0) || 'U'}%3C%2Ftext%3E%3C%2Fsvg%3E`;
         const userImage = review.image || defaultAvatar;
 
         return `
                 <div class="review-item">
                     <div class="review-header">
                         <div class="user-info">
-                            <img src="${userImage}" alt="${review.author}" class="user-avatar" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                            <img src="${userImage}" alt="${review.author || 'User'}" class="user-avatar" onerror="this.onerror=null; this.src='${defaultAvatar}';">
                             <div>
-                                <h4 class="user-name">${review.author}</h4>
-                                <div class="review-date">${review.date}</div>
+                                <h4 class="user-name">${review.author || 'Anonymous'}</h4>
+                                <div class="review-date">${review.date || new Date().toLocaleDateString()}</div>
                             </div>
                         </div>
                         <div class="review-rating">
@@ -78,7 +173,7 @@ class TeacherReviewList extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
            <style>
-                @import url("../colors.css");
+               
 
 .reviews-title {
   top: -10;

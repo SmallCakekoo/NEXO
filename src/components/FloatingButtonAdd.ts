@@ -7,7 +7,7 @@ class FloatingButtonAdd extends HTMLElement {
   connectedCallback() {
     this.shadowRoot!.innerHTML = `
      <style>
-    @import url('../colors.css');
+     
 .fab {
     position: fixed;
     bottom: 30px;

@@ -48,7 +48,7 @@ button:active {
     `;
 
     this.shadowRoot!.querySelector("#feed-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "feed", bubbles: true }));
+      this.dispatchEvent(new CustomEvent("navigate", { detail: "feed" }));
     });
   }
 }

@@ -1,56 +1,63 @@
 import { Review } from "../../types/subject-detail/SubjectReviewList.types";
+import { fetchSubjects } from "../../services/SubjectService";
+import { subjects } from "../../types/academics/SubjectsContainer.types";
 
 class SubjectReviewList extends HTMLElement {
   private reviews: Review[] = [];
+  private subjectName: string = "";
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  // Static reviews for now (Mock data)
-  connectedCallback() {
-    this.reviews = [
-      {
-        author: "John Smith",
-        date: "20/03/25",
-        rating: 5,
-        text: "The professor's explanations are crystal clear. Highly recommend taking detailed notes during lectures.",
-        image: "https://i.pravatar.cc/150?img=2",
-      },
-      {
-        author: "Michael Brown",
-        date: "17/03/25",
-        rating: 5,
-        text: "The practical assignments are challenging but rewarding. The feedback is constructive and helpful.",
-        image: "https://i.pravatar.cc/150?img=4",
-      },
-      {
-        author: "Emma Wilson",
-        date: "16/03/25",
-        rating: 4,
-        text: "Make sure to attend all the tutoring sessions - they're invaluable for exam preparation.",
-        image: "https://i.pravatar.cc/150?img=5",
-      },
-      {
-        author: "David Lee",
-        date: "15/03/25",
-        rating: 5,
-        text: "The course materials are well-organized and the online resources are comprehensive.",
-        image: "https://i.pravatar.cc/150?img=6",
-      },
-    ];
+  static get observedAttributes() {
+    return ["subject-name"];
+  }
 
-    this.render();
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "subject-name" && oldValue !== newValue) {
+      this.subjectName = newValue;
+      this.fetchReviews();
+    }
+  }
+
+  async fetchReviews() {
+    try {
+      console.log('Fetching reviews for subject:', this.subjectName);
+      const data = await fetchSubjects();
+      console.log('Fetched subjects data:', data);
+      
+      if (!this.subjectName) {
+        this.subjectName = this.getAttribute('subject-name') || '';
+      }
+      
+      const subject = data.subjects.find((s: subjects) => s.name === this.subjectName);
+      console.log('Found subject:', subject);
+
+      if (subject && subject.reviews) {
+        this.reviews = subject.reviews;
+      } else {
+        this.reviews = [];
+      }
+      this.render();
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      this.reviews = [];
+      this.render();
+    }
+  }
+
+  connectedCallback() {
+    // Always try to fetch reviews when connected
+    this.fetchReviews();
     this.setupEventListeners();
   }
 
   // Sets up event listeners for the review list
   setupEventListeners() {
-    document.addEventListener("review-submitted", ((event: CustomEvent) => {
-      this.reviews.unshift(event.detail); // Adds new review to the top of the list
-      this.render();
-    }) as EventListener);
+    // Event listener removed to prevent duplicate submissions
+    // The event is now only handled by SubjectCommentsContainer
   }
 
   // Public method to add a review from external code
@@ -99,7 +106,7 @@ class SubjectReviewList extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
           <style>
-@import url('../colors.css');
+ 
 
 .reviews-title {
     top:-10;

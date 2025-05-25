@@ -31,6 +31,13 @@ class CommentsContainer extends HTMLElement {
   removeEventListeners() {
     // Eliminar el listener anterior si existe
     if (this.commentSubmittedHandler) {
+      // Eliminar el listener del documento
+      document.removeEventListener(
+        "comment-submitted",
+        this.commentSubmittedHandler as EventListener
+      );
+
+      // Eliminar el listener del shadowRoot
       this.shadowRoot?.removeEventListener(
         "comment-submitted",
         this.commentSubmittedHandler as EventListener
@@ -65,7 +72,13 @@ class CommentsContainer extends HTMLElement {
       }
     }) as EventListener;
 
-    // Añadir el nuevo listener
+    // Añadir el nuevo listener al documento completo
+    document.addEventListener(
+      "comment-submitted",
+      this.commentSubmittedHandler as EventListener
+    );
+
+    // También agregar el listener en el shadowRoot por si acaso
     this.shadowRoot?.addEventListener(
       "comment-submitted",
       this.commentSubmittedHandler as EventListener

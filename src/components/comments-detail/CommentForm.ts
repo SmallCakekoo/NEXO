@@ -33,11 +33,11 @@ class CommentForm extends HTMLElement {
       // Disparar un evento con los datos del comentario
       const commentEvent = new CustomEvent("comment-submitted", {
         detail: newComment,
-        bubbles: true,
+
         composed: true
       });
       
-      this.dispatchEvent(commentEvent);
+      document.dispatchEvent(commentEvent);
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });

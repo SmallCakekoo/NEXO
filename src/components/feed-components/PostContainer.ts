@@ -130,7 +130,7 @@ class PostContainer extends HTMLElement {
       tag: postData.category,
       likes: 0,
       share: "0",
-      comments: "0",
+      comments: [],
     };
 
     // Add the new post to the beginning (top) of the posts array

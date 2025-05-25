@@ -1,4 +1,6 @@
-class CommentsDetailPage extends HTMLElement {
+import { NavigationActions } from "../flux/NavigationActions";
+
+class CommentsDetailProfilePage extends HTMLElement {
   private liked: boolean = false;
   private postData: any = null;
   private postId: string = "";
@@ -20,21 +22,21 @@ class CommentsDetailPage extends HTMLElement {
 
   async loadPostData() {
     try {
-      const response = await fetch("/data/Feed.json");
+      const response = await fetch("/data/ProfilePost.json");
       const data = await response.json();
 
       if (this.postId && data.posts) {
-        this.postData = data.posts.find((post: any) => post.photo === this.postId);
+        this.postData = data.posts.find((post: any) => post.id === this.postId);
 
         if (!this.postData && data.posts.length > 0) {
           // Si no se encuentra el post, usar el primero como fallback
           this.postData = data.posts[0];
-          this.postId = this.postData.photo;
+          this.postId = this.postData.id;
         }
       } else if (data.posts && data.posts.length > 0) {
         // Si no hay ID, usar el primer post
         this.postData = data.posts[0];
-        this.postId = this.postData.photo;
+        this.postId = this.postData.id;
       }
 
       // Asegurarse de que los comentarios estén en formato array
@@ -45,35 +47,25 @@ class CommentsDetailPage extends HTMLElement {
       }
 
       this.render();
-      this.setupEventListeners();
+      this.addEventListeners();
     } catch (error) {
       console.error("Error loading post data:", error);
       this.render(); // Renderizar con datos por defecto
-      this.setupEventListeners();
+      this.addEventListeners();
     }
   }
 
-  setupEventListeners() {
-    const backButton = this.shadowRoot?.querySelector("back-button");
+  addEventListeners() {
+    const button = this.shadowRoot?.querySelector("back-button");
+    button?.addEventListener("click", () => {
+      // Siempre navegar a /profile ya que estamos en CommentsDetailProfilePage
+      sessionStorage.setItem("returnToProfile", "true");
+      NavigationActions.navigate("/profile");
+    });
+
+    // Manejar likes y comentarios
     const likeButton = this.shadowRoot?.querySelector(".just-likes");
     const commentInput = this.shadowRoot?.querySelector("comment-form");
-
-    // Handle back button to preserve scroll position
-    backButton?.addEventListener("click", () => {
-      if (this.fromProfile) {
-        sessionStorage.setItem("returnToProfile", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed",
-        });
-        document.dispatchEvent(navigationEvent);
-      } else {
-        sessionStorage.setItem("returnToFeed", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed",
-        });
-        document.dispatchEvent(navigationEvent);
-      }
-    });
 
     // Handle like button toggle
     likeButton?.addEventListener("click", () => {
@@ -94,16 +86,18 @@ class CommentsDetailPage extends HTMLElement {
   }
 
   render() {
-    // Valores por defecto si no hay datos
     const post = this.postData || {
+      id: "default-1",
       photo: "https://i.pravatar.cc/150?img=3",
       name: "Juan Telón",
       date: "16/03/25",
       career: "Multimedia Engineering",
       semestre: "Semester 6",
       message: "Did anyone else stumble against a guy using boots in the stairs???",
-      tag: "Daily Life",
-      likes: 19,
+      tag: "Academic",
+      likes: 2,
+      share: "0",
+      comments: [],
     };
 
     this.shadowRoot!.innerHTML = `
@@ -390,7 +384,7 @@ class CommentsDetailPage extends HTMLElement {
       
       <div class="container">
         <div class="back-button-container">
-          <back-button></back-button>
+          <back-button target="/profile"></back-button>
         </div>
         
         <div class="post-container">
@@ -428,7 +422,7 @@ class CommentsDetailPage extends HTMLElement {
 
             <div class="align-share">
               <button class="just-share">
-                <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                 <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
                 </svg>
                 <p class="share-count">Share</p>
@@ -443,4 +437,4 @@ class CommentsDetailPage extends HTMLElement {
   }
 }
 
-export default CommentsDetailPage;
+export default CommentsDetailProfilePage;

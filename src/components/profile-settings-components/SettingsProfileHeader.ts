@@ -13,7 +13,7 @@ class SettingsProfileHeader extends HTMLElement {
   addEventListeners() {
     const xButton = this.shadowRoot!.querySelector(".x-button");
     xButton?.addEventListener("click", () => {
-      const navigationEvent = new CustomEvent("navigate", { detail: "/profile", bubbles: true });
+      const navigationEvent = new CustomEvent("navigate", { detail: "/profile" });
       document.dispatchEvent(navigationEvent);
     });
 

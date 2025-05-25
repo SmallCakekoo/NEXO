@@ -20,9 +20,18 @@ class TeacherCard extends HTMLElement {
   setupCardClickHandler() {
     const card = this.shadowRoot?.querySelector(".card");
     card?.addEventListener("click", () => {
+      // Guardar los datos del profesor en sessionStorage
+      const teacherData = {
+        name: this.getAttribute("name") || "",
+        subject: this.getAttribute("subject") || "",
+        nucleus: this.getAttribute("nucleus") || "",
+        rating: this.getAttribute("rating") || "0",
+        image: this.getAttribute("image") || Math.floor(Math.random() * 30).toString()
+      };
+      
+      sessionStorage.setItem("selectedTeacher", JSON.stringify(teacherData));
+      
       const customEvent = new CustomEvent("navigate", {
-        bubbles: true,
-        composed: true,
         detail: "/teacher-detail",
       });
       document.dispatchEvent(customEvent);
@@ -77,10 +86,10 @@ class TeacherCard extends HTMLElement {
       )
       .join("");
 
-      this.shadowRoot!.innerHTML = `
+    this.shadowRoot!.innerHTML = `
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
       <style>
-        @import url("../colors.css");
+       
     
         .card {
           max-width: 300px;

@@ -1,6 +1,7 @@
 import { Post, Comment } from "../../types/feed/feeds.types";
+import { NavigationActions } from "../../flux/NavigationActions";
 
-class FeedPost extends HTMLElement {
+class ProfilePost extends HTMLElement {
   post: Post;
   liked: boolean = false;
 
@@ -8,6 +9,7 @@ class FeedPost extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.post = {
+      id: "",
       photo: "",
       name: "",
       career: "",
@@ -23,6 +25,7 @@ class FeedPost extends HTMLElement {
 
   static get observedAttributes(): string[] {
     return [
+      "id",
       "photo",
       "name",
       "career",
@@ -51,6 +54,12 @@ class FeedPost extends HTMLElement {
       }
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
+    }
+
+    // Actualizar el número de comentarios
+    const commentsCount = this.shadowRoot?.querySelector(".comments-count");
+    if (commentsCount && this.post.comments) {
+      commentsCount.textContent = `${this.post.comments.length} Comments`;
     }
 
     this.render();
@@ -472,15 +481,18 @@ class FeedPost extends HTMLElement {
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
-        // Guardar el ID del post actual (usando la URL de la foto como ID)
-        sessionStorage.setItem("currentPostId", this.post.photo);
+        // Verificar que el post tenga un ID
+        if (!this.post.id) {
+          console.error("Post ID is required");
+          return;
+        }
 
-        const navigateEvent = new CustomEvent("navigate", {
-          detail: "/comments-detail",
+        // Guardar el ID del post en sessionStorage
+        sessionStorage.setItem("currentPostId", this.post.id);
+        sessionStorage.setItem("fromProfile", "true");
 
-          composed: true,
-        });
-        document.dispatchEvent(navigateEvent);
+        // Usar NavigationActions en lugar del evento personalizado
+        NavigationActions.navigate("/comments-detail-profile");
       });
 
       const shareButton = this.shadowRoot.querySelector(".just-share");
@@ -562,4 +574,4 @@ class FeedPost extends HTMLElement {
   }
 }
 
-export default FeedPost;
+export default ProfilePost;

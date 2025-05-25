@@ -2,6 +2,7 @@ export interface Comment {
   photo: string;
   name: string;
   career: string;
+  date: string;
   message: string;
 }
 
@@ -16,7 +17,7 @@ export interface Post {
   likes: number;
   date: string;
   share: string;
-  comments: string;
+  comments: Comment[];
 }
 
 export interface PostsResponse {

@@ -1,16 +1,28 @@
 class SubjectDetailPage extends HTMLElement {
+  private subjectData: any = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
+    // Recuperar los datos de la asignatura seleccionada
+    const storedData = sessionStorage.getItem("selectedSubject");
+    if (storedData) {
+      this.subjectData = JSON.parse(storedData);
+    }
+
     this.render();
   }
 
   render() {
-    // In a real application, you would get subject details from URL or state
-    // const subjectId = new URLSearchParams(window.location.search).get('id') || '1';
+    // Si no hay datos, mostrar valores predeterminados
+    const name = this.subjectData?.name || "Logic & Argumentation";
+    const career = this.subjectData?.career || "Computer Science";
+    const credits = this.subjectData?.credits || "3";
+    const rating = this.subjectData?.rating || "4";
+    const id = this.subjectData?.id || "301";
 
     this.shadowRoot!.innerHTML = `
             <style>
@@ -59,14 +71,15 @@ class SubjectDetailPage extends HTMLElement {
                 <div class="subject-detail-container">
                     <back-button text="Subject Reviews" target="/academic"></back-button>
                     <subject-detail-card 
-                        name="Logic & Argumentation" 
-                        career="Computer Science"
+                        name="${name}" 
+                        career="${career}"
                         nucleus="Disciplinary"
-                        credits="3"
-                        rating="4"
-                        image="301">
+                        credits="${credits}"
+                        rating="${rating}"
+                        image="${id}">
                     </subject-detail-card>
-                    <subject-comments-container></subject-comments-container>
+                    <subject-comments-container subject-name="${name}">
+                    </subject-comments-container>
                 </div>
             </div>
         `;

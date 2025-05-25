@@ -2,7 +2,7 @@ import { TeachersResponse } from "../types/academics/TeachersContainer.types";
 
 export async function fetchTeachers(): Promise<TeachersResponse> {
   try {
-    const response = await fetch("/data/teachers.json");
+    const response = await fetch("/data/TeachersReviews.json");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

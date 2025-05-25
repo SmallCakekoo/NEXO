@@ -11,7 +11,7 @@ class SearchBar extends HTMLElement {
   render() {
     this.shadowRoot!.innerHTML = `
     <style>
-      @import url("../colors.css");
+     
 
       .search-container {
         position: relative;

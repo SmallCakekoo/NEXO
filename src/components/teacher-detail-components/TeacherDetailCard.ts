@@ -31,10 +31,10 @@ class TeacherDetailCard extends HTMLElement {
     const name = this.getAttribute("name") || "Jimmy Ramirez";
     const subject = this.getAttribute("subject") || "Logic & Argumentation";
     const rating = parseInt(this.getAttribute("rating") || "0");
-    const imageId = this.getAttribute("image") || "425";
     const nucleus = this.getAttribute("nucleus") || "basic";
 
-    const image = `https://picsum.photos/id/${imageId}/400/300`;
+    // Usar una imagen aleatoria de picsum.photos
+    const image = "https://picsum.photos/id/301/400/300";
 
     const stars = Array(5)
       .fill(0)
@@ -50,7 +50,7 @@ class TeacherDetailCard extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
            <style>
-                @import url("../colors.css");
+               
 
 .teacher-card {
   display: flex;

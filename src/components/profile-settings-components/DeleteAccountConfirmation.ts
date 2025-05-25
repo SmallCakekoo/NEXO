@@ -22,7 +22,7 @@ class DeleteAccountConfirmation extends HTMLElement {
   render() {
     this.shadowRoot!.innerHTML = `
             <style>
-@import url('../colors.css');
+ 
 
 :host {
   display: block;
@@ -198,7 +198,7 @@ class DeleteAccountConfirmation extends HTMLElement {
         this.animateOut().then(() => {
           const event = new CustomEvent("navigate", {
             detail: "/",
-            bubbles: true,
+
             composed: true,
           });
           document.dispatchEvent(event);
