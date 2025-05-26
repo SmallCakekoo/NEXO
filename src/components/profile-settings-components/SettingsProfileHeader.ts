@@ -86,8 +86,6 @@ class SettingsProfileHeader extends HTMLElement {
 
           // Re-render the component to ensure the new photo is displayed
           this.render();
-          
-          alert("Image uploaded successfully!");
         };
 
         reader.onerror = (error) => {

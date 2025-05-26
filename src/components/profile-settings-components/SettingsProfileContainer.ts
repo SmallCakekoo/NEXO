@@ -407,6 +407,10 @@ input:focus, select:focus, textarea:focus {
         alert('Profile updated!');
         // Dispatch event to notify profile update
         document.dispatchEvent(new CustomEvent('profile-updated'));
+        
+        // Navigate back to the profile page
+        const navigationEvent = new CustomEvent("navigate", { detail: "/profile", composed: true });
+        document.dispatchEvent(navigationEvent);
       }
     });
 
