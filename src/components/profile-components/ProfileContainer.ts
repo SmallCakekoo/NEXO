@@ -1,5 +1,7 @@
 import { Post } from "../../types/feed/feeds.types";
 import { fetchProfilePosts } from "../../services/ProfileService";
+import { AppDispatcher } from "../../flux/Dispatcher";
+import { PostActionTypes } from "../../types/feed/PostActionTypes";
 
 class ProfileContainer extends HTMLElement {
   private posts: Post[] = [];
@@ -15,6 +17,14 @@ class ProfileContainer extends HTMLElement {
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
       this.loadPosts();
+    });
+
+    // Listen for navigation events to reload posts when returning to profile
+    document.addEventListener('navigate', (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      if (customEvent.detail === '/profile') {
+        this.loadPosts();
+      }
     });
   }
 
@@ -70,12 +80,12 @@ class ProfileContainer extends HTMLElement {
         comments: [],
       };
 
-      // Save to localStorage
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      posts.unshift(newPost);
-      localStorage.setItem('posts', JSON.stringify(posts));
+      // Get current posts from localStorage
+      const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+      currentPosts.unshift(newPost);
+      localStorage.setItem('posts', JSON.stringify(currentPosts));
 
-      // Añadir el nuevo post al inicio del array
+      // Update local state
       this.posts.unshift(newPost);
       this.render();
     }) as EventListener);

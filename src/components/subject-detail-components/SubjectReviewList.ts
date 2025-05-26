@@ -1,10 +1,12 @@
 import { Review } from "../../types/subject-detail/SubjectReviewList.types";
 import { fetchSubjects } from "../../services/SubjectService";
 import { subjects } from "../../types/academics/SubjectsContainer.types";
+import { store, State } from '../../flux/Store';
 
 class SubjectReviewList extends HTMLElement {
   private reviews: Review[] = [];
   private subjectName: string = "";
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -27,19 +29,15 @@ class SubjectReviewList extends HTMLElement {
       if (!this.subjectName) {
         this.subjectName = this.getAttribute('subject-name') || '';
       }
-      const localKey = `subjectReviews_${this.subjectName}`;
-      let localReviews: Review[] = [];
-      try {
-        localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
-      } catch (e) {}
-      // If localStorage is empty, initialize from static data
-      if (localReviews.length === 0) {
-        const data = await fetchSubjects();
-        const subject = data.subjects.find((s: subjects) => s.name === this.subjectName);
-        localReviews = subject && subject.reviews ? subject.reviews : [];
-        localStorage.setItem(localKey, JSON.stringify(localReviews));
-      }
-      this.reviews = localReviews;
+      const state = store.getState();
+      const subjectRatings = state.subjectRatings[this.subjectName] || [];
+      this.reviews = subjectRatings.map(rating => ({
+        rating: rating.rating,
+        text: rating.comment,
+        date: rating.timestamp,
+        author: 'Anonymous',
+        image: '',
+      }));
       this.render();
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -49,25 +47,44 @@ class SubjectReviewList extends HTMLElement {
   }
 
   connectedCallback() {
-    // Always try to fetch reviews when connected
     this.fetchReviews();
     this.setupEventListeners();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
 
-  // Sets up event listeners for the review list
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
   setupEventListeners() {
     // Event listener removed to prevent duplicate submissions
     // The event is now only handled by SubjectCommentsContainer
   }
 
-  // Public method to add a review from external code
+  handleStoreChange(state: State) {
+    if (!this.isConnected || !this.subjectName) {
+      return;
+    }
+    const latestRatings = state.subjectRatings[this.subjectName] || [];
+    this.reviews = latestRatings.map(rating => ({
+      rating: rating.rating,
+      text: rating.comment,
+      date: rating.timestamp,
+      author: 'Anonymous',
+      image: '',
+    }));
+    this.render();
+  }
+
   addReview(review: Review) {
+    console.warn('addReview method in SubjectReviewList called. Consider using the store for updates.');
     const localKey = `subjectReviews_${this.subjectName}`;
     let localReviews: Review[] = [];
     try {
       localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
     } catch (e) {}
-    // Prevent duplicates by checking for same author, text, and date
     if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
       localReviews.unshift(review);
       localStorage.setItem(localKey, JSON.stringify(localReviews));

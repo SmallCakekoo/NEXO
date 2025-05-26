@@ -1,25 +1,25 @@
 import { Post } from "../../types/feed/feeds.types";
 import { fetchPosts } from "../../services/FeedService";
-import { store, State } from "../../flux/Store"; // Import store and State
+import { store, State } from "../../flux/Store";
 import { AppDispatcher } from "../../flux/Dispatcher";
+import { PostActionTypes } from "../../types/feed/PostActionTypes";
 
 // An interface to extend windows
 interface WindowWithPostContainer extends Window {
   postContainerConnected?: boolean;
 }
 
-class PostContainer extends HTMLElement {
+export class PostContainer extends HTMLElement {
   private filteredPosts: Post[] = [];
   private currentFilter: string = "All";
   private tagSelectedListener: ((event: Event) => void) | null = null;
   private postPublishedListener: ((event: Event) => void) | null = null;
   private isListenerAttached: boolean = false;
-  private unsubscribeStore: (() => void) | null = null; // To store the unsubscribe function
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    // Bind the store change handler
     this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
@@ -39,7 +39,14 @@ class PostContainer extends HTMLElement {
       if (response.posts && response.posts.length > 0) {
         // Store posts in localStorage
         localStorage.setItem('posts', JSON.stringify(response.posts));
-        // Update the store
+        
+        // Dispatch action to update store
+        AppDispatcher.dispatch({
+          type: PostActionTypes.LOAD_POSTS,
+          payload: response.posts
+        });
+
+        // Update local state
         this.filteredPosts = response.posts;
         this.render();
       }
@@ -79,41 +86,35 @@ class PostContainer extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // Remove the event listeners when the component is removed from the DOM
-    if (this.tagSelectedListener && this.isListenerAttached) {
+    // Clean up event listeners
+    if (this.tagSelectedListener) {
       document.removeEventListener("tagSelected", this.tagSelectedListener);
-      this.tagSelectedListener = null;
     }
-
-    if (this.postPublishedListener && this.isListenerAttached) {
+    if (this.postPublishedListener) {
       document.removeEventListener("post-published", this.postPublishedListener);
-      this.postPublishedListener = null;
     }
-
-    // Reset the flag
-    this.isListenerAttached = false;
-    // Remove the global flag
-    const windowWithPC = window as WindowWithPostContainer;
-    if (windowWithPC.postContainerConnected) {
-      windowWithPC.postContainerConnected = false;
-    }
-
-    // Unsubscribe from the store
+    // Unsubscribe from store
     if (this.unsubscribeStore) {
       this.unsubscribeStore();
-      this.unsubscribeStore = null;
     }
+  }
+
+  private subscribeToStore() {
+    // Subscribe to store changes
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+    // Initial state load
+    this.handleStoreChange(store.getState());
   }
 
   // Helper method to apply the current filter
   private applyCurrentFilter(): void {
-    const allPosts = store.getState().posts; // Get posts from the store
+    const allPosts = store.getState().posts;
     if (this.currentFilter === "All") {
       this.filteredPosts = [...allPosts];
     } else {
       this.filteredPosts = allPosts.filter((post) => post.tag === this.currentFilter);
     }
-    this.render(); // Re-render after filtering
+    this.render();
   }
 
   addNewPost(postData: {
@@ -150,210 +151,177 @@ class PostContainer extends HTMLElement {
     // Get current posts from localStorage
     const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
     
-    // Add the new post to the array
-    currentPosts.unshift(newPost); // Add to the beginning of the array
-    
-    // Update localStorage
-    localStorage.setItem('posts', JSON.stringify(currentPosts));
-    
-    // Update the filtered posts
-    this.filteredPosts = currentPosts.filter((post: Post) => 
-      this.currentFilter === "All" ? true : post.tag === this.currentFilter
-    );
-    
-    // Re-render the component
-    this.render();
+    // Check if post with same ID already exists
+    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
+    if (!postExists) {
+      // Add the new post to the array
+      currentPosts.unshift(newPost);
+      
+      // Update localStorage
+      localStorage.setItem('posts', JSON.stringify(currentPosts));
+      
+      // Dispatch action to update store
+      AppDispatcher.dispatch({
+        type: PostActionTypes.ADD_POST,
+        payload: newPost
+      });
+    }
   }
 
   filterPosts(tag: string) {
-    this.currentFilter = tag; // update the current filter
+    this.currentFilter = tag;
     this.applyCurrentFilter();
   }
 
   // Handler for store changes
   private handleStoreChange(state: State): void {
-    // Update filtered posts based on the new state
     this.applyCurrentFilter();
-  }
-
-  private subscribeToStore(): void {
-    if (!this.unsubscribeStore) {
-      this.unsubscribeStore = store.subscribe(this.handleStoreChange);
-    }
-  }
-
-  initAnimations() {
-    // Use "animate.css" classes directly
-    if (!this.shadowRoot) return;
-
-    const posts = this.shadowRoot.querySelectorAll("feed-post");
-    posts.forEach((post, index) => {
-      setTimeout(() => {
-        post.classList.add("post-animated");
-      }, index * 150);
-    });
-
-    const emptyState = this.shadowRoot.querySelector(".empty-state");
-    if (emptyState) {
-      emptyState.classList.add("empty-animated");
-      const emptyTitle = emptyState.querySelector("h3");
-      const emptyText = emptyState.querySelector("p");
-      if (emptyTitle) emptyTitle.classList.add("title-animated");
-      if (emptyText) {
-        setTimeout(() => {
-          emptyText.classList.add("text-animated");
-        }, 1000);
-      }
-    }
   }
 
   // Function to remove duplicates from an array of posts based on ID
   private removeDuplicatePosts(posts: Post[]): Post[] {
-    // Use a set to track seen post IDs
     const seenPostIds = new Set<string>();
-
-    // Filter posts to keep only the unique ones based on ID
     return posts.filter((post) => {
-      if (!post.id) return true; // If the post doesn't have an ID, keep it
-      // If we've seen this ID, it's a duplicate
+      if (!post.id) return true;
       if (seenPostIds.has(post.id)) {
         return false;
       }
-      // If we haven't seen this ID, add it and keep it
       seenPostIds.add(post.id);
       return true;
     });
   }
 
   render() {
-    // Get the latest posts from the store before filtering and rendering
-    const latestPosts = store.getState().posts;
-    this.filteredPosts = this.removeDuplicatePosts(latestPosts.filter(post => 
-      this.currentFilter === "All" ? true : post.tag === this.currentFilter
-    ));
-
     if (!this.shadowRoot) return;
+    
     this.shadowRoot.innerHTML = `
-            <style>
-              @import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
-              
-              .post-animated {
-                animation: fadeInUp 0.8s ease forwards;
-              }
-              
-              .empty-animated {
-                animation: fadeIn 1s ease forwards;
-              }
-              
-              .title-animated {
-                animation: pulse 2s infinite;
-              }
-              
-              .text-animated {
-                animation: fadeIn 1s ease forwards;
-              }
-              
-              @keyframes fadeInUp {
-                from {
-                  opacity: 0;
-                  transform: translate3d(0, 30px, 0);
-                }
-                to {
-                  opacity: 1;
-                  transform: translate3d(0, 0, 0);
-                }
-              }
-              
-              @keyframes fadeIn {
-                from {
-                  opacity: 0;
-                }
-                to {
-                  opacity: 1;
-                }
-              }
-              
-              @keyframes pulse {
-                0% {
-                  transform: scale(1);
-                }
-                50% {
-                  transform: scale(1.05);
-                }
-                100% {
-                  transform: scale(1);
-                }
-              }
-              
-              .end-message {
-                text-align: center;
-                padding: 1.5rem;
-                margin-top: 1rem;
-                color: #6c757d;
-                font-style: italic;
-                animation: zoomIn 0.8s ease forwards;
-              }
-              
-              .empty-state {
-                text-align: center;
-                padding: 2rem;
-                margin: 1rem 0;  
-              } 
-              
-              .empty-state h3 {
-                color: #495057;
-                margin-bottom: 0.5rem;
-              }
-              
-              .empty-state p {
-                color: #6c757d;
-              }
-              
-              @keyframes zoomIn {
-                from {
-                  opacity: 0;
-                  transform: scale3d(0.3, 0.3, 0.3);
-                }
-                50% {
-                  opacity: 1;
-                }
-              }
-            </style>
-            <div>
-                ${
-                  this.filteredPosts.length > 0
-                    ? `${this.filteredPosts
-                        .map(
-                          (post) => `
-                            <feed-post 
-                                ${post.id ? `id="${post.id}"` : ""}
-                                photo="${post.photo}"
-                                name="${post.name}"
-                                date="${post.date}"
-                                career="${post.career}"
-                                semestre="${post.semestre}"
-                                message="${post.message}"
-                                tag="${post.tag}"
-                                likes="${post.likes}"
-                                share="${post.share}"
-                                comments="${post.comments}"
-                            ></feed-post>`
-                        )
-                        .join("")}
-                        <div class="end-message">
-                          <p>No more posts to show</p>
-                        </div>`
-                    : `<div class="empty-state"> 
-                        <h3>No posts yet</h3>
-                        <p>Be the first to share something interesting</p>
-                       </div>`
-                }
-            </div>
-        `;
+      <style>
+        @import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
+        
+        .post-animated {
+          animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .empty-animated {
+          animation: fadeIn 1s ease forwards;
+        }
+        
+        .title-animated {
+          animation: pulse 2s infinite;
+        }
+        
+        .text-animated {
+          animation: fadeIn 1s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translate3d(0, 30px, 0);
+          }
+          to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        
+        .end-message {
+          text-align: center;
+          padding: 1.5rem;
+          margin-top: 1rem;
+          color: #6c757d;
+          font-style: italic;
+          animation: zoomIn 0.8s ease forwards;
+        }
+        
+        .empty-state {
+          text-align: center;
+          padding: 2rem;
+          margin: 1rem 0;  
+        } 
+        
+        .empty-state h3 {
+          color: #495057;
+          margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+          color: #6c757d;
+        }
+        
+        @keyframes zoomIn {
+          from {
+            opacity: 0;
+            transform: scale3d(0.3, 0.3, 0.3);
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+      </style>
+      <div>
+        ${this.filteredPosts.length > 0
+          ? `${this.filteredPosts
+              .map(
+                (post) => `
+                  <feed-post 
+                      ${post.id ? `id="${post.id}"` : ""}
+                      photo="${post.photo}"
+                      name="${post.name}"
+                      date="${post.date}"
+                      career="${post.career}"
+                      semestre="${post.semestre}"
+                      message="${post.message}"
+                      tag="${post.tag}"
+                      likes="${post.likes}"
+                      share="${post.share}"
+                      comments='${JSON.stringify(post.comments)}'
+                  ></feed-post>`
+              )
+              .join("")}
+              <div class="end-message">
+                <p>No more posts to show</p>
+              </div>`
+          : `<div class="empty-state"> 
+              <h3>No posts yet</h3>
+              <p>Be the first to share something interesting</p>
+             </div>`
+        }
+      </div>
+    `;
 
     // Initialize animations after rendering
     setTimeout(() => this.initAnimations(), 100);
   }
+
+  private initAnimations() {
+    const posts = this.shadowRoot?.querySelectorAll('feed-post');
+    posts?.forEach((post, index) => {
+      post.classList.add('post-animated');
+      (post as HTMLElement).style.animationDelay = `${index * 0.1}s`;
+    });
+  }
 }
 
-export default PostContainer;
+customElements.define("post-container", PostContainer);

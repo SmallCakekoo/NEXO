@@ -6,33 +6,26 @@ class AppContainer extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.handleRouteChange = this.handleRouteChange.bind(this);
-    this.render();
-    store.subscribe((state: State) => {
-      this.handleRouteChange(state);
-    });
   }
 
   connectedCallback() {
     store.load();
-    this.render();
+    NavigationActions.updateRoute(window.location.pathname);
 
-    // Manejar navegación a través de Flux
-    document.addEventListener("navigate", (event: Event) => {
-      const route = (event as CustomEvent).detail;
-      if (typeof route === "string") {
-        NavigationActions.updateRoute(route);
-      }
-    });
-
-    // Suscribirse al store para actualizar la vista cuando cambie la ruta
     store.subscribe((state: State) => {
       this.handleRouteChange(state);
     });
+
+    // Add event listener for navigation events
+    document.addEventListener("navigate", ((event: CustomEvent) => {
+      const path = event.detail;
+      NavigationActions.navigate(path);
+    }) as EventListener);
   }
 
   render() {
     this.shadowRoot!.innerHTML = `
-      <landing-page></landing-page>
+      <div>Loading...</div>
     `;
   }
 
@@ -73,14 +66,16 @@ class AppContainer extends HTMLElement {
       case "/login":
         newComponent = "<login-component></login-component>";
         break;
-      case "./signup":
+      case "/signup":
         newComponent = "<sign-up-component></sign-up-component>";
         break;
       case "/":
         newComponent = "<landing-page></landing-page>";
         break;
       default:
+        console.warn(`Unknown route: ${route}. Redirecting to landing page.`);
         newComponent = "<landing-page></landing-page>";
+        break;
     }
     this.shadowRoot!.innerHTML = newComponent;
     window.scrollTo(0, 0);

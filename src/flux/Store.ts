@@ -4,6 +4,40 @@ import { SignUpActionsType } from "./Actions";
 import { PostActionTypes } from "../types/feed/PostActionTypes";
 import { Post } from "../types/feed/feeds.types";
 
+interface Rating {
+  rating: number;
+  comment: string;
+  timestamp: string;
+}
+
+interface Ratings {
+  [key: string]: Rating[];
+}
+
+interface TeacherRatingPayload {
+  teacherName: string;
+  rating: number;
+  comment: string;
+  timestamp: string;
+}
+
+interface SubjectRatingPayload {
+  subjectName: string;
+  rating: number;
+  comment: string;
+  timestamp: string;
+}
+
+interface UpdateTeacherRatingPayload {
+  teacherName: string;
+  rating: number;
+}
+
+interface UpdateSubjectRatingPayload {
+  subjectName: string;
+  rating: number;
+}
+
 export interface State {
   currentPath: string;
   history: string[];
@@ -13,6 +47,8 @@ export interface State {
     success: boolean;
   };
   posts: Post[];
+  teacherRatings: Ratings;
+  subjectRatings: Ratings;
 }
 
 type Listener = (state: State) => void;
@@ -27,6 +63,8 @@ class Store {
       success: false
     },
     posts: [],
+    teacherRatings: {},
+    subjectRatings: {}
   };
 
   // Los componentes
@@ -137,6 +175,95 @@ class Store {
           this._emitChange();
         }
         break;
+      case PostActionTypes.ADD_TEACHER_RATING:
+        if (action.payload && typeof action.payload === "object" && "teacherName" in action.payload) {
+          const payload = action.payload as TeacherRatingPayload;
+          const { teacherName, rating, comment, timestamp } = payload;
+          const currentRatings = this._myState.teacherRatings[teacherName] || [];
+          this._myState = {
+            ...this._myState,
+            teacherRatings: {
+              ...this._myState.teacherRatings,
+              [teacherName]: [...currentRatings, { rating, comment, timestamp }]
+            }
+          };
+          // Persist ratings to localStorage
+          localStorage.setItem('teacherRatings', JSON.stringify(this._myState.teacherRatings));
+          this._emitChange();
+        }
+        break;
+      case PostActionTypes.ADD_SUBJECT_RATING:
+        if (action.payload && typeof action.payload === "object" && "subjectName" in action.payload) {
+          const payload = action.payload as SubjectRatingPayload;
+          const { subjectName, rating, comment, timestamp } = payload;
+          const currentRatings = this._myState.subjectRatings[subjectName] || [];
+          this._myState = {
+            ...this._myState,
+            subjectRatings: {
+              ...this._myState.subjectRatings,
+              [subjectName]: [...currentRatings, { rating, comment, timestamp }]
+            }
+          };
+          // Persist ratings to localStorage
+          localStorage.setItem('subjectRatings', JSON.stringify(this._myState.subjectRatings));
+          this._emitChange();
+        }
+        break;
+      case PostActionTypes.UPDATE_TEACHER_RATING:
+        if (action.payload && typeof action.payload === "object" && "teacherName" in action.payload) {
+          const payload = action.payload as UpdateTeacherRatingPayload;
+          const { teacherName, rating } = payload;
+          const ratings = this._myState.teacherRatings[teacherName] || [];
+          const averageRating = ratings.length > 0 
+            ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length 
+            : rating;
+          
+          // Update the rating in localStorage for the teacher card
+          const teacherData = JSON.parse(localStorage.getItem('selectedTeacher') || '{}');
+          if (teacherData.name === teacherName) {
+            teacherData.rating = averageRating.toFixed(1);
+            localStorage.setItem('selectedTeacher', JSON.stringify(teacherData));
+          }
+          this._emitChange();
+        }
+        break;
+      case PostActionTypes.UPDATE_SUBJECT_RATING:
+        if (action.payload && typeof action.payload === "object" && "subjectName" in action.payload) {
+          const payload = action.payload as UpdateSubjectRatingPayload;
+          const { subjectName, rating } = payload;
+          const ratings = this._myState.subjectRatings[subjectName] || [];
+          const averageRating = ratings.length > 0 
+            ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length 
+            : rating;
+          
+          // Update the rating in localStorage for the subject card
+          const subjectData = JSON.parse(localStorage.getItem('selectedSubject') || '{}');
+          if (subjectData.name === subjectName) {
+            subjectData.rating = averageRating.toFixed(1);
+            localStorage.setItem('selectedSubject', JSON.stringify(subjectData));
+          }
+          this._emitChange();
+        }
+        break;
+      case PostActionTypes.LOAD_POSTS:
+        if (action.payload && Array.isArray(action.payload)) {
+          this._myState = {
+            ...this._myState,
+            posts: action.payload
+          };
+          this._emitChange();
+        }
+        break;
+      case PostActionTypes.ADD_POST:
+        if (action.payload && typeof action.payload === "object") {
+          const newPost = action.payload as Post;
+          this._myState = {
+            ...this._myState,
+            posts: [newPost, ...this._myState.posts]
+          };
+          this._emitChange();
+        }
+        break;
     }
   }
 
@@ -216,6 +343,26 @@ class Store {
         this._myState.posts = []; // Reset posts if there's an error
       }
     }
+
+    // Load ratings from localStorage
+    const storedTeacherRatings = localStorage.getItem('teacherRatings');
+    if (storedTeacherRatings) {
+      try {
+        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+      } catch (e) {
+        console.error("Error loading teacher ratings from localStorage", e);
+      }
+    }
+
+    const storedSubjectRatings = localStorage.getItem('subjectRatings');
+    if (storedSubjectRatings) {
+      try {
+        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+      } catch (e) {
+        console.error("Error loading subject ratings from localStorage", e);
+      }
+    }
+
     this._emitChange(); // Emit the new state
   }
 

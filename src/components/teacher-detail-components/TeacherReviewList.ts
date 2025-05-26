@@ -1,6 +1,7 @@
 import { Review } from "../../types/teacher-detail/TeacherReviewList.types";
 import { fetchTeachers } from "../../services/TeacherService";
 import { teachers } from "../../types/academics/TeachersContainer.types";
+import { store, State } from '../../flux/Store';
 
 // Cache estática para almacenar las reseñas por profesor
 const reviewsCache: Record<string, Review[]> = {};
@@ -14,6 +15,7 @@ class TeacherReviewList extends HTMLElement {
   private teacherName: string = "";
   private isLoading: boolean = false;
   private abortController: AbortController | null = null;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -71,19 +73,18 @@ class TeacherReviewList extends HTMLElement {
 
     this.isLoading = true;
     try {
-      const localKey = `teacherReviews_${this.teacherName}`;
-      let localReviews: Review[] = [];
-      try {
-        localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
-      } catch (e) {}
-      // If localStorage is empty, initialize from static data
-      if (localReviews.length === 0) {
-        const data = await fetchTeachers();
-        const teacher = data.teachers.find((t: teachers) => t.name === this.teacherName);
-        localReviews = teacher && teacher.reviews ? teacher.reviews : [];
-        localStorage.setItem(localKey, JSON.stringify(localReviews));
-      }
-      this.reviews = localReviews;
+      const state = store.getState();
+      const teacherRatings = state.teacherRatings[this.teacherName] || [];
+      // Map the ratings to the Review type, formatting the date and including author/image if available
+      this.reviews = teacherRatings.map(rating => ({
+        rating: rating.rating,
+        text: rating.comment,
+        // Format the timestamp to a readable date string
+        date: new Date(rating.timestamp).toLocaleDateString(), 
+        author: (rating as any).author || 'Anonymous', // Assuming author might be added later, fallback to Anonymous
+        image: (rating as any).image || '', // Assuming image might be added later, fallback to empty
+      }));
+
       this.render();
     } catch (error) {
       console.error('Error in fetchReviews:', error);
@@ -106,24 +107,43 @@ class TeacherReviewList extends HTMLElement {
     if (this.teacherName) {
       this.fetchReviews();
     }
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
 
   disconnectedCallback() {
-    // Limpiar el controlador de aborto si existe
     if (this.abortController) {
       this.abortController.abort();
       this.abortController = null;
     }
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
   }
 
-  // Public method to add a review from external code
+  private handleStoreChange(state: State) {
+    if (!this.isConnected || !this.teacherName) {
+      return; // Only update if the component is connected and has a teacher name
+    }
+    // Update reviews from the store state for this teacher
+    const latestRatings = state.teacherRatings[this.teacherName] || [];
+    this.reviews = latestRatings.map(rating => ({
+      rating: rating.rating,
+      text: rating.comment,
+      // Format the timestamp to a readable date string
+      date: new Date(rating.timestamp).toLocaleDateString(), 
+      author: (rating as any).author || 'Anonymous', // Assuming author might be added later, fallback to Anonymous
+      image: (rating as any).image || '', // Assuming image might be added later, fallback to empty
+    }));
+    this.render();
+  }
+
   addReview(review: Review) {
+    console.warn('addReview method in TeacherReviewList called. Consider using the store for updates.');
     const localKey = `teacherReviews_${this.teacherName}`;
     let localReviews: Review[] = [];
     try {
       localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
     } catch (e) {}
-    // Prevent duplicates by checking for same author, text, and date
     if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
       localReviews.unshift(review);
       localStorage.setItem(localKey, JSON.stringify(localReviews));
