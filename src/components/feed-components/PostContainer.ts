@@ -1,6 +1,7 @@
 import { Post } from "../../types/feed/feeds.types";
 import { fetchPosts } from "../../services/FeedService";
 import { store, State } from "../../flux/Store"; // Import store and State
+import { AppDispatcher } from "../../flux/Dispatcher";
 
 // An interface to extend windows
 interface WindowWithPostContainer extends Window {
@@ -31,6 +32,20 @@ class PostContainer extends HTMLElement {
     }
 
     this.subscribeToStore();
+
+    // Load posts from the service
+    try {
+      const response = await fetchPosts();
+      if (response.posts && response.posts.length > 0) {
+        // Store posts in localStorage
+        localStorage.setItem('posts', JSON.stringify(response.posts));
+        // Update the store
+        this.filteredPosts = response.posts;
+        this.render();
+      }
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    }
 
     // Only set up event listeners if they're not already attached
     if (!this.isListenerAttached) {
@@ -132,8 +147,22 @@ class PostContainer extends HTMLElement {
       comments: [],
     };
 
-    // TODO: Dispatch an action to add the new post to the store
-    console.log("New post created, dispatch action to add to store:", newPost);
+    // Get current posts from localStorage
+    const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+    
+    // Add the new post to the array
+    currentPosts.unshift(newPost); // Add to the beginning of the array
+    
+    // Update localStorage
+    localStorage.setItem('posts', JSON.stringify(currentPosts));
+    
+    // Update the filtered posts
+    this.filteredPosts = currentPosts.filter((post: Post) => 
+      this.currentFilter === "All" ? true : post.tag === this.currentFilter
+    );
+    
+    // Re-render the component
+    this.render();
   }
 
   filterPosts(tag: string) {
