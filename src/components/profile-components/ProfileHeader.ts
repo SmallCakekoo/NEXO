@@ -21,6 +21,16 @@ class ProfileHeader extends HTMLElement {
   }
 
   render() {
+    // Get logged-in user info from localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    } catch (e) {}
+    const name = user?.username || "Unknown User";
+    const career = user?.degree || "Unknown Career";
+    const bio = user?.bio || "";
+    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
+
     this.shadowRoot!.innerHTML = `
           <style>
             
@@ -148,16 +158,16 @@ h1 {
                 </div>
             </div>
             <div class="profile-section">
-                <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture"  >
+                <img class="profile-picture" src="${profilePic}" alt="Profile picture"  >
                 <button class="edit-button">
                     <svg viewBox="0 0 24 24">
                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                     </svg>
                 </button>
                 <div class="profile-info">
-                    <h1>Rosa Elvira</h1>
-                    <p class="career">Medicine</p>
-                    <p class="bio">Hi! I'm Rosa (the girl of the right). I'm a medicine student that likes to have fun. Here's my insta @Rosa_Elvira</p>
+                    <h1>${name}</h1>
+                    <p class="career">${career}</p>
+                    <p class="bio">${bio}</p>
                 </div>
             </div>
         `;

@@ -45,16 +45,11 @@ class PrimaryButton extends HTMLElement {
         }
       }
     </style>
-    <button class="primary">${text}</button>
+    <button class="primary" type="button">${text}</button>
     `;
 
     this.shadowRoot!.querySelector(".primary")?.addEventListener("click", () => {
-      const event = new CustomEvent("navigate", {
-        detail: "/feed",
-
-        composed: true,
-      });
-      document.dispatchEvent(event);
+      this.dispatchEvent(new CustomEvent("primary-click", { bubbles: true, composed: true }));
     });
   }
 }

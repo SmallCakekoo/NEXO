@@ -57,12 +57,19 @@ class SubjectReviewForm extends HTMLElement {
       this.updateStars();
 
       // Crear el objeto de reseña
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const author = user?.username || "Current User";
+      const image = user?.profilePic || defaultAvatar;
+
       const review = {
         rating: oldRating,
         text: reviewText,
         date: new Date().toLocaleDateString(),
-        author: "Current User",
-        image: defaultAvatar,
+        author,
+        image,
       };
 
       // Despachar el evento directamente en este elemento

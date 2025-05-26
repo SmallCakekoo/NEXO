@@ -118,6 +118,12 @@ class NavBarLoginSignup extends HTMLElement {
     font-weight: bold;
     margin-left: 20px;
     margin-top: 10px;
+    cursor: pointer;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
   }
 
   @media (max-width: 430px) {
@@ -128,7 +134,11 @@ class NavBarLoginSignup extends HTMLElement {
     }
 
     .back-arrow {
-      display: inline-block;
+      display: block;
+    }
+
+    .container-fluid {
+      justify-content: center;
     }
   }
 
@@ -190,14 +200,24 @@ class NavBarLoginSignup extends HTMLElement {
 
   setupNavigation() {
     const buttons = this.shadowRoot!.querySelectorAll("btn-login, btn-signup");
+    const backArrow = this.shadowRoot!.querySelector(".back-arrow");
 
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         let route = "";
-        if (btn.tagName.toLowerCase() === "btn-login") route = "./login";
+        if (btn.tagName.toLowerCase() === "btn-login") route = "/login";
         if (btn.tagName.toLowerCase() === "btn-signup") route = "./signup";
         this.navigate(route);
       });
+    });
+
+    backArrow?.addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // If there's no history, navigate to home
+        this.navigate("/");
+      }
     });
   }
 

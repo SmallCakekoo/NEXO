@@ -113,6 +113,16 @@ class SignUpFormFields extends HTMLElement {
       </form>
     `;
 
+    // Prevent default form submission after DOM is updated
+    setTimeout(() => {
+      const form = this.querySelector('#signup-form') as HTMLFormElement;
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+        });
+      }
+    });
+
     const degreeSelect = this.querySelector('select[name="degree"]') as HTMLSelectElement;
     const semesterSelect = this.querySelector('select[name="semester"]') as HTMLSelectElement;
     

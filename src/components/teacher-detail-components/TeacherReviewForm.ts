@@ -61,12 +61,19 @@ class TeacherReviewForm extends HTMLElement {
       }
 
       // Create the review object
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const author = user?.username || "Current User";
+      const image = user?.profilePic || '';
+
       const review = {
         rating: this.selectedRating,
         text: reviewText,
         date: new Date().toLocaleDateString(),
-        author: "Current User",
-        image: "",
+        author,
+        image,
       };
 
       // Dispatch custom event to notify other components

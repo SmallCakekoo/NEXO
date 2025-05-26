@@ -70,21 +70,25 @@ class TeacherReviewList extends HTMLElement {
     }
 
     this.isLoading = true;
-    
     try {
-      // Usar caché si está disponible y es reciente
-      if (!this.shouldFetchFromNetwork(this.teacherName) && reviewsCache[this.teacherName]) {
-        console.log('Using cached reviews for teacher:', this.teacherName);
-        this.updateReviews(reviewsCache[this.teacherName]);
-        return;
+      const localKey = `teacherReviews_${this.teacherName}`;
+      let localReviews: Review[] = [];
+      try {
+        localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+      } catch (e) {}
+      // If localStorage is empty, initialize from static data
+      if (localReviews.length === 0) {
+        const data = await fetchTeachers();
+        const teacher = data.teachers.find((t: teachers) => t.name === this.teacherName);
+        localReviews = teacher && teacher.reviews ? teacher.reviews : [];
+        localStorage.setItem(localKey, JSON.stringify(localReviews));
       }
-
-      console.log('Fetching fresh reviews for teacher:', this.teacherName);
-      const reviews = await this.fetchFromNetwork();
-      this.updateReviews(reviews);
+      this.reviews = localReviews;
+      this.render();
     } catch (error) {
       console.error('Error in fetchReviews:', error);
-      this.updateReviews([]);
+      this.reviews = [];
+      this.render();
     } finally {
       this.isLoading = false;
     }
@@ -114,21 +118,18 @@ class TeacherReviewList extends HTMLElement {
 
   // Public method to add a review from external code
   addReview(review: Review) {
-    // Agregar a las reseñas locales
-    this.reviews.unshift(review);
-    
-    // Actualizar la caché
-    if (reviewsCache[this.teacherName]) {
-      reviewsCache[this.teacherName].unshift(review);
-    } else {
-      reviewsCache[this.teacherName] = [review];
+    const localKey = `teacherReviews_${this.teacherName}`;
+    let localReviews: Review[] = [];
+    try {
+      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (e) {}
+    // Prevent duplicates by checking for same author, text, and date
+    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      localReviews.unshift(review);
+      localStorage.setItem(localKey, JSON.stringify(localReviews));
+      this.reviews = localReviews;
+      this.render();
     }
-    
-    // Actualizar el tiempo de la última modificación
-    lastFetchTime[this.teacherName] = Date.now();
-    
-    // Renderizar
-    this.render();
   }
 
   render() {

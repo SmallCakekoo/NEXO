@@ -12,15 +12,24 @@ class ProfileContainer extends HTMLElement {
   connectedCallback() {
     this.loadPosts();
     this.setupEventListeners();
+    // Listen for profile updates
+    document.addEventListener('profile-updated', () => {
+      this.loadPosts();
+    });
   }
 
   async loadPosts() {
     try {
-      const data = await fetchProfilePosts();
-      if (data.posts) {
-        this.posts = data.posts;
-        this.render();
-      }
+      // Always get the latest loggedInUser
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const username = user?.username;
+      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      // Filter posts by the current username
+      this.posts = posts.filter((p: any) => p.name === username);
+      this.render();
     } catch (error) {
       console.error("Error loading posts:", error);
       this.render();
@@ -36,25 +45,35 @@ class ProfileContainer extends HTMLElement {
 
     // Escuchar el evento de nueva publicación
     document.addEventListener("post-published", ((event: CustomEvent) => {
-      // Añadir el nuevo post al array de posts
-      const newPostData = event.detail;
+      // Always get the latest loggedInUser
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const name = user?.username || "Unknown User";
+      const career = user?.degree || "Unknown Career";
+      const semestre = user?.semester || "";
+      const photo = user?.profilePic || (event.detail.image ? URL.createObjectURL(event.detail.image) : `https://picsum.photos/seed/picsum/200/300`);
 
       // Crear un nuevo post con el nombre de usuario actual
       const newPost: Post = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-        photo: newPostData.image
-          ? URL.createObjectURL(newPostData.image)
-          : `https://picsum.photos/seed/picsum/200/300`,
-        name: "Rosa Elvira", // Nombre fijo para que aparezca en el perfil
+        photo: photo,
+        name: name,
         date: new Date().toLocaleDateString(),
-        career: "Medicine",
-        semestre: "2nd",
-        message: newPostData.content,
-        tag: newPostData.category,
+        career: career,
+        semestre: semestre,
+        message: event.detail.content,
+        tag: event.detail.category,
         likes: 0,
         share: "0",
         comments: [],
       };
+
+      // Save to localStorage
+      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      posts.unshift(newPost);
+      localStorage.setItem('posts', JSON.stringify(posts));
 
       // Añadir el nuevo post al inicio del array
       this.posts.unshift(newPost);

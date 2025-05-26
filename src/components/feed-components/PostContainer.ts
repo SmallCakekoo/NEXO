@@ -1,5 +1,6 @@
 import { Post } from "../../types/feed/feeds.types";
 import { fetchPosts } from "../../services/FeedService";
+import { store, State } from "../../flux/Store"; // Import store and State
 
 // An interface to extend windows
 interface WindowWithPostContainer extends Window {
@@ -7,27 +8,29 @@ interface WindowWithPostContainer extends Window {
 }
 
 class PostContainer extends HTMLElement {
-  private posts: Post[] = [];
   private filteredPosts: Post[] = [];
   private currentFilter: string = "All";
   private tagSelectedListener: ((event: Event) => void) | null = null;
   private postPublishedListener: ((event: Event) => void) | null = null;
   private isListenerAttached: boolean = false;
+  private unsubscribeStore: (() => void) | null = null; // To store the unsubscribe function
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    // Bind the store change handler
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   async connectedCallback() {
     // Check if a connected instance of this component already exists
     const windowWithPC = window as WindowWithPostContainer;
     if (windowWithPC.postContainerConnected) {
-      await this.loadPosts();
+      this.subscribeToStore();
       return;
     }
 
-    await this.loadPosts();
+    this.subscribeToStore();
 
     // Only set up event listeners if they're not already attached
     if (!this.isListenerAttached) {
@@ -79,31 +82,23 @@ class PostContainer extends HTMLElement {
     if (windowWithPC.postContainerConnected) {
       windowWithPC.postContainerConnected = false;
     }
-  }
 
-  async loadPosts(): Promise<void> {
-    try {
-      // Only fetch posts from server if we don't have any posts yet
-      if (this.posts.length === 0) {
-        const data = await fetchPosts();
-        this.posts = data.posts;
-      }
-
-      // Apply current filter
-      this.applyCurrentFilter();
-      this.render();
-    } catch (error) {
-      console.error("Error loading posts:", error);
+    // Unsubscribe from the store
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+      this.unsubscribeStore = null;
     }
   }
 
   // Helper method to apply the current filter
   private applyCurrentFilter(): void {
+    const allPosts = store.getState().posts; // Get posts from the store
     if (this.currentFilter === "All") {
-      this.filteredPosts = [...this.posts];
+      this.filteredPosts = [...allPosts];
     } else {
-      this.filteredPosts = this.posts.filter((post) => post.tag === this.currentFilter);
+      this.filteredPosts = allPosts.filter((post) => post.tag === this.currentFilter);
     }
+    this.render(); // Re-render after filtering
   }
 
   addNewPost(postData: {
@@ -112,20 +107,24 @@ class PostContainer extends HTMLElement {
     image: File | null;
     createdAt: string;
   }): void {
-    // Generate a unique ID for each post using timestamp and a random value
-    // Use the date and a random string and cut use the last 9 characters
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    // Get current user info from localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    } catch (e) {}
+    const name = user?.username || "Unknown User";
+    const career = user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || (postData.image ? URL.createObjectURL(postData.image) : `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`);
 
     // Create a new post object with the data from the modal
     const newPost: Post = {
-      id: uniqueId,
-      photo: postData.image
-        ? URL.createObjectURL(postData.image)
-        : `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`,
-      name: "Current User",
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      photo: photo,
+      name: name,
       date: new Date().toLocaleDateString(),
-      career: "Student",
-      semestre: "Current",
+      career: career,
+      semestre: semestre,
       message: postData.content,
       tag: postData.category,
       likes: 0,
@@ -133,18 +132,25 @@ class PostContainer extends HTMLElement {
       comments: [],
     };
 
-    // Add the new post to the beginning (top) of the posts array
-    this.posts.unshift(newPost);
-    // Apply the current filter
-    this.applyCurrentFilter();
-    // Re-render the component
-    this.render();
+    // TODO: Dispatch an action to add the new post to the store
+    console.log("New post created, dispatch action to add to store:", newPost);
   }
 
   filterPosts(tag: string) {
     this.currentFilter = tag; // update the current filter
     this.applyCurrentFilter();
-    this.render();
+  }
+
+  // Handler for store changes
+  private handleStoreChange(state: State): void {
+    // Update filtered posts based on the new state
+    this.applyCurrentFilter();
+  }
+
+  private subscribeToStore(): void {
+    if (!this.unsubscribeStore) {
+      this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+    }
   }
 
   initAnimations() {
@@ -191,8 +197,11 @@ class PostContainer extends HTMLElement {
   }
 
   render() {
-    // Check and remove duplicates before rendering
-    this.filteredPosts = this.removeDuplicatePosts(this.filteredPosts);
+    // Get the latest posts from the store before filtering and rendering
+    const latestPosts = store.getState().posts;
+    this.filteredPosts = this.removeDuplicatePosts(latestPosts.filter(post => 
+      this.currentFilter === "All" ? true : post.tag === this.currentFilter
+    ));
 
     if (!this.shadowRoot) return;
     this.shadowRoot.innerHTML = `

@@ -70,7 +70,7 @@ class AppContainer extends HTMLElement {
       case "/comments-detail-profile":
         newComponent = "<comments-detail-profile></comments-detail-profile>";
         break;
-      case "./login":
+      case "/login":
         newComponent = "<login-component></login-component>";
         break;
       case "./signup":

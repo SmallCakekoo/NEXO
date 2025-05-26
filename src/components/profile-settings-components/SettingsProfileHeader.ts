@@ -18,19 +18,51 @@ class SettingsProfileHeader extends HTMLElement {
     });
 
     const profilePicture = this.shadowRoot!.querySelector(".profile-picture-container");
-    const fileInput = this.shadowRoot!.querySelector("#profile-upload");
+    const fileInput = this.shadowRoot!.querySelector("#profile-upload") as HTMLInputElement;
+    const img = this.shadowRoot!.querySelector(".profile-picture") as HTMLImageElement;
 
     profilePicture?.addEventListener("click", () => {
       (fileInput as HTMLElement).click();
     });
 
-    // Handles the image upload (this is static and this is a simulation)
-    fileInput?.addEventListener("change", () => {
-      alert("Image uploaded successfully! (simulation)");
+    // Handles the image upload and persistence
+    fileInput?.addEventListener("change", async () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const base64 = e.target?.result as string;
+          img.src = base64;
+          // Save to loggedInUser and users array in localStorage
+          let user = null;
+          try {
+            user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+          } catch (e) {}
+          if (user) {
+            user.profilePic = base64;
+            localStorage.setItem('loggedInUser', JSON.stringify(user));
+            // Update in users array
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const idx = users.findIndex((u: any) => u.username === user.username || u.email === user.email);
+            if (idx !== -1) {
+              users[idx].profilePic = base64;
+              localStorage.setItem('users', JSON.stringify(users));
+            }
+          }
+          alert("Image uploaded successfully!");
+        };
+        reader.readAsDataURL(file);
+      }
     });
   }
 
   render() {
+    // Get logged-in user info from localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    } catch (e) {}
+    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
     this.shadowRoot!.innerHTML = `
             <style>
 :host {
@@ -194,11 +226,11 @@ h1 {
             </div>
             <div class="profile-section">
                 <div class="profile-picture-container">
-                    <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture">
+                    <img class="profile-picture" src="${profilePic}" alt="Profile picture">
                     <div class="profile-overlay">
                         <span>Change Image</span>
                     </div>
-                    <input type="file" id="profile-upload" accept="image/*">
+                    <input id="profile-upload" type="file" accept="image/*" style="display:none" />
                 </div>
                 <button class="x-button">
                     <svg viewBox="0 0 24 24">

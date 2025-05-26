@@ -57,6 +57,37 @@ class LoginComponent extends HTMLElement {
       <social-buttons></social-buttons>
     </section>
     `;
+    this.setupLoginHandler();
+  }
+
+  setupLoginHandler() {
+    const loginButton = this.querySelector('primary-button');
+    loginButton?.addEventListener('click', () => {
+      const form = this.querySelector('#login-form') as HTMLFormElement;
+      if (!form) return;
+      const usernameInput = form.querySelector('input[type="text"]') as HTMLInputElement;
+      const passwordInput = form.querySelector('input[type="password"]') as HTMLInputElement;
+      const username = usernameInput?.value.trim();
+      const password = passwordInput?.value;
+      if (!username || !password) {
+        alert('Please enter both username and password.');
+        return;
+      }
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find((u:any) => u.username === username && u.password === password);
+      if (!user) {
+        alert('Invalid username or password.');
+        return;
+      }
+      // Set logged in user
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+      // Navigate to feed
+      const event = new CustomEvent('navigate', {
+        detail: '/feed',
+        composed: true
+      });
+      document.dispatchEvent(event);
+    });
   }
 }
 

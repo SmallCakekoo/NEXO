@@ -24,22 +24,22 @@ class SubjectReviewList extends HTMLElement {
 
   async fetchReviews() {
     try {
-      console.log('Fetching reviews for subject:', this.subjectName);
-      const data = await fetchSubjects();
-      console.log('Fetched subjects data:', data);
-      
       if (!this.subjectName) {
         this.subjectName = this.getAttribute('subject-name') || '';
       }
-      
-      const subject = data.subjects.find((s: subjects) => s.name === this.subjectName);
-      console.log('Found subject:', subject);
-
-      if (subject && subject.reviews) {
-        this.reviews = subject.reviews;
-      } else {
-        this.reviews = [];
+      const localKey = `subjectReviews_${this.subjectName}`;
+      let localReviews: Review[] = [];
+      try {
+        localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+      } catch (e) {}
+      // If localStorage is empty, initialize from static data
+      if (localReviews.length === 0) {
+        const data = await fetchSubjects();
+        const subject = data.subjects.find((s: subjects) => s.name === this.subjectName);
+        localReviews = subject && subject.reviews ? subject.reviews : [];
+        localStorage.setItem(localKey, JSON.stringify(localReviews));
       }
+      this.reviews = localReviews;
       this.render();
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -62,8 +62,18 @@ class SubjectReviewList extends HTMLElement {
 
   // Public method to add a review from external code
   addReview(review: Review) {
-    this.reviews.unshift(review);
-    this.render();
+    const localKey = `subjectReviews_${this.subjectName}`;
+    let localReviews: Review[] = [];
+    try {
+      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (e) {}
+    // Prevent duplicates by checking for same author, text, and date
+    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      localReviews.unshift(review);
+      localStorage.setItem(localKey, JSON.stringify(localReviews));
+      this.reviews = localReviews;
+      this.render();
+    }
   }
 
   render() {

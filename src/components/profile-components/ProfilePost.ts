@@ -71,6 +71,17 @@ class ProfilePost extends HTMLElement {
 
   render() {
     if (this.shadowRoot) {
+      // Check if logged in user has liked this post
+      let userLikedPost = false;
+      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      if (loggedInUser && this.post.id) {
+        const userId = loggedInUser.username;
+        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+        if (userLikes[userId] && userLikes[userId].includes(this.post.id)) {
+          userLikedPost = true;
+        }
+      }
+
       this.shadowRoot.innerHTML = `
         <style>
           .post {
@@ -444,8 +455,8 @@ class ProfilePost extends HTMLElement {
           <hr>
           <div class="footer">  
              <div class="align-likes">
-              <button class="just-likes">
-                <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+              <button class="just-likes ${userLikedPost ? 'liked' : ''}">
+                <svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
                 <p class="likes-count">${this.post.likes} Likes</p>
@@ -475,8 +486,59 @@ class ProfilePost extends HTMLElement {
 
       const likeButton = this.shadowRoot.querySelector(".just-likes");
       likeButton?.addEventListener("click", () => {
-        this.liked = !this.liked;
-        this.render();
+        // Check if user is logged in
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        if (!loggedInUser) {
+          alert('Please log in to like posts.');
+          return;
+        }
+
+        // Ensure post has an ID
+        if (!this.post.id) {
+          console.error('Post is missing ID, cannot like.');
+          return;
+        }
+
+        const userId = loggedInUser.username; // Using username as a simple user ID
+        const postId = this.post.id;
+
+        // Get user likes from localStorage
+        const userLikesKey = 'userLikes';
+        let userLikes = JSON.parse(localStorage.getItem(userLikesKey) || '{}');
+
+        // Initialize user's liked list if it doesn't exist
+        if (!userLikes[userId]) {
+          userLikes[userId] = [];
+        }
+
+        // Check if user has already liked this post
+        if (userLikes[userId].includes(postId)) {
+          console.log('User already liked this post.');
+          return; // User already liked it, do nothing
+        }
+
+        // User has not liked this post, proceed to like
+
+        // Add post ID to user's liked list and save userLikes
+        userLikes[userId].push(postId);
+        localStorage.setItem(userLikesKey, JSON.stringify(userLikes));
+
+        // Update the main posts array in localStorage
+        const postsKey = 'posts';
+        let allPosts = JSON.parse(localStorage.getItem(postsKey) || '[]');
+        const postIndex = allPosts.findIndex((p: any) => p.id === postId);
+
+        if (postIndex !== -1) {
+          allPosts[postIndex].likes = (allPosts[postIndex].likes || 0) + 1;
+          localStorage.setItem(postsKey, JSON.stringify(allPosts));
+
+          // Update the current component instance
+          this.liked = true; // Mark as liked for this user in this session
+          this.post.likes = allPosts[postIndex].likes; // Update the post object within the component
+          this.render(); // Re-render to update the like count and button style
+        } else {
+          console.error('Post not found in localStorage posts array.');
+        }
       });
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
