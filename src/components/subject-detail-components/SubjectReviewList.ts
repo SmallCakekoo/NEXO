@@ -34,9 +34,9 @@ class SubjectReviewList extends HTMLElement {
       this.reviews = subjectRatings.map(rating => ({
         rating: rating.rating,
         text: rating.comment,
-        date: rating.timestamp,
-        author: 'Anonymous',
-        image: '',
+        date: new Date(rating.timestamp).toLocaleDateString(),
+        author: rating.author || 'Anonymous',
+        image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
       }));
       this.render();
     } catch (error) {
@@ -71,9 +71,9 @@ class SubjectReviewList extends HTMLElement {
     this.reviews = latestRatings.map(rating => ({
       rating: rating.rating,
       text: rating.comment,
-      date: rating.timestamp,
-      author: 'Anonymous',
-      image: '',
+      date: new Date(rating.timestamp).toLocaleDateString(),
+      author: rating.author || 'Anonymous',
+      image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
     }));
     this.render();
   }

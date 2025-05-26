@@ -90,7 +90,9 @@ class TeacherReviewForm extends HTMLElement {
       RatingActions.addTeacherRating(
         this.teacherName,
         this.selectedRating,
-        reviewText
+        reviewText,
+        author,
+        image
       );
 
       // Update the average rating

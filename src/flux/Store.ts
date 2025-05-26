@@ -8,6 +8,8 @@ interface Rating {
   rating: number;
   comment: string;
   timestamp: string;
+  author?: string;
+  image?: string;
 }
 
 interface Ratings {
@@ -19,6 +21,8 @@ interface TeacherRatingPayload {
   rating: number;
   comment: string;
   timestamp: string;
+  author?: string;
+  image?: string;
 }
 
 interface SubjectRatingPayload {
@@ -26,6 +30,8 @@ interface SubjectRatingPayload {
   rating: number;
   comment: string;
   timestamp: string;
+  author?: string;
+  image?: string;
 }
 
 interface UpdateTeacherRatingPayload {
@@ -178,13 +184,13 @@ class Store {
       case PostActionTypes.ADD_TEACHER_RATING:
         if (action.payload && typeof action.payload === "object" && "teacherName" in action.payload) {
           const payload = action.payload as TeacherRatingPayload;
-          const { teacherName, rating, comment, timestamp } = payload;
+          const { teacherName, rating, comment, timestamp, author, image } = payload;
           const currentRatings = this._myState.teacherRatings[teacherName] || [];
           this._myState = {
             ...this._myState,
             teacherRatings: {
               ...this._myState.teacherRatings,
-              [teacherName]: [...currentRatings, { rating, comment, timestamp }]
+              [teacherName]: [...currentRatings, { rating, comment, timestamp, author, image }]
             }
           };
           // Persist ratings to localStorage
@@ -195,13 +201,13 @@ class Store {
       case PostActionTypes.ADD_SUBJECT_RATING:
         if (action.payload && typeof action.payload === "object" && "subjectName" in action.payload) {
           const payload = action.payload as SubjectRatingPayload;
-          const { subjectName, rating, comment, timestamp } = payload;
+          const { subjectName, rating, comment, timestamp, author, image } = payload;
           const currentRatings = this._myState.subjectRatings[subjectName] || [];
           this._myState = {
             ...this._myState,
             subjectRatings: {
               ...this._myState.subjectRatings,
-              [subjectName]: [...currentRatings, { rating, comment, timestamp }]
+              [subjectName]: [...currentRatings, { rating, comment, timestamp, author, image }]
             }
           };
           // Persist ratings to localStorage

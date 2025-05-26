@@ -81,8 +81,8 @@ class TeacherReviewList extends HTMLElement {
         text: rating.comment,
         // Format the timestamp to a readable date string
         date: new Date(rating.timestamp).toLocaleDateString(), 
-        author: (rating as any).author || 'Anonymous', // Assuming author might be added later, fallback to Anonymous
-        image: (rating as any).image || '', // Assuming image might be added later, fallback to empty
+        author: (rating as any).author || 'Anonymous', // Bypassing type check as author might not be on Rating type
+        image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`, // Bypassing type check for image
       }));
 
       this.render();
@@ -129,10 +129,9 @@ class TeacherReviewList extends HTMLElement {
     this.reviews = latestRatings.map(rating => ({
       rating: rating.rating,
       text: rating.comment,
-      // Format the timestamp to a readable date string
-      date: new Date(rating.timestamp).toLocaleDateString(), 
-      author: (rating as any).author || 'Anonymous', // Assuming author might be added later, fallback to Anonymous
-      image: (rating as any).image || '', // Assuming image might be added later, fallback to empty
+      date: new Date(rating.timestamp).toLocaleDateString(),
+      author: (rating as any).author || 'Anonymous',
+      image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
     }));
     this.render();
   }
