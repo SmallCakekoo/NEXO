@@ -48,7 +48,7 @@ button:active {
     `;
 
     this.shadowRoot!.querySelector("#signup-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "signup" }));
+      this.dispatchEvent(new CustomEvent("navigate", { detail: "/signup" }));
     });
   }
 }

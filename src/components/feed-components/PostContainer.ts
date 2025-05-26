@@ -9,11 +9,14 @@ interface WindowWithPostContainer extends Window {
   postContainerConnected?: boolean;
 }
 
+const windowWithPC = window as WindowWithPostContainer;
+
 export class PostContainer extends HTMLElement {
   private filteredPosts: Post[] = [];
   private currentFilter: string = "All";
   private tagSelectedListener: ((event: Event) => void) | null = null;
   private postPublishedListener: ((event: Event) => void) | null = null;
+  private profileUpdatedListener: ((event: Event) => void) | null = null;
   private isListenerAttached: boolean = false;
   private unsubscribeStore: (() => void) | null = null;
 
@@ -24,38 +27,14 @@ export class PostContainer extends HTMLElement {
   }
 
   async connectedCallback() {
-        console.log("se Lee1")
-    // Check if a connected instance of this component already exists
-    const windowWithPC = window as WindowWithPostContainer;
-    if (windowWithPC.postContainerConnected) {
-      this.subscribeToStore();
-      return;
-    }
+    // Subscribe to store changes
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
 
-    this.subscribeToStore();
-
-    // Load posts from the service
-    try {
-      console.log("se Lee2")
-      const response = await fetchPosts(); 
-                  console.log(response)
-      if (response.posts && response.posts.length > 0) {
-        // Store posts in localStorage
-        localStorage.setItem('posts', JSON.stringify(response.posts));
-        
-        // Dispatch action to update store
-        AppDispatcher.dispatch({
-          type: PostActionTypes.LOAD_POSTS,
-          payload: response.posts
-        });
-
-        // Update local state
-        this.filteredPosts = response.posts;
-        this.render();
-  
-      }
-    } catch (error) {
-      console.error("Error loading posts:", error);
+    // Initial load of posts
+    const response = await fetchPosts();
+    if (response.posts) {
+      this.filteredPosts = response.posts;
+      this.render();
     }
 
     // Only set up event listeners if they're not already attached
@@ -79,12 +58,22 @@ export class PostContainer extends HTMLElement {
         this.addNewPost(customEvent.detail);
       };
 
+      // Create the profile-updated event listener
+      this.profileUpdatedListener = (event: Event) => {
+        const customEvent = event as CustomEvent<{ type: string; value: string }>;
+        if (customEvent.detail.type === 'photo') {
+          // Reload posts to reflect the new profile photo
+          this.loadPosts();
+        }
+      };
+
       // Add the event listeners
       document.addEventListener("tagSelected", this.tagSelectedListener);
       document.addEventListener("post-published", this.postPublishedListener);
+      document.addEventListener("profile-updated", this.profileUpdatedListener);
+      
       // Mark listeners as attached
       this.isListenerAttached = true;
-      // Mark that an instance is already connected
       windowWithPC.postContainerConnected = true;
     }
   }
@@ -97,28 +86,133 @@ export class PostContainer extends HTMLElement {
     if (this.postPublishedListener) {
       document.removeEventListener("post-published", this.postPublishedListener);
     }
+    if (this.profileUpdatedListener) {
+      document.removeEventListener("profile-updated", this.profileUpdatedListener);
+    }
     // Unsubscribe from store
     if (this.unsubscribeStore) {
       this.unsubscribeStore();
     }
   }
 
-  private subscribeToStore() {
-    // Subscribe to store changes
-    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
-    // Initial state load
-    this.handleStoreChange(store.getState());
+  private handleStoreChange(state: State) {
+    if (state.posts) {
+      this.filteredPosts = state.posts;
+      this.render();
+    }
   }
 
-  // Helper method to apply the current filter
-  private applyCurrentFilter(): void {
-    const allPosts = store.getState().posts;
-    if (this.currentFilter === "All") {
-      this.filteredPosts = [...allPosts];
+  private filterPosts(tag: string) {
+    if (tag === "All") {
+      this.filteredPosts = store.getState().posts;
     } else {
-      this.filteredPosts = allPosts.filter((post) => post.tag === this.currentFilter);
+      this.filteredPosts = store.getState().posts.filter(
+        (post) => post.tag === tag
+      );
     }
     this.render();
+  }
+
+  private render() {
+    if (this.shadowRoot) {
+      const postsHTML = this.filteredPosts.length > 0 
+        ? this.filteredPosts
+            .map(
+              (post) => `
+              <feed-post
+                ${post.id ? `id="${post.id}"` : ""}
+                photo="${post.photo}"
+                name="${post.name}"
+                date="${post.date}"
+                career="${post.career}"
+                semestre="${post.semestre}"
+                message="${post.message}"
+                tag="${post.tag}"
+                likes="${post.likes}"
+                share="${post.share}"
+                comments="${JSON.stringify(post.comments)}"
+              ></feed-post>
+            `
+            )
+            .join("")
+        : `
+          <div class="no-posts">
+            <p class="no-posts-title">No posts yet</p>
+            <p class="subtitle">Be the first to share something interesting</p>
+          </div>
+        `;
+
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host {
+            display: block;
+            width: 100%;
+            min-height: 100vh;
+          }
+
+          .posts-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+
+          .no-posts {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 690px;
+          }
+
+          .no-posts p {
+            margin: 0;
+            color: #1f2937;
+          }
+
+          .no-posts-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a4a4a;
+            animation: pulse 2s infinite ease-in-out;
+          }
+
+          .no-posts .subtitle {
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 1rem;
+          }
+
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+          }
+
+          @media (max-width: 576px) {
+            .posts-container {
+              padding: 10px;
+            }
+
+            .no-posts {
+              margin: 10px;
+              padding: 30px 15px;
+            }
+
+            .no-posts-title {
+              font-size: 1.2rem;
+            }
+
+            .no-posts .subtitle {
+              font-size: 0.9rem;
+            }
+          }
+        </style>
+        <div class="posts-container">
+          ${postsHTML}
+        </div>
+      `;
+    }
   }
 
   addNewPost(postData: {
@@ -127,15 +221,34 @@ export class PostContainer extends HTMLElement {
     image: File | null;
     createdAt: string;
   }): void {
+    console.log("addNewPost called with data:", postData);
+    
     // Get current user info from localStorage
     let user = null;
     try {
       user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    } catch (e) {}
+    } catch (e) {
+      console.error("Error getting user from localStorage:", e);
+      alert("Error getting user information. Cannot create post.");
+      return;
+    }
+    
+    if (!user) {
+      console.error("No logged in user found");
+      alert("You must be logged in to create a post.");
+      return;
+    }
+
     const name = user?.username || "Unknown User";
     const career = user?.degree || "Unknown Career";
     const semestre = user?.semester || "";
-    const photo = user?.profilePic || (postData.image ? URL.createObjectURL(postData.image) : `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`);
+    let photo = user?.profilePic;
+    if (!photo && postData.image) {
+        photo = URL.createObjectURL(postData.image);
+    } else if (!photo) {
+        photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    }
+    console.log("User photo:", photo);
 
     // Create a new post object with the data from the modal
     const newPost: Post = {
@@ -152,181 +265,43 @@ export class PostContainer extends HTMLElement {
       comments: [],
     };
 
+    console.log("New post object created:", newPost);
+    
     // Get current posts from localStorage
     const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+    console.log("Current posts from localStorage:", currentPosts);
     
     // Check if post with same ID already exists
     const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
     if (!postExists) {
       // Add the new post to the array
       currentPosts.unshift(newPost);
+      console.log("Adding new post to array:", currentPosts);
       
       // Update localStorage
       localStorage.setItem('posts', JSON.stringify(currentPosts));
+      console.log("Posts updated in localStorage");
       
       // Dispatch action to update store
       AppDispatcher.dispatch({
         type: PostActionTypes.ADD_POST,
         payload: newPost
       });
+      console.log("ADD_POST action dispatched");
+    } else {
+      console.warn("Post with same ID already exists, not adding:", newPost.id);
     }
   }
 
-  filterPosts(tag: string) {
-    this.currentFilter = tag;
-    this.applyCurrentFilter();
-  }
-
-  // Handler for store changes
-  private handleStoreChange(state: State): void {
-    this.applyCurrentFilter();
-  }
-
-  // Function to remove duplicates from an array of posts based on ID
-  private removeDuplicatePosts(posts: Post[]): Post[] {
-    const seenPostIds = new Set<string>();
-    return posts.filter((post) => {
-      if (!post.id) return true;
-      if (seenPostIds.has(post.id)) {
-        return false;
-      }
-      seenPostIds.add(post.id);
-      return true;
-    });
-  }
-
-  render() {
-    if (!this.shadowRoot) return;
-    
-    this.shadowRoot.innerHTML = `
-      <style>
-        @import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
-        
-        .post-animated {
-          animation: fadeInUp 0.8s ease forwards;
-        }
-        
-        .empty-animated {
-          animation: fadeIn 1s ease forwards;
-        }
-        
-        .title-animated {
-          animation: pulse 2s infinite;
-        }
-        
-        .text-animated {
-          animation: fadeIn 1s ease forwards;
-        }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translate3d(0, 30px, 0);
-          }
-          to {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-        
-        .end-message {
-          text-align: center;
-          padding: 1.5rem;
-          margin-top: 1rem;
-          color: #6c757d;
-          font-style: italic;
-          animation: zoomIn 0.8s ease forwards;
-        }
-        
-        .empty-state {
-          text-align: center;
-          padding: 2rem;
-          margin: 1rem 0;  
-        } 
-        
-        .empty-state h3 {
-          color: #495057;
-          margin-bottom: 0.5rem;
-        }
-        
-        .empty-state p {
-          color: #6c757d;
-        }
-        
-        @keyframes zoomIn {
-          from {
-            opacity: 0;
-            transform: scale3d(0.3, 0.3, 0.3);
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-      </style>
-      <div>
-        ${this.filteredPosts.length > 0
-          ? `${this.filteredPosts
-              .map(
-                (post) => `
-                  <feed-post 
-                      ${post.id ? `id="${post.id}"` : ""}
-                      photo="${post.photo}"
-                      name="${post.name}"
-                      date="${post.date}"
-                      career="${post.career}"
-                      semestre="${post.semestre}"
-                      message="${post.message}"
-                      tag="${post.tag}"
-                      likes="${post.likes}"
-                      share="${post.share}"
-                      comments='${JSON.stringify(post.comments)}'
-                  ></feed-post>`
-              )
-              .join("")}
-              <div class="end-message">
-                <p>No more posts to show</p>
-              </div>`
-          : `<div class="empty-state"> 
-              <h3>No posts yet</h3>
-              <p>Be the first to share something interesting</p>
-             </div>`
-        }
-      </div>
-    `;
-
-    // Initialize animations after rendering
-    setTimeout(() => this.initAnimations(), 100);
-  }
-
-  private initAnimations() {
-    const posts = this.shadowRoot?.querySelectorAll('feed-post');
-    posts?.forEach((post, index) => {
-      post.classList.add('post-animated');
-      (post as HTMLElement).style.animationDelay = `${index * 0.1}s`;
-    });
+  private async loadPosts() {
+    const response = await fetchPosts();
+    if (response.posts) {
+      this.filteredPosts = response.posts;
+      this.render();
+    }
   }
 }
 
+export default PostContainer;
 
 console.log("se cargó este archivo")

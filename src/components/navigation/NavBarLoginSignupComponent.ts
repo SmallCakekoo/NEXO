@@ -10,6 +10,47 @@ class NavBarLoginSignup extends HTMLElement {
     this.setupNavigation();
   }
 
+  setupNavigation() {
+    // Get both desktop and mobile buttons
+    const desktopButtons = this.shadowRoot?.querySelector('.desktop-buttons');
+    const mobileButtons = this.shadowRoot?.querySelector('.mobile-menu .buttons');
+
+    // Add click handlers for login buttons
+    const loginButtons = this.shadowRoot?.querySelectorAll('btn-login');
+    loginButtons?.forEach(button => {
+      button.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('navigate', {
+          detail: '/login',
+          composed: true
+        }));
+      });
+    });
+
+    // Add click handlers for signup buttons
+    const signupButtons = this.shadowRoot?.querySelectorAll('btn-signup');
+    signupButtons?.forEach(button => {
+      button.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('navigate', {
+          detail: '/signup',
+          composed: true
+        }));
+      });
+    });
+
+    // Add click handlers for the back arrow
+    const backArrow = this.shadowRoot?.querySelector('.back-arrow');
+    backArrow?.addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        document.dispatchEvent(new CustomEvent('navigate', {
+          detail: '/',
+          composed: true
+        }));
+      }
+    });
+  }
+
   render() {
     this.shadowRoot!.innerHTML = `
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -191,39 +232,10 @@ class NavBarLoginSignup extends HTMLElement {
     logo?.addEventListener("click", () => {
       const event = new CustomEvent("navigate", {
         detail: "/",
-
         composed: true,
       });
       document.dispatchEvent(event);
     });
-  }
-
-  setupNavigation() {
-    const buttons = this.shadowRoot!.querySelectorAll("btn-login, btn-signup");
-    const backArrow = this.shadowRoot!.querySelector(".back-arrow");
-
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        let route = "";
-        if (btn.tagName.toLowerCase() === "btn-login") route = "/login";
-        if (btn.tagName.toLowerCase() === "btn-signup") route = "./signup";
-        this.navigate(route);
-      });
-    });
-
-    backArrow?.addEventListener("click", () => {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        // If there's no history, navigate to home
-        this.navigate("/");
-      }
-    });
-  }
-
-  navigate(route: string) {
-    const event = new CustomEvent("navigate", { detail: route });
-    document.dispatchEvent(event);
   }
 }
 

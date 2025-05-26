@@ -30,27 +30,71 @@ class SettingsProfileHeader extends HTMLElement {
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
         const reader = new FileReader();
-        reader.onload = function (e) {
+        
+        reader.onload = (e) => {
           const base64 = e.target?.result as string;
+          if (!base64) return;
+
+          // Update the image immediately
           img.src = base64;
-          // Save to loggedInUser and users array in localStorage
+          
+          // Get current user
           let user = null;
           try {
             user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-          } catch (e) {}
-          if (user) {
-            user.profilePic = base64;
-            localStorage.setItem('loggedInUser', JSON.stringify(user));
-            // Update in users array
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const idx = users.findIndex((u: any) => u.username === user.username || u.email === user.email);
-            if (idx !== -1) {
-              users[idx].profilePic = base64;
-              localStorage.setItem('users', JSON.stringify(users));
+          } catch (e) {
+            console.error('Error parsing loggedInUser:', e);
+            return;
+          }
+          
+          if (!user) {
+            console.error('No logged in user found');
+            return;
+          }
+
+          // Update user's profile picture
+          user.profilePic = base64;
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          
+          // Update in users array
+          const users = JSON.parse(localStorage.getItem('users') || '[]');
+          const idx = users.findIndex((u: any) => u.username === user.username || u.email === user.email);
+          if (idx !== -1) {
+            users[idx].profilePic = base64;
+            localStorage.setItem('users', JSON.stringify(users));
+          }
+          
+          // Update all posts for this user
+          const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+          let postsUpdated = false;
+          for (let post of posts) {
+            if (post.name === user.username) {
+              post.photo = base64;
+              postsUpdated = true;
             }
           }
+          if (postsUpdated) {
+            localStorage.setItem('posts', JSON.stringify(posts));
+            
+            // Dispatch action to update store
+            const event = new CustomEvent('profile-updated', {
+              detail: { type: 'photo', value: base64 },
+              composed: true
+            });
+            document.dispatchEvent(event);
+          }
+
+          // Re-render the component to ensure the new photo is displayed
+          this.render();
+          
           alert("Image uploaded successfully!");
         };
+
+        reader.onerror = (error) => {
+          console.error('Error reading file:', error);
+          alert('Error uploading image. Please try again.');
+        };
+
         reader.readAsDataURL(file);
       }
     });
@@ -61,7 +105,9 @@ class SettingsProfileHeader extends HTMLElement {
     let user = null;
     try {
       user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error parsing loggedInUser:', e);
+    }
     const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
     this.shadowRoot!.innerHTML = `
             <style>
