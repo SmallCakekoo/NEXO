@@ -24,6 +24,7 @@ export class PostContainer extends HTMLElement {
   }
 
   async connectedCallback() {
+        console.log("se Lee1")
     // Check if a connected instance of this component already exists
     const windowWithPC = window as WindowWithPostContainer;
     if (windowWithPC.postContainerConnected) {
@@ -35,7 +36,9 @@ export class PostContainer extends HTMLElement {
 
     // Load posts from the service
     try {
-      const response = await fetchPosts();
+      console.log("se Lee2")
+      const response = await fetchPosts(); 
+                  console.log(response)
       if (response.posts && response.posts.length > 0) {
         // Store posts in localStorage
         localStorage.setItem('posts', JSON.stringify(response.posts));
@@ -49,6 +52,7 @@ export class PostContainer extends HTMLElement {
         // Update local state
         this.filteredPosts = response.posts;
         this.render();
+  
       }
     } catch (error) {
       console.error("Error loading posts:", error);
@@ -324,4 +328,5 @@ export class PostContainer extends HTMLElement {
   }
 }
 
-customElements.define("post-container", PostContainer);
+
+console.log("se cargó este archivo")

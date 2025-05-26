@@ -55,7 +55,7 @@ customElements.define("button-tags", ButtonsTags);
 customElements.define("tag-filters-bar", TagFiltersBar);
 customElements.define("feed-post", FeedPost);
 customElements.define("profile-post", ProfilePost);
-
+customElements.define("post-container", PostContainer)
 // Componentes de Landing
 import StartButton from "./components/landing-components/StartButton";
 import LandingCards from "./components/landing-components/LandingCards";
