@@ -1,5 +1,8 @@
+import { store, State, Rating } from "../flux/Store";
+
 class SubjectDetailPage extends HTMLElement {
   private subjectData: any = null;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -14,6 +17,32 @@ class SubjectDetailPage extends HTMLElement {
     }
 
     this.render();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange(state: State) {
+    // Re-render if the relevant subject's ratings change
+    if (this.subjectData && state.subjectRatings[this.subjectData.name]) {
+        this.render();
+    }
+  }
+
+  private calculateAverageRating(subjectName: string): number {
+    const state = store.getState();
+    const ratings = state.subjectRatings[subjectName] || [];
+    
+    if (ratings.length === 0) {
+      return 0;
+    }
+    
+    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
   }
 
   render() {
@@ -21,7 +50,7 @@ class SubjectDetailPage extends HTMLElement {
     const name = this.subjectData?.name || "Logic & Argumentation";
     const career = this.subjectData?.career || "Computer Science";
     const credits = this.subjectData?.credits || "3";
-    const rating = this.subjectData?.rating || "4";
+    const rating = this.calculateAverageRating(name); // Calculate rating from the store
     const id = this.subjectData?.id || "301";
 
     this.shadowRoot!.innerHTML = `

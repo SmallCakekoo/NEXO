@@ -1,6 +1,9 @@
 import { SubjectCardAttributes } from "../../types/academics/SubjectCard.types";
+import { store, State, Rating } from "../../flux/Store";
 
 class SubjectCard extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -14,6 +17,17 @@ class SubjectCard extends HTMLElement {
     this.render();
     this.setupStarInteraction();
     this.setupCardClickHandler();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange() {
+    this.render();
   }
 
   // Adds click event to the card for the navigation
@@ -23,7 +37,7 @@ class SubjectCard extends HTMLElement {
       const name = this.getAttribute("name") || "";
       const career = this.getAttribute("career") || "";
       const credits = this.getAttribute("credits") || "";
-      const rating = this.getAttribute("rating") || "";
+      const rating = this.calculateAverageRating(); // Use calculated average rating
       const id = this.getAttribute("id") || "";
 
       // Crear un objeto con los datos de la asignatura
@@ -46,9 +60,22 @@ class SubjectCard extends HTMLElement {
     });
   }
 
+  private calculateAverageRating(): number {
+    const subjectName = this.getAttribute("name") || "";
+    const state = store.getState();
+    const ratings = state.subjectRatings[subjectName] || [];
+    
+    if (ratings.length === 0) {
+      return 0;
+    }
+    
+    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
+  }
+
   // Adds hover interaction to the star icons to simulate rating behavior (only visual)
   setupStarInteraction() {
-    const rating = parseInt(this.getAttribute("rating") || "3");
+    const rating = this.calculateAverageRating(); // Use calculated average rating
     const stars = this.shadowRoot?.querySelectorAll(".star-icon");
     if (stars) {
       stars.forEach((star, index) => {
@@ -79,7 +106,7 @@ class SubjectCard extends HTMLElement {
     const name = this.getAttribute("name") || "Name not specified";
     const career = this.getAttribute("career") || "Career not specified";
     const credits = this.getAttribute("credits") || "0";
-    const rating = this.getAttribute("rating") || "3";
+    const rating = this.calculateAverageRating(); // Use calculated average rating
     const randomId = Math.floor(Math.random() * 30);
     const image = `https://picsum.photos/id/${randomId}/250/150`;
 
@@ -87,7 +114,7 @@ class SubjectCard extends HTMLElement {
       .fill(0)
       .map(
         (_, index) => `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < parseInt(rating) ? "#5354ED" : "#ccc"}" class="star-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < rating ? "#5354ED" : "#ccc"}" class="star-icon">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
         `

@@ -1,8 +1,12 @@
 import { TeacherCardAttributes } from "../../types/academics/TeacherCard.types";
+import { store, State, Rating } from "../../flux/Store";
 
 class TeacherCard extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
+    console.log("TeacherCard: Constructor called");
     this.attachShadow({ mode: "open" });
   }
 
@@ -11,36 +15,69 @@ class TeacherCard extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log("TeacherCard: connectedCallback");
     this.render();
     this.setupStarInteraction();
     this.setupCardClickHandler();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange() {
+    this.render();
   }
 
   // Adds click event to the card for the navigation
   setupCardClickHandler() {
+    console.log("TeacherCard: setupCardClickHandler");
     const card = this.shadowRoot?.querySelector(".card");
-    card?.addEventListener("click", () => {
-      // Guardar los datos del profesor en sessionStorage
-      const teacherData = {
-        name: this.getAttribute("name") || "",
-        subject: this.getAttribute("subject") || "",
-        nucleus: this.getAttribute("nucleus") || "",
-        rating: this.getAttribute("rating") || "0",
-        image: this.getAttribute("image") || Math.floor(Math.random() * 30).toString()
-      };
-      
-      sessionStorage.setItem("selectedTeacher", JSON.stringify(teacherData));
-      
-      const customEvent = new CustomEvent("navigate", {
-        detail: "/teacher-detail",
+    console.log("TeacherCard: querySelector(.card) result", card);
+    if (card) {
+      console.log("TeacherCard: Attaching click listener to card");
+      card.addEventListener("click", () => {
+        console.log("TeacherCard: card clicked");
+        // Guardar los datos del profesor en sessionStorage
+        const teacherData = {
+          name: this.getAttribute("name") || "",
+          subject: this.getAttribute("subject") || "",
+          nucleus: this.getAttribute("nucleus") || "",
+          rating: this.getAttribute("rating") || "0", // Store the original rating attribute
+          image: this.getAttribute("image") || Math.floor(Math.random() * 30).toString()
+        };
+        
+        sessionStorage.setItem("selectedTeacher", JSON.stringify(teacherData));
+        
+        const customEvent = new CustomEvent("navigate", {
+          detail: "/teacher-detail",
+        });
+        document.dispatchEvent(customEvent);
       });
-      document.dispatchEvent(customEvent);
-    });
+    } else {
+      console.error("TeacherCard: Could not find .card element to attach listener");
+    }
+  }
+
+  private calculateAverageRating(): number {
+    const teacherName = this.getAttribute("name") || "";
+    const state = store.getState();
+    const ratings = state.teacherRatings[teacherName] || [];
+    
+    if (ratings.length === 0) {
+      return 0;
+    }
+    
+    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
   }
 
   // Adds hover interaction to the star icons to simulate rating behavior (only visual)
   setupStarInteraction() {
-    const rating = parseInt(this.getAttribute("rating") || "0");
+    const rating = this.calculateAverageRating();
     const stars = this.shadowRoot?.querySelectorAll(".star-icon");
     if (stars) {
       stars.forEach((star, index) => {
@@ -60,6 +97,7 @@ class TeacherCard extends HTMLElement {
   }
 
   attributeChangedCallback(_name: keyof TeacherCardAttributes, oldValue: string, newValue: string) {
+    console.log("TeacherCard: attributeChangedCallback", _name, oldValue, newValue);
     if (oldValue !== newValue) {
       this.render();
       this.setupStarInteraction();
@@ -71,7 +109,7 @@ class TeacherCard extends HTMLElement {
     const name = this.getAttribute("name") || "Name not specified";
     const subject = this.getAttribute("subject") || "Subject not specified";
     const nucleus = this.getAttribute("nucleus") || "Nucleus not specified";
-    const rating = parseInt(this.getAttribute("rating") || "0");
+    const rating = this.calculateAverageRating();
     const randomId = Math.floor(Math.random() * 30);
     const image = `https://picsum.photos/id/${randomId}/250/150`;
 

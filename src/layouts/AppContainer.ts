@@ -18,6 +18,7 @@ class AppContainer extends HTMLElement {
 
     // Add event listener for navigation events
     document.addEventListener("navigate", ((event: CustomEvent) => {
+      console.log("AppContainer: 'navigate' event received", event.detail);
       const path = event.detail;
       NavigationActions.navigate(path);
     }) as EventListener);
@@ -30,12 +31,14 @@ class AppContainer extends HTMLElement {
   }
 
   private handleRouteChange(state: State) {
+    console.log("AppContainer: handleRouteChange", state.currentPath);
     const route = state.currentPath;
     this.updateView(route);
     window.scrollTo(0, 0);
   }
 
   private updateView(route: string) {
+    console.log("AppContainer: updateView to", route);
     let newComponent = "";
 
     switch (route) {

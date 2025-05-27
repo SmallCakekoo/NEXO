@@ -1,5 +1,8 @@
+import { store, State, Rating } from "../flux/Store";
+
 class TeacherDetailPage extends HTMLElement {
   private teacherData: any = null;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -7,20 +10,57 @@ class TeacherDetailPage extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log("TeacherDetailPage: connectedCallback");
     // Recuperar los datos del profesor seleccionado
     const storedData = sessionStorage.getItem("selectedTeacher");
     if (storedData) {
       this.teacherData = JSON.parse(storedData);
+      console.log("TeacherDetailPage: teacherData from sessionStorage", this.teacherData);
     }
     this.render();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange(state: State) {
+    // Re-render if the relevant teacher's ratings change
+    if (this.teacherData && state.teacherRatings[this.teacherData.name]) {
+        this.render();
+    }
+  }
+
+  private calculateAverageRating(teacherName: string): number {
+    console.log("TeacherDetailPage: calculateAverageRating for", teacherName);
+    const state = store.getState();
+    const ratings = state.teacherRatings[teacherName] || [];
+    console.log("TeacherDetailPage: ratings from store", ratings);
+    
+    if (ratings.length === 0) {
+      console.log("TeacherDetailPage: no ratings, returning 0");
+      return 0;
+    }
+    
+    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
+    console.log("TeacherDetailPage: sum of ratings", sum);
+    const average = Number((sum / ratings.length).toFixed(1));
+    console.log("TeacherDetailPage: calculated average rating", average);
+    return average;
   }
 
   render() {
+    console.log("TeacherDetailPage: render");
     // Si no hay datos, mostrar valores predeterminados
     const name = this.teacherData?.name || "Jimmy Ramirez";
+    console.log("TeacherDetailPage: rendering for teacher", name);
     const subject = this.teacherData?.subject || "Logic & Argumentation";
+    // Calculate rating from the store based on the teacher's name
+    const rating = this.calculateAverageRating(name);
     const nucleus = this.teacherData?.nucleus || "basic";
-    const rating = this.teacherData?.rating || "4";
     const image = this.teacherData?.image || "425";
 
     this.shadowRoot!.innerHTML = `

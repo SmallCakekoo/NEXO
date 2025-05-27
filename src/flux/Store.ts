@@ -4,7 +4,7 @@ import { SignUpActionsType } from "./Actions";
 import { PostActionTypes } from "../types/feed/PostActionTypes";
 import { Post } from "../types/feed/feeds.types";
 
-interface Rating {
+export interface Rating {
   rating: number;
   comment: string;
   timestamp: string;
@@ -12,7 +12,7 @@ interface Rating {
   image?: string;
 }
 
-interface Ratings {
+export interface Ratings {
   [key: string]: Rating[];
 }
 
