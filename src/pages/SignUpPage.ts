@@ -1,5 +1,5 @@
 import { store } from '../flux/Store';
-import { SignUpActions } from '../flux/Actions';
+import { SignUpActions } from '../flux/SignUpActions';
 
 class SignUpComponent extends HTMLElement {
   connectedCallback() {
@@ -23,7 +23,7 @@ class SignUpComponent extends HTMLElement {
         .error-message {
           color: #ff0000;
           font-size: 0.875rem;
-          margin-top: 0.5rem;
+          margin: 0.5rem 0 1rem 0;
           text-align: center;
           display: none;
         }
@@ -61,9 +61,9 @@ class SignUpComponent extends HTMLElement {
 
       <section>
         <header-title title="Sign Up" subtitle="Enter your info"></header-title>
+        <div class="error-message" id="error-message"></div>
         <signup-form-fields></signup-form-fields>
         <custom-checkbox></custom-checkbox>
-        <div class="error-message" id="error-message"></div>
         <primary-button text="Sign Up"></primary-button>
         <custom-divider></custom-divider>
         <social-buttons></social-buttons>
@@ -72,26 +72,21 @@ class SignUpComponent extends HTMLElement {
 
     this.setupEventListeners();
     this.setupStoreSubscription();
-    this.preventFormSubmission();
-  }
-
-  preventFormSubmission() {
-    // Prevent default form submission for the sign-up form
-    const form = this.querySelector('#signup-form') as HTMLFormElement;
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-      });
-    }
   }
 
   setupStoreSubscription() {
     store.subscribe((state) => {
       const errorMessage = this.querySelector('#error-message') as HTMLElement;
+      const signUpFormFields = this.querySelector('signup-form-fields') as any;
+      
       if (errorMessage) {
         if (state.signUp.error) {
           errorMessage.textContent = state.signUp.error;
           errorMessage.style.display = 'block';
+          // Restore form values when there's an error
+          if (signUpFormFields) {
+            signUpFormFields.restoreFormValues();
+          }
         } else {
           errorMessage.style.display = 'none';
         }
@@ -101,14 +96,16 @@ class SignUpComponent extends HTMLElement {
 
   setupEventListeners() {
     const signUpButton = this.querySelector('primary-button');
-    const errorMessage = this.querySelector('#error-message') as HTMLElement;
-    const signUpFormFields = this.querySelector('signup-form-fields') as any; // Get reference to the custom element
+    const signUpFormFields = this.querySelector('signup-form-fields') as any;
 
-    signUpButton?.addEventListener('primary-click', (event) => {
+    signUpButton?.addEventListener('click', (event) => {
       const form = this.querySelector('#signup-form') as HTMLFormElement;
       const checkbox = this.querySelector('input[name="terms"]') as HTMLInputElement;
       
-      if (!form || !checkbox || !signUpFormFields) return; // Ensure signUpFormFields is available
+      if (!form || !checkbox || !signUpFormFields) return;
+
+      // Store current form values before validation
+      signUpFormFields.storeFormValues();
 
       const formData = new FormData(form);
       const username = formData.get('username') as string;
@@ -116,59 +113,31 @@ class SignUpComponent extends HTMLElement {
       const phone = formData.get('phone') as string;
       const password = formData.get('password') as string;
       
-      // Use the areSelectsFilled method from the custom element for validation
-      if (!username || !email || !phone || !password || !signUpFormFields.areSelectsFilled()) {
-        SignUpActions.signUpError('Please fill in all fields');
-        alert('Please fill in all fields');
-        event.preventDefault?.();
-        event.stopPropagation?.();
-        return false;
-      }
-
       // Validate terms checkbox
       if (!checkbox.checked) {
-        SignUpActions.signUpError('Please accept the terms of use');
-        alert('Please accept the terms of use');
-        event.preventDefault?.();
-        event.stopPropagation?.();
-        return false;
+        SignUpActions.initiateSignUp({
+          username,
+          email,
+          phone,
+          password,
+          degree: signUpFormFields.getDegree(),
+          semester: signUpFormFields.getSemester()
+        });
+        return;
       }
 
-      // Check for duplicate username or email
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const duplicate = users.find((u: any) => u.username === username || u.email === email);
-      if (duplicate) {
-        SignUpActions.signUpError('Username or email already exists');
-        alert('Username or email already exists');
-        event.preventDefault?.();
-        event.stopPropagation?.();
-        return false;
-      }
-
-      // Save user info to localStorage
-      users.push({
+      // Initiate sign up process
+      SignUpActions.initiateSignUp({
         username,
         email,
         phone,
         password,
-        degree: signUpFormFields.degree,
-        semester: signUpFormFields.semester,
-        createdAt: new Date().toISOString()
+        degree: signUpFormFields.getDegree(),
+        semester: signUpFormFields.getSemester()
       });
-      localStorage.setItem('users', JSON.stringify(users));
 
-      // Show success alert
-      alert('Registration successful!');
-
-      // Redirect to login page
-      const navigationEvent = new CustomEvent('navigate', {
-        detail: '/login',
-        composed: true
-      });
-      document.dispatchEvent(navigationEvent);
-      event.preventDefault?.();
-      event.stopPropagation?.();
-      return false;
+      event.preventDefault();
+      event.stopPropagation();
     });
   }
 }

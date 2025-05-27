@@ -99,6 +99,7 @@ class TeacherCard extends HTMLElement {
   attributeChangedCallback(_name: keyof TeacherCardAttributes, oldValue: string, newValue: string) {
     console.log("TeacherCard: attributeChangedCallback", _name, oldValue, newValue);
     if (oldValue !== newValue) {
+          console.log('funciona eche')
       this.render();
       this.setupStarInteraction();
       this.setupCardClickHandler();
