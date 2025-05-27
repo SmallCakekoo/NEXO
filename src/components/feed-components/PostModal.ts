@@ -398,13 +398,19 @@ class PostModal extends HTMLElement {
         return;
       }
 
+      console.log("PostModal: Content captured:", content);
+
       // Get selected category
       const selectedCategory =
         this.shadowRoot!.querySelector<HTMLInputElement>('input[name="category"]:checked')?.id ||
         "Daily Life";
 
+      console.log("PostModal: Selected category:", selectedCategory);
+
       // Get uploaded image (if any)
       const imageFile = imageInput.files?.[0] || null;
+
+      console.log("PostModal: Image file selected:", imageFile);
 
       const newPost = {
         content,
@@ -412,6 +418,8 @@ class PostModal extends HTMLElement {
         image: imageFile,
         createdAt: new Date().toISOString(),
       };
+
+      console.log("PostModal: New post object created for dispatch:", newPost);
 
       // Dispatch event to send post elsewhere
       document.dispatchEvent(

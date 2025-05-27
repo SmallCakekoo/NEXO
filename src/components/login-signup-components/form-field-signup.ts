@@ -1,4 +1,7 @@
 class SignUpFormFields extends HTMLElement {
+  private degree: string = '';
+  private semester: string = '';
+
   connectedCallback() {
     this.innerHTML = `
       <style>
@@ -65,50 +68,49 @@ class SignUpFormFields extends HTMLElement {
         <input type="tel" placeholder="Phone number" name="phone" />
         <input type="password" placeholder="Password" name="password" />
 
-        <select name="degree">
-          <option disabled selected>Degree</option>
-          <option>Administración de Empresas con Énfasis en Negocios Internacionales</option>
-          <option>Antropología</option>
-          <option>Bacteriología y Laboratorio Clínico</option>
-          <option>Biología</option>
-          <option>Ciencia Política</option>
-          <option>Comunicación con Enfoque Digital</option>
-          <option>Contaduría Pública y Finanzas Internacionales</option>
-          <option>Derecho</option>
-          <option>Diseño de Medios Interactivos</option>
-          <option>Diseño Industrial (Diseño + Innovación)</option>
-          <option>Economía y Negocios Internacionales</option>
-          <option>Finanzas con Énfasis en Mercados Globales</option>
-          <option>Ingeniería Bioquímica</option>
-          <option>Ingeniería de Sistemas</option>
-          <option>Ingeniería en Energía Inteligente</option>
-          <option>Ingeniería Industrial</option>
-          <option>Licenciatura en Ciencias Sociales</option>
-          <option>Licenciatura en Lenguas Extranjeras con Énfasis en Inglés</option>
-          <option>Medicina</option>
-          <option>Mercadeo Internacional y Publicidad</option>
-          <option>Música</option>
-          <option>Negocios, Estrategia y Tecnología</option>
-          <option>Psicología</option>
-          <option>Química</option>
-          <option>Química Farmacéutica</option>
-          <option>Sociología</option>
-          <option>Veterinaria y Zootecnia</option>
-        </select>
+                        <select id="career">
+                            <option ${this.degree === '' ? 'selected' : ''}>Select a career</option>
+                            <option ${this.degree === 'Business Administration with an Emphasis in International Business' ? 'selected' : ''}>Business Administration with an Emphasis in International Business</option>
+                            <option ${this.degree === 'Anthropology' ? 'selected' : ''}>Anthropology</option>
+                            <option ${this.degree === 'Biology' ? 'selected' : ''}>Biology</option>
+                            <option ${this.degree === 'Political Science with an Emphasis in International Relations' ? 'selected' : ''}>Political Science with an Emphasis in International Relations</option>
+                            <option ${this.degree === 'Communication with a Digital Approach' ? 'selected' : ''}>Communication with a Digital Approach</option>
+                            <option ${this.degree === 'Public Accounting and International Finance' ? 'selected' : ''}>Public Accounting and International Finance</option>
+                            <option ${this.degree === 'Law' ? 'selected' : ''}>Law</option>
+                            <option ${this.degree === 'Interactive Media Design' ? 'selected' : ''}>Interactive Media Design</option>
+                            <option ${this.degree === 'Industrial Design' ? 'selected' : ''}>Industrial Design</option>
+                            <option ${this.degree === 'Economics' ? 'selected' : ''}>Economics</option>
+                            <option ${this.degree === 'Economics and International Business' ? 'selected' : ''}>Economics and International Business</option>
+                            <option ${this.degree === 'Finance' ? 'selected' : ''}>Finance</option>
+                            <option ${this.degree === 'Biochemical Engineering' ? 'selected' : ''}>Biochemical Engineering</option>
+                            <option ${this.degree === 'Systems Engineering' ? 'selected' : ''}>Systems Engineering</option>
+                            <option ${this.degree === 'Industrial Engineering' ? 'selected' : ''}>Industrial Engineering</option>
+                            <option ${this.degree === 'Telematics Engineering' ? 'selected' : ''}>Telematics Engineering</option>
+                            <option ${this.degree === "Bachelor's Degree in Social Sciences" ? 'selected' : ''}>Bachelor's Degree in Social Sciences</option>
+                            <option ${this.degree === "Bachelor's Degree in Foreign Languages with an Emphasis in English" ? 'selected' : ''}>Bachelor's Degree in Foreign Languages with an Emphasis in English</option>
+                            <option ${this.degree === 'Medicine' ? 'selected' : ''}>Medicine</option>
+                            <option ${this.degree === 'Music' ? 'selected' : ''}>Music</option>
+                            <option ${this.degree === 'International Marketing and Advertising' ? 'selected' : ''}>International Marketing and Advertising</option>
+                            <option ${this.degree === 'Psychology' ? 'selected' : ''}>Psychology</option>
+                            <option ${this.degree === 'Chemistry' ? 'selected' : ''}>Chemistry</option>
+                            <option ${this.degree === 'Pharmaceutical Chemistry' ? 'selected' : ''}>Pharmaceutical Chemistry</option>
+                            <option ${this.degree === 'Sociology' ? 'selected' : ''}>Sociology</option>
+                        </select>
 
-        <select name="semester">
+        <select id="semester">
           <option disabled selected>Semester</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-          <option>6</option>
-          <option>7</option>
-          <option>8</option>
-          <option>9</option>
-          <option>10</option>
-          <option>+10</option>
+          <option ${this.semester === '' ? 'selected' : ''}>Select a semester</option>
+          <option ${this.semester === 'First semester' ? 'selected' : ''}>First semester</option>
+          <option ${this.semester === 'Second semester' ? 'selected' : ''}>Second semester</option>
+          <option ${this.semester === 'Third semester' ? 'selected' : ''}>Third semester</option>
+          <option ${this.semester === 'Fourth semester' ? 'selected' : ''}>Fourth semester</option>
+          <option ${this.semester === 'Fifth semester' ? 'selected' : ''}>Fifth semester</option>
+          <option ${this.semester === 'Sixth semester' ? 'selected' : ''}>Sixth semester</option>
+          <option ${this.semester === 'Seventh semester' ? 'selected' : ''}>Seventh semester</option>
+          <option ${this.semester === 'Eighth semester' ? 'selected' : ''}>Eighth semester</option>
+          <option ${this.semester === 'Ninth semester' ? 'selected' : ''}>Ninth semester</option>
+          <option ${this.semester === 'Tenth semester' ? 'selected' : ''}>Tenth semester</option>
+          <option ${this.semester === '+Tenth semester' ? 'selected' : ''}>+Tenth semester</option>
         </select>
       </form>
     `;
@@ -121,22 +123,46 @@ class SignUpFormFields extends HTMLElement {
           e.preventDefault();
         });
       }
+
+      // Add event listeners for degree and semester selects
+      const degreeSelect = this.querySelector('#career') as HTMLSelectElement;
+      const semesterSelect = this.querySelector('#semester') as HTMLSelectElement;
+      
+      if (degreeSelect) {
+        degreeSelect.addEventListener("change", (e) => {
+          const target = e.target as HTMLSelectElement;
+          this.degree = target.value;
+          target.style.color = "black";
+          // Dispatch a custom event to notify form validation
+          this.dispatchEvent(new CustomEvent('degree-changed', { detail: this.degree }));
+        });
+      }
+
+      if (semesterSelect) {
+        semesterSelect.addEventListener("change", (e) => {
+          const target = e.target as HTMLSelectElement;
+          this.semester = target.value;
+          target.style.color = "black";
+          // Dispatch a custom event to notify form validation
+          this.dispatchEvent(new CustomEvent('semester-changed', { detail: this.semester }));
+        });
+      }
     });
+  }
 
-    const degreeSelect = this.querySelector('select[name="degree"]') as HTMLSelectElement;
-    const semesterSelect = this.querySelector('select[name="semester"]') as HTMLSelectElement;
-    
-    if (degreeSelect) {
-      degreeSelect.addEventListener("change", () => {
-        degreeSelect.style.color = "black"; 
-      });
-    }
+  // Add getters to access the current values
+  getDegree(): string {
+    return this.degree;
+  }
 
-    if (semesterSelect) {
-      semesterSelect.addEventListener("change", () => {
-        semesterSelect.style.color = "black"; 
-      });
-    }
+  getSemester(): string {
+    return this.semester;
+  }
+
+  // Method to check if both degree and semester selects have been filled
+  areSelectsFilled(): boolean {
+    return this.degree !== '' && this.degree !== 'Select a career' &&
+           this.semester !== '' && this.semester !== 'Select a semester';
   }
 }
 

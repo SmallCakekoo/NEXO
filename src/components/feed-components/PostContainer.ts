@@ -49,6 +49,7 @@ export class PostContainer extends HTMLElement {
 
       // Create the post-published event listener
       this.postPublishedListener = (event: Event) => {
+        console.log("PostContainer: 'post-published' event received.", event);
         const customEvent = event as CustomEvent<{
           content: string;
           category: string;
@@ -221,7 +222,7 @@ export class PostContainer extends HTMLElement {
     image: File | null;
     createdAt: string;
   }): void {
-    console.log("addNewPost called with data:", postData);
+    console.log("PostContainer: addNewPost called with data:", postData);
     
     // Get current user info from localStorage
     let user = null;
@@ -248,7 +249,7 @@ export class PostContainer extends HTMLElement {
     } else if (!photo) {
         photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
     }
-    console.log("User photo:", photo);
+    console.log("PostContainer: User photo:", photo);
 
     // Create a new post object with the data from the modal
     const newPost: Post = {
@@ -265,22 +266,22 @@ export class PostContainer extends HTMLElement {
       comments: [],
     };
 
-    console.log("New post object created:", newPost);
+    console.log("PostContainer: New post object created:", newPost);
     
     // Get current posts from localStorage
     const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-    console.log("Current posts from localStorage:", currentPosts);
+    console.log("PostContainer: Current posts from localStorage BEFORE adding new post:", currentPosts);
     
     // Check if post with same ID already exists
     const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
     if (!postExists) {
       // Add the new post to the array
       currentPosts.unshift(newPost);
-      console.log("Adding new post to array:", currentPosts);
+      console.log("PostContainer: Posts array AFTER adding new post:", currentPosts);
       
       // Update localStorage
       localStorage.setItem('posts', JSON.stringify(currentPosts));
-      console.log("Posts updated in localStorage");
+      console.log("PostContainer: Posts updated in localStorage.");
       
       // Dispatch action to update store
       AppDispatcher.dispatch({

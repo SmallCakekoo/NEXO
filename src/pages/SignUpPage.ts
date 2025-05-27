@@ -102,23 +102,22 @@ class SignUpComponent extends HTMLElement {
   setupEventListeners() {
     const signUpButton = this.querySelector('primary-button');
     const errorMessage = this.querySelector('#error-message') as HTMLElement;
+    const signUpFormFields = this.querySelector('signup-form-fields') as any; // Get reference to the custom element
 
     signUpButton?.addEventListener('primary-click', (event) => {
       const form = this.querySelector('#signup-form') as HTMLFormElement;
       const checkbox = this.querySelector('input[name="terms"]') as HTMLInputElement;
       
-      if (!form || !checkbox) return;
+      if (!form || !checkbox || !signUpFormFields) return; // Ensure signUpFormFields is available
 
       const formData = new FormData(form);
       const username = formData.get('username') as string;
       const email = formData.get('email') as string;
       const phone = formData.get('phone') as string;
       const password = formData.get('password') as string;
-      const degree = formData.get('degree') as string;
-      const semester = formData.get('semester') as string;
-
-      // Validate all fields are filled
-      if (!username || !email || !phone || !password || !degree || !semester) {
+      
+      // Use the areSelectsFilled method from the custom element for validation
+      if (!username || !email || !phone || !password || !signUpFormFields.areSelectsFilled()) {
         SignUpActions.signUpError('Please fill in all fields');
         alert('Please fill in all fields');
         event.preventDefault?.();
@@ -152,8 +151,8 @@ class SignUpComponent extends HTMLElement {
         email,
         phone,
         password,
-        degree,
-        semester,
+        degree: signUpFormFields.degree,
+        semester: signUpFormFields.semester,
         createdAt: new Date().toISOString()
       });
       localStorage.setItem('users', JSON.stringify(users));

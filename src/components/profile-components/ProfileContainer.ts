@@ -20,6 +20,7 @@ class ProfileContainer extends HTMLElement {
     
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
+      console.log("ProfileContainer: 'profile-updated' event received. Loading posts."); // Log profile update event
       this.loadPosts();
     });
 
@@ -27,20 +28,9 @@ class ProfileContainer extends HTMLElement {
     document.addEventListener('navigate', (event: Event) => {
       const customEvent = event as CustomEvent<string>;
       if (customEvent.detail === '/profile') {
+        console.log("ProfileContainer: 'navigate' to profile event received. Loading posts."); // Log navigation event
         this.loadPosts();
       }
-    });
-
-    // Listen for post-published event from the modal
-    document.addEventListener("post-published", (event: Event) => {
-      console.log("ProfileContainer: 'post-published' event received.", event);
-      const customEvent = event as CustomEvent<{
-        content: string;
-        category: string;
-        image: File | null;
-        createdAt: string;
-      }>;
-      this.addNewPost(customEvent.detail);
     });
   }
 
@@ -60,6 +50,7 @@ class ProfileContainer extends HTMLElement {
   }
 
   async loadPosts() {
+    console.log("ProfileContainer: loadPosts called."); // Log when loadPosts is called
     try {
       // Always get the latest loggedInUser
       let user = null;
@@ -68,8 +59,10 @@ class ProfileContainer extends HTMLElement {
       } catch (e) {}
       const username = user?.username;
       const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      console.log("ProfileContainer: Posts from localStorage in loadPosts:", posts); // Log posts from localStorage
       // Filter posts by the current username
       this.posts = posts.filter((p: any) => p.name === username);
+      console.log("ProfileContainer: Filtered posts (this.posts) before render:", this.posts); // Log filtered posts
       this.render();
     } catch (error) {
       console.error("Error loading posts:", error);
@@ -92,6 +85,13 @@ class ProfileContainer extends HTMLElement {
     createdAt: string;
   }): Promise<void> {
     console.log("ProfileContainer: addNewPost called with data:", postData);
+    
+    // This method is no longer directly called by the post-published event listener
+    // The logic for adding the post to localStorage and dispatching the action
+    // is now handled solely by PostContainer.
+    // This method can potentially be removed if it's not called elsewhere,
+    // or refactored if ProfileContainer needs a different way to handle new posts
+    // (e.g., adding to its local state after the store is updated).
     
     // Get current user info from localStorage
     let user = null;
