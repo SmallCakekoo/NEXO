@@ -13,37 +13,79 @@ class CommentsDetailPage extends HTMLElement {
     // Obtener el ID del post de la URL o sessionStorage
     this.postId = sessionStorage.getItem("currentPostId") || "";
     this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
+    console.log("CommentsDetailPage connectedCallback: postId from sessionStorage", this.postId);
 
     // Cargar los datos del post
     this.loadPostData();
   }
 
   async loadPostData() {
+    const storedPost = sessionStorage.getItem("currentPost");
+    if (storedPost) {
+      try {
+        this.postData = JSON.parse(storedPost);
+        this.postId = this.postData.id; // Use unique post ID
+        console.log("Loaded post from sessionStorage:", this.postData);
+        console.log("Updated postId after loading from sessionStorage:", this.postId);
+        this.checkUserLikeStatus(); // Check like status after loading post
+        // Ensure comments are array after loading from sessionStorage
+        if (this.postData && this.postData.comments) {
+          this.postData.comments = Array.isArray(this.postData.comments)
+            ? this.postData.comments
+            : JSON.parse(this.postData.comments);
+        }
+        this.render();
+        this.setupEventListeners();
+        // Set postId after successfully loading/finding postData
+        if (this.postData && this.postData.id) {
+          this.postId = this.postData.id;
+        }
+        return; // Exit if loaded from sessionStorage
+      } catch (parseError) {
+        console.error("Error parsing stored post from sessionStorage:", parseError);
+        // Fallback to fetching if parsing fails
+      }
+    }
+
+    // If not in sessionStorage or parsing failed, fetch the data
+    console.log("Fetching post data with postId:", this.postId);
+    await this.fetchPostData();
+  }
+
+  async fetchPostData() {
     try {
       const response = await fetch("/data/Feed.json");
       const data = await response.json();
 
       if (this.postId && data.posts) {
+        console.log("Searching for post with ID in fetched data:", this.postId);
         this.postData = data.posts.find((post: any) => post.photo === this.postId);
 
         if (!this.postData && data.posts.length > 0) {
           // Si no se encuentra el post, usar el primero como fallback
+          console.warn("Post not found with ID, using first post as fallback.");
           this.postData = data.posts[0];
           this.postId = this.postData.photo;
+        } else if (this.postData) {
+          console.log("Found post in fetched data:", this.postData);
+        } else {
+          console.warn("No posts found in fetched data.");
         }
-      } else if (data.posts && data.posts.length > 0) {
-        // Si no hay ID, usar el primer post
-        this.postData = data.posts[0];
-        this.postId = this.postData.photo;
       }
 
-      // Asegurarse de que los comentarios estén en formato array
+      // Ensure that comments are in format array
       if (this.postData && this.postData.comments) {
         this.postData.comments = Array.isArray(this.postData.comments)
           ? this.postData.comments
           : JSON.parse(this.postData.comments);
       }
 
+      // Set postId after successfully loading/finding postData
+      if (this.postData && this.postData.id) {
+        this.postId = this.postData.id;
+      }
+
+      this.checkUserLikeStatus(); // Check like status after fetching post
       this.render();
       this.setupEventListeners();
     } catch (error) {
@@ -51,6 +93,18 @@ class CommentsDetailPage extends HTMLElement {
       this.render(); // Renderizar con datos por defecto
       this.setupEventListeners();
     }
+  }
+
+  checkUserLikeStatus() {
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    if (loggedInUser && this.postData && this.postData.photo) {
+      const userId = loggedInUser.username; // Assuming username is the user ID
+      const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+      this.liked = userLikes[userId] && userLikes[userId].includes(this.postData.photo);
+    } else {
+      this.liked = false;
+    }
+    console.log("User like status checked. Liked:", this.liked);
   }
 
   setupEventListeners() {
@@ -77,19 +131,44 @@ class CommentsDetailPage extends HTMLElement {
 
     // Handle like button toggle
     likeButton?.addEventListener("click", () => {
-      this.liked = !this.liked;
-      const likeIcon = this.shadowRoot?.querySelector(".like-icon");
-      const likesCount = this.shadowRoot?.querySelector(".likes-count");
-
-      if (likeIcon && likesCount && this.postData) {
-        if (this.liked) {
-          likeIcon.classList.add("liked");
-          likesCount.textContent = `${this.postData.likes + 1} Likes`;
-        } else {
-          likeIcon.classList.remove("liked");
-          likesCount.textContent = `${this.postData.likes} Likes`;
-        }
+      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      if (!loggedInUser || !this.postData || !this.postData.photo) {
+        console.warn("Cannot toggle like: user not logged in or post data missing.");
+        return;
       }
+
+      const userId = loggedInUser.username; // Assuming username is the user ID
+      const postId = this.postData.photo;
+
+      let userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+      if (!userLikes[userId]) {
+        userLikes[userId] = [];
+      }
+
+      const postIndex = userLikes[userId].indexOf(postId);
+
+      if (postIndex === -1) {
+        // User likes the post
+        userLikes[userId].push(postId);
+        this.postData.likes = (this.postData.likes || 0) + 1;
+        this.liked = true;
+        console.log("User liked post:", postId);
+      } else {
+        // User unlikes the post
+        userLikes[userId].splice(postIndex, 1);
+        this.postData.likes = Math.max(0, (this.postData.likes || 0) - 1);
+        this.liked = false;
+        console.log("User unliked post:", postId);
+      }
+
+      // Save updated likes to localStorage
+      localStorage.setItem('userLikes', JSON.stringify(userLikes));
+
+      // Update the post data in sessionStorage as well
+      sessionStorage.setItem("currentPost", JSON.stringify(this.postData));
+
+      // Re-render to reflect changes
+      this.render();
     });
   }
 

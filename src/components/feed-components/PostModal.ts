@@ -417,10 +417,11 @@ class PostModal extends HTMLElement {
       document.dispatchEvent(
         new CustomEvent("post-published", {
           detail: newPost,
-
           composed: true,
         })
       );
+
+      console.log("PostModal: 'post-published' event dispatched with data:", newPost);
 
       // Reset and close modal
       textarea.value = "";

@@ -515,8 +515,9 @@ class FeedPost extends HTMLElement {
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
-        // Guardar el ID del post actual (usando la URL de la foto como ID)
-        sessionStorage.setItem("currentPostId", this.post.photo);
+        // Save the entire post object to sessionStorage
+        sessionStorage.setItem("currentPost", JSON.stringify(this.post));
+        sessionStorage.setItem("currentPostId", this.post.photo); // Keep this for now as CommentsDetailProfilePage might use it
 
         const navigateEvent = new CustomEvent("navigate", {
           detail: "/comments-detail",

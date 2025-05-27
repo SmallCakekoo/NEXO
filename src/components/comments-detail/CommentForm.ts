@@ -22,10 +22,21 @@ class CommentForm extends HTMLElement {
       }
 
       // Crear un objeto de comentario con datos completos
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {
+        console.error("Error parsing loggedInUser from localStorage:", e);
+      }
+
+      const userPhoto = user?.profilePic || "https://picsum.photos/seed/default/200/300"; // Default photo
+      const userName = user?.username || "Anonymous"; // Default name
+      const userCareer = user?.career || ""; // Default career, if available
+
       const newComment = {
-        photo: "https://picsum.photos/seed/user/200/300", // URL de foto por defecto
-        name: "Rosa Elvira", // Nombre del usuario actual
-        career: "Medicine", // Carrera del usuario actual
+        photo: userPhoto,
+        name: userName,
+        career: userCareer,
         date: new Date().toLocaleDateString(), // Fecha actual
         message: commentText // El texto del comentario
       };
@@ -33,7 +44,6 @@ class CommentForm extends HTMLElement {
       // Disparar un evento con los datos del comentario
       const commentEvent = new CustomEvent("comment-submitted", {
         detail: newComment,
-
         composed: true
       });
       
