@@ -18,19 +18,95 @@ class SettingsProfileHeader extends HTMLElement {
     });
 
     const profilePicture = this.shadowRoot!.querySelector(".profile-picture-container");
-    const fileInput = this.shadowRoot!.querySelector("#profile-upload");
+    const fileInput = this.shadowRoot!.querySelector("#profile-upload") as HTMLInputElement;
+    const img = this.shadowRoot!.querySelector(".profile-picture") as HTMLImageElement;
 
     profilePicture?.addEventListener("click", () => {
       (fileInput as HTMLElement).click();
     });
 
-    // Handles the image upload (this is static and this is a simulation)
-    fileInput?.addEventListener("change", () => {
-      alert("Image uploaded successfully! (simulation)");
+    // Handles the image upload and persistence
+    fileInput?.addEventListener("change", async () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          if (!base64) return;
+
+          // Update the image immediately
+          img.src = base64;
+          
+          // Get current user
+          let user = null;
+          try {
+            user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+          } catch (e) {
+            console.error('Error parsing loggedInUser:', e);
+            return;
+          }
+          
+          if (!user) {
+            console.error('No logged in user found');
+            return;
+          }
+
+          // Update user's profile picture
+          user.profilePic = base64;
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          
+          // Update in users array
+          const users = JSON.parse(localStorage.getItem('users') || '[]');
+          const idx = users.findIndex((u: any) => u.username === user.username || u.email === user.email);
+          if (idx !== -1) {
+            users[idx].profilePic = base64;
+            localStorage.setItem('users', JSON.stringify(users));
+          }
+          
+          // Update all posts for this user
+          const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+          let postsUpdated = false;
+          for (let post of posts) {
+            if (post.name === user.username) {
+              post.photo = base64;
+              postsUpdated = true;
+            }
+          }
+          if (postsUpdated) {
+            localStorage.setItem('posts', JSON.stringify(posts));
+            
+            // Dispatch action to update store
+            const event = new CustomEvent('profile-updated', {
+              detail: { type: 'photo', value: base64 },
+              composed: true
+            });
+            document.dispatchEvent(event);
+          }
+
+          // Re-render the component to ensure the new photo is displayed
+          this.render();
+        };
+
+        reader.onerror = (error) => {
+          console.error('Error reading file:', error);
+          alert('Error uploading image. Please try again.');
+        };
+
+        reader.readAsDataURL(file);
+      }
     });
   }
 
   render() {
+    // Get logged-in user info from localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    } catch (e) {
+      console.error('Error parsing loggedInUser:', e);
+    }
+    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
     this.shadowRoot!.innerHTML = `
             <style>
 :host {
@@ -194,11 +270,11 @@ h1 {
             </div>
             <div class="profile-section">
                 <div class="profile-picture-container">
-                    <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture">
+                    <img class="profile-picture" src="${profilePic}" alt="Profile picture">
                     <div class="profile-overlay">
                         <span>Change Image</span>
                     </div>
-                    <input type="file" id="profile-upload" accept="image/*">
+                    <input id="profile-upload" type="file" accept="image/*" style="display:none" />
                 </div>
                 <button class="x-button">
                     <svg viewBox="0 0 24 24">

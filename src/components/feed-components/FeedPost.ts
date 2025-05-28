@@ -1,4 +1,5 @@
 import { Post, Comment } from "../../types/feed/feeds.types";
+import { PostActions } from "../../flux/PostActions";
 
 class FeedPost extends HTMLElement {
   post: Post;
@@ -33,6 +34,7 @@ class FeedPost extends HTMLElement {
       "date",
       "share",
       "comments",
+      "id",
     ];
   }
 
@@ -49,6 +51,8 @@ class FeedPost extends HTMLElement {
       } catch {
         this.post.comments = [];
       }
+    } else if (propName === "id") {
+      this.post.id = newValue as string;
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
     }
@@ -62,6 +66,17 @@ class FeedPost extends HTMLElement {
 
   render() {
     if (this.shadowRoot) {
+      // Check if logged in user has liked this post
+      let userLikedPost = false;
+      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      if (loggedInUser && this.post.id) {
+        const userId = loggedInUser.username;
+        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+        if (userLikes[userId] && userLikes[userId].includes(this.post.id)) {
+          userLikedPost = true;
+        }
+      }
+
       this.shadowRoot.innerHTML = `
         <style>
           .post {
@@ -435,8 +450,8 @@ class FeedPost extends HTMLElement {
           <hr>
           <div class="footer">  
              <div class="align-likes">
-              <button class="just-likes">
-                <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+              <button class="just-likes ${userLikedPost ? 'liked' : ''}">
+                <svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
                 <p class="likes-count">${this.post.likes} Likes</p>
@@ -466,14 +481,43 @@ class FeedPost extends HTMLElement {
 
       const likeButton = this.shadowRoot.querySelector(".just-likes");
       likeButton?.addEventListener("click", () => {
-        this.liked = !this.liked;
-        this.render();
+        // Check if user is logged in
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        if (!loggedInUser) {
+          alert('Please log in to like posts.');
+          return;
+        }
+
+        // Ensure post has an ID
+        if (!this.post.id) {
+          console.error('Post is missing ID, cannot like.');
+          return;
+        }
+
+        const userId = loggedInUser.username; // Using username as a simple user ID
+        const postId = this.post.id;
+
+        // Check if user has already liked this post (needed to decide which action to dispatch)
+        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+        const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
+
+        if (hasLiked) {
+          // Dispatch unlike action
+          PostActions.unlikePost(postId, userId);
+        } else {
+          // Dispatch like action
+          PostActions.likePost(postId, userId);
+        }
+
+        // Remove direct localStorage updates and re-render call
+        // The state update and re-render will now be handled by PostContainer subscribing to the store
       });
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
-        // Guardar el ID del post actual (usando la URL de la foto como ID)
-        sessionStorage.setItem("currentPostId", this.post.photo);
+        // Save the entire post object to sessionStorage
+        sessionStorage.setItem("currentPost", JSON.stringify(this.post));
+        sessionStorage.setItem("currentPostId", this.post.photo); // Keep this for now as CommentsDetailProfilePage might use it
 
         const navigateEvent = new CustomEvent("navigate", {
           detail: "/comments-detail",

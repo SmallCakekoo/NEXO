@@ -10,6 +10,17 @@ class SettingsProfileContainer extends HTMLElement {
   }
 
   render() {
+    // Get logged-in user info from localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    } catch (e) {}
+    const username = user?.username || '';
+    const phone = user?.phone || '';
+    const degree = user?.degree || '';
+    const semester = user?.semester || '';
+    const bio = user?.bio || '';
+
     this.shadowRoot!.innerHTML = `
     <style>
 :host {
@@ -255,66 +266,66 @@ input:focus, select:focus, textarea:focus {
                 <div class="profile-form">
                     <div class="form-group">
                         <label>Change Username</label>
-                        <input type="text" id="username" placeholder="Username" value="Rosa Elvira">
+                        <input type="text" id="username" placeholder="Username" value="${username}">
                     </div>
                     
                     <div class="form-group">
                         <label>Change Semester info</label>
                         <select id="Semester">
-                            <option selected>Select a semester</option>
-                            <option>First semester</option>
-                            <option>Second semester</option>
-                            <option>Third semester</option>
-                            <option>Fourth semester</option>
-                            <option>Fifth semester</option>
-                            <option>Sixth semester</option>
-                            <option>Seventh semester</option>
-                            <option>Eighth semester</option>
-                            <option>Ninth semester</option>
-                            <option>Tenth semester</option>
-                            <option>+Tenth semester</option>
+                            <option ${semester === '' ? 'selected' : ''}>Select a semester</option>
+                            <option ${semester === 'First semester' ? 'selected' : ''}>First semester</option>
+                            <option ${semester === 'Second semester' ? 'selected' : ''}>Second semester</option>
+                            <option ${semester === 'Third semester' ? 'selected' : ''}>Third semester</option>
+                            <option ${semester === 'Fourth semester' ? 'selected' : ''}>Fourth semester</option>
+                            <option ${semester === 'Fifth semester' ? 'selected' : ''}>Fifth semester</option>
+                            <option ${semester === 'Sixth semester' ? 'selected' : ''}>Sixth semester</option>
+                            <option ${semester === 'Seventh semester' ? 'selected' : ''}>Seventh semester</option>
+                            <option ${semester === 'Eighth semester' ? 'selected' : ''}>Eighth semester</option>
+                            <option ${semester === 'Ninth semester' ? 'selected' : ''}>Ninth semester</option>
+                            <option ${semester === 'Tenth semester' ? 'selected' : ''}>Tenth semester</option>
+                            <option ${semester === '+Tenth semester' ? 'selected' : ''}>+Tenth semester</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Change career info</label>
                         <select id="career">
-                            <option selected>Select a career</option>
-                            <option>Business Administration with an Emphasis in International Business</option>
-                            <option>Anthropology</option>
-                            <option>Biology</option>
-                            <option>Political Science with an Emphasis in International Relations</option>
-                            <option>Communication with a Digital Approach</option>
-                            <option>Public Accounting and International Finance</option>
-                            <option>Law</option>
-                            <option>Interactive Media Design</option>
-                            <option>Industrial Design</option>
-                            <option>Economics</option>
-                            <option>Economics and International Business</option>
-                            <option>Finance</option>
-                            <option>Biochemical Engineering</option>
-                            <option>Systems Engineering</option>
-                            <option>Industrial Engineering</option>
-                            <option>Telematics Engineering</option>
-                            <option>Bachelor's Degree in Social Sciences</option>
-                            <option>Bachelor's Degree in Foreign Languages with an Emphasis in English</option>
-                            <option>Medicine</option>
-                            <option>Music</option>
-                            <option>International Marketing and Advertising</option>
-                            <option>Psychology</option>
-                            <option>Chemistry</option>
-                            <option>Pharmaceutical Chemistry</option>
-                            <option>Sociology</option>
+                            <option ${degree === '' ? 'selected' : ''}>Select a career</option>
+                            <option ${degree === 'Business Administration with an Emphasis in International Business' ? 'selected' : ''}>Business Administration with an Emphasis in International Business</option>
+                            <option ${degree === 'Anthropology' ? 'selected' : ''}>Anthropology</option>
+                            <option ${degree === 'Biology' ? 'selected' : ''}>Biology</option>
+                            <option ${degree === 'Political Science with an Emphasis in International Relations' ? 'selected' : ''}>Political Science with an Emphasis in International Relations</option>
+                            <option ${degree === 'Communication with a Digital Approach' ? 'selected' : ''}>Communication with a Digital Approach</option>
+                            <option ${degree === 'Public Accounting and International Finance' ? 'selected' : ''}>Public Accounting and International Finance</option>
+                            <option ${degree === 'Law' ? 'selected' : ''}>Law</option>
+                            <option ${degree === 'Interactive Media Design' ? 'selected' : ''}>Interactive Media Design</option>
+                            <option ${degree === 'Industrial Design' ? 'selected' : ''}>Industrial Design</option>
+                            <option ${degree === 'Economics' ? 'selected' : ''}>Economics</option>
+                            <option ${degree === 'Economics and International Business' ? 'selected' : ''}>Economics and International Business</option>
+                            <option ${degree === 'Finance' ? 'selected' : ''}>Finance</option>
+                            <option ${degree === 'Biochemical Engineering' ? 'selected' : ''}>Biochemical Engineering</option>
+                            <option ${degree === 'Systems Engineering' ? 'selected' : ''}>Systems Engineering</option>
+                            <option ${degree === 'Industrial Engineering' ? 'selected' : ''}>Industrial Engineering</option>
+                            <option ${degree === 'Telematics Engineering' ? 'selected' : ''}>Telematics Engineering</option>
+                            <option ${degree === "Bachelor's Degree in Social Sciences" ? 'selected' : ''}>Bachelor's Degree in Social Sciences</option>
+                            <option ${degree === "Bachelor's Degree in Foreign Languages with an Emphasis in English" ? 'selected' : ''}>Bachelor's Degree in Foreign Languages with an Emphasis in English</option>
+                            <option ${degree === 'Medicine' ? 'selected' : ''}>Medicine</option>
+                            <option ${degree === 'Music' ? 'selected' : ''}>Music</option>
+                            <option ${degree === 'International Marketing and Advertising' ? 'selected' : ''}>International Marketing and Advertising</option>
+                            <option ${degree === 'Psychology' ? 'selected' : ''}>Psychology</option>
+                            <option ${degree === 'Chemistry' ? 'selected' : ''}>Chemistry</option>
+                            <option ${degree === 'Pharmaceutical Chemistry' ? 'selected' : ''}>Pharmaceutical Chemistry</option>
+                            <option ${degree === 'Sociology' ? 'selected' : ''}>Sociology</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Change Phone number</label>
-                        <input type="tel" id="phone" placeholder="Phone number" value="315798754">
+                        <input type="tel" id="phone" placeholder="Phone number" value="${phone}">
                     </div>
                     
                     <div class="bio-container">
-                        <textarea class="bio-text">Hi I'm Rosa (the girl of the right), I'm a medicine student that likes to have fun. Here's my insta @Rosa_Elvira.</textarea>
+                        <textarea class="bio-text">${bio}</textarea>
                         <span class="char-counter">0/280 caracteres</span>
                     </div>
                     
@@ -357,14 +368,57 @@ input:focus, select:focus, textarea:focus {
 
     // Handles the save button click
     saveBtn?.addEventListener("click", () => {
-      console.log("Save button clicked");
+      // Save the updated profile info to localStorage
+      const usernameInput = this.shadowRoot!.querySelector('#username') as HTMLInputElement;
+      const phoneInput = this.shadowRoot!.querySelector('#phone') as HTMLInputElement;
+      const degreeSelect = this.shadowRoot!.querySelector('#career') as HTMLSelectElement;
+      const semesterSelect = this.shadowRoot!.querySelector('#Semester') as HTMLSelectElement;
+      const bioText = this.shadowRoot!.querySelector('.bio-text') as HTMLTextAreaElement;
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      if (user) {
+        const oldUsername = user.username;
+        user.username = usernameInput.value;
+        user.phone = phoneInput.value;
+        user.degree = degreeSelect.value;
+        user.semester = semesterSelect.value;
+        user.bio = bioText.value;
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        // Update in users array
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const idx = users.findIndex((u: any) => u.username === oldUsername || u.email === user.email);
+        if (idx !== -1) {
+          users[idx] = user;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        // Update all posts for this user
+        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+        for (let post of posts) {
+          if (post.name === oldUsername) {
+            post.name = user.username;
+            post.career = user.degree;
+            post.semestre = user.semester;
+            if (user.profilePic) post.photo = user.profilePic;
+          }
+        }
+        localStorage.setItem('posts', JSON.stringify(posts));
+        alert('Profile updated!');
+        // Dispatch event to notify profile update
+        document.dispatchEvent(new CustomEvent('profile-updated'));
+        
+        // Navigate back to the profile page
+        const navigationEvent = new CustomEvent("navigate", { detail: "/profile", composed: true });
+        document.dispatchEvent(navigationEvent);
+      }
     });
 
     // Handles the unlog button click
     unlogBtn?.addEventListener("click", () => {
+      localStorage.removeItem('loggedInUser');
       const event = new CustomEvent("navigate", {
-        detail: "/",
-
+        detail: "/login",
         composed: true,
       });
       document.dispatchEvent(event);

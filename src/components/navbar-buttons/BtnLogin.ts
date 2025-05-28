@@ -46,10 +46,6 @@ button:active {
      </style>
       <button id="login-button">Login</button>
     `;
-
-    this.shadowRoot!.querySelector("#login-button")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("navigate", { detail: "login" }));
-    });
   }
 }
 export default BtnLogin;

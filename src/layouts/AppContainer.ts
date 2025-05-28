@@ -1,48 +1,56 @@
 import { store, State } from "../flux/Store";
 import { NavigationActions } from "../flux/NavigationActions";
+import { AuthActions } from "../flux/AuthActions";
 
 class AppContainer extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this.handleRouteChange = this.handleRouteChange.bind(this);
-    this.render();
-    store.subscribe((state: State) => {
-      this.handleRouteChange(state);
-    });
   }
 
   connectedCallback() {
     store.load();
-    this.render();
 
-    // Manejar navegación a través de Flux
-    document.addEventListener("navigate", (event: Event) => {
-      const route = (event as CustomEvent).detail;
-      if (typeof route === "string") {
-        NavigationActions.updateRoute(route);
-      }
-    });
+    // Verificar autenticación al inicio
+    AuthActions.checkAuth();
 
-    // Suscribirse al store para actualizar la vista cuando cambie la ruta
+    // Actualizar la ruta inicial
+    NavigationActions.updateRoute(window.location.pathname);
+
+    // Suscribirse a cambios en el store
     store.subscribe((state: State) => {
       this.handleRouteChange(state);
     });
+
+    // Agregar manejador para el evento popstate (navegación del navegador)
+    window.addEventListener("popstate", () => {
+      NavigationActions.updateRoute(window.location.pathname);
+    });
+
+    // Agregar manejador para eventos de navegación personalizados
+    document.addEventListener("navigate", ((event: CustomEvent) => {
+      console.log("AppContainer: 'navigate' event received", event.detail);
+      const path = event.detail;
+      NavigationActions.navigate(path);
+    }) as EventListener);
   }
 
   render() {
     this.shadowRoot!.innerHTML = `
-      <landing-page></landing-page>
+      <div>Loading...</div>
     `;
   }
 
   private handleRouteChange(state: State) {
+    console.log("AppContainer: handleRouteChange", state.currentPath);
     const route = state.currentPath;
     this.updateView(route);
     window.scrollTo(0, 0);
   }
 
   private updateView(route: string) {
+    console.log("AppContainer: updateView to", route);
     let newComponent = "";
 
     switch (route) {
@@ -70,17 +78,19 @@ class AppContainer extends HTMLElement {
       case "/comments-detail-profile":
         newComponent = "<comments-detail-profile></comments-detail-profile>";
         break;
-      case "./login":
+      case "/login":
         newComponent = "<login-component></login-component>";
         break;
-      case "./signup":
+      case "/signup":
         newComponent = "<sign-up-component></sign-up-component>";
         break;
       case "/":
         newComponent = "<landing-page></landing-page>";
         break;
       default:
+        console.warn(`Unknown route: ${route}. Redirecting to landing page.`);
         newComponent = "<landing-page></landing-page>";
+        break;
     }
     this.shadowRoot!.innerHTML = newComponent;
     window.scrollTo(0, 0);

@@ -14,13 +14,14 @@ class CommentsContainer extends HTMLElement {
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (name === "post-id" && newValue !== oldValue) {
       this.postId = newValue;
-      this.loadComments();
+      this.loadAndDisplayComments();
     }
   }
 
   connectedCallback() {
     this.render();
     this.setupEventListeners();
+    this.loadAndDisplayComments();
   }
 
   disconnectedCallback() {
@@ -69,6 +70,8 @@ class CommentsContainer extends HTMLElement {
 
         // Actualizar el atributo de comentarios
         commentsList.setAttribute("comments", JSON.stringify(currentComments));
+        // Save updated comments to localStorage
+        localStorage.setItem(`comments_${this.postId}`, JSON.stringify(currentComments));
       }
     }) as EventListener;
 
@@ -85,7 +88,25 @@ class CommentsContainer extends HTMLElement {
     );
   }
 
-  async loadComments() {
+  async loadAndDisplayComments() {
+    const storedComments = localStorage.getItem(`comments_${this.postId}`);
+
+    if (storedComments) {
+      try {
+        const comments = JSON.parse(storedComments);
+        const commentsList = this.shadowRoot?.querySelector("comments-list");
+        if (commentsList) {
+          commentsList.setAttribute("comments", JSON.stringify(comments));
+        }
+        console.log("Loaded comments from localStorage for postId:", this.postId);
+        return; // Exit if comments were loaded from localStorage
+      } catch (error) {
+        console.error("Error parsing comments from localStorage:", error);
+        // If parsing fails, proceed to fetch from JSON
+      }
+    }
+
+    // If no comments in localStorage or parsing failed, fetch from JSON
     try {
       const response = await fetch("/data/Feed.json");
       const data = await response.json();
@@ -96,12 +117,15 @@ class CommentsContainer extends HTMLElement {
         if (post && post.comments) {
           const commentsList = this.shadowRoot?.querySelector("comments-list");
           if (commentsList) {
-            commentsList.setAttribute("comments", JSON.stringify(post.comments));
+            const commentsToSave = Array.isArray(post.comments) ? post.comments : JSON.parse(post.comments);
+            localStorage.setItem(`comments_${this.postId}`, JSON.stringify(commentsToSave));
+            commentsList.setAttribute("comments", JSON.stringify(commentsToSave));
+            console.log("Loaded comments from JSON and saved to localStorage for postId:", this.postId);
           }
         }
       }
     } catch (error) {
-      console.error("Error loading comments:", error);
+      console.error("Error loading comments from JSON:", error);
     }
   }
 

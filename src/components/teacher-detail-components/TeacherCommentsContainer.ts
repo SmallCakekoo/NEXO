@@ -26,17 +26,16 @@ class TeacherCommentsContainer extends HTMLElement {
   }
 
   private setupEventListeners() {
-    // Listen for review submission from the form
-    this.addEventListener('review-submitted', (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const review = customEvent.detail;
-      
-      // Get the review list component and add the new review
-      const reviewList = this.shadowRoot?.querySelector('teacher-review-list') as any;
-      if (reviewList && typeof reviewList.addReview === 'function') {
-        reviewList.addReview(review);
-      }
-    });
+    // Removed the event listener for 'review-submitted' as updates are now handled by the store subscription in TeacherReviewList
+    // this.addEventListener('review-submitted', (event: Event) => {
+    //   const customEvent = event as CustomEvent;
+    //   const review = customEvent.detail;
+    // 
+    //   const reviewList = this.shadowRoot?.querySelector('teacher-review-list') as any;
+    //   if (reviewList && typeof reviewList.addReview === 'function') {
+    //     reviewList.addReview(review);
+    //   }
+    // });
   }
 
   render() {
@@ -64,12 +63,20 @@ class TeacherCommentsContainer extends HTMLElement {
             margin-top: 1rem;
           }
         </style>
-        <teacher-review-form></teacher-review-form>
+        <div id="form-container"></div>
         <div class="divider"></div>
         <div class="reviews-container">
           <teacher-review-list teacher-name="${this.teacherName}"></teacher-review-list>
         </div>
       `;
+
+      // Manually create and append the teacher-review-form to pass the property
+      const formContainer = this.shadowRoot.getElementById('form-container');
+      if (formContainer) {
+        const reviewForm = document.createElement('teacher-review-form') as any;
+        reviewForm.teacherName = this.teacherName; // Pass teacherName as a property
+        formContainer.appendChild(reviewForm);
+      }
     }
   }
 }

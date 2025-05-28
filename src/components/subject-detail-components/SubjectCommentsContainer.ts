@@ -72,7 +72,7 @@ class SubjectCommentsContainer extends HTMLElement {
             margin: 1rem 0;
           }
         </style>
-        <subject-review-form id="review-form"></subject-review-form>
+        <subject-review-form id="review-form" subject-name="${this.subjectName}"></subject-review-form>
         <div class="divider"></div>
         <subject-review-list id="review-list" subject-name="${this.subjectName}"></subject-review-list>
       `;

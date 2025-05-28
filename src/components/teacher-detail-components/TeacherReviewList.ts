@@ -1,6 +1,7 @@
 import { Review } from "../../types/teacher-detail/TeacherReviewList.types";
 import { fetchTeachers } from "../../services/TeacherService";
 import { teachers } from "../../types/academics/TeachersContainer.types";
+import { store, State } from '../../flux/Store';
 
 // Cache estática para almacenar las reseñas por profesor
 const reviewsCache: Record<string, Review[]> = {};
@@ -14,6 +15,7 @@ class TeacherReviewList extends HTMLElement {
   private teacherName: string = "";
   private isLoading: boolean = false;
   private abortController: AbortController | null = null;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -70,21 +72,24 @@ class TeacherReviewList extends HTMLElement {
     }
 
     this.isLoading = true;
-    
     try {
-      // Usar caché si está disponible y es reciente
-      if (!this.shouldFetchFromNetwork(this.teacherName) && reviewsCache[this.teacherName]) {
-        console.log('Using cached reviews for teacher:', this.teacherName);
-        this.updateReviews(reviewsCache[this.teacherName]);
-        return;
-      }
+      const state = store.getState();
+      const teacherRatings = state.teacherRatings[this.teacherName] || [];
+      // Map the ratings to the Review type, formatting the date and including author/image if available
+      this.reviews = teacherRatings.map(rating => ({
+        rating: rating.rating,
+        text: rating.comment,
+        // Format the timestamp to a readable date string
+        date: new Date(rating.timestamp).toLocaleDateString(), 
+        author: (rating as any).author || 'Anonymous', // Bypassing type check as author might not be on Rating type
+        image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`, // Bypassing type check for image
+      }));
 
-      console.log('Fetching fresh reviews for teacher:', this.teacherName);
-      const reviews = await this.fetchFromNetwork();
-      this.updateReviews(reviews);
+      this.render();
     } catch (error) {
       console.error('Error in fetchReviews:', error);
-      this.updateReviews([]);
+      this.reviews = [];
+      this.render();
     } finally {
       this.isLoading = false;
     }
@@ -102,33 +107,48 @@ class TeacherReviewList extends HTMLElement {
     if (this.teacherName) {
       this.fetchReviews();
     }
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
 
   disconnectedCallback() {
-    // Limpiar el controlador de aborto si existe
     if (this.abortController) {
       this.abortController.abort();
       this.abortController = null;
     }
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
   }
 
-  // Public method to add a review from external code
-  addReview(review: Review) {
-    // Agregar a las reseñas locales
-    this.reviews.unshift(review);
-    
-    // Actualizar la caché
-    if (reviewsCache[this.teacherName]) {
-      reviewsCache[this.teacherName].unshift(review);
-    } else {
-      reviewsCache[this.teacherName] = [review];
+  private handleStoreChange(state: State) {
+    if (!this.isConnected || !this.teacherName) {
+      return; // Only update if the component is connected and has a teacher name
     }
-    
-    // Actualizar el tiempo de la última modificación
-    lastFetchTime[this.teacherName] = Date.now();
-    
-    // Renderizar
+    // Update reviews from the store state for this teacher
+    const latestRatings = state.teacherRatings[this.teacherName] || [];
+    this.reviews = latestRatings.map(rating => ({
+      rating: rating.rating,
+      text: rating.comment,
+      date: new Date(rating.timestamp).toLocaleDateString(),
+      author: (rating as any).author || 'Anonymous',
+      image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+    }));
     this.render();
+  }
+
+  addReview(review: Review) {
+    console.warn('addReview method in TeacherReviewList called. Consider using the store for updates.');
+    const localKey = `teacherReviews_${this.teacherName}`;
+    let localReviews: Review[] = [];
+    try {
+      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (e) {}
+    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      localReviews.unshift(review);
+      localStorage.setItem(localKey, JSON.stringify(localReviews));
+      this.reviews = localReviews;
+      this.render();
+    }
   }
 
   render() {

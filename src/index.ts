@@ -8,6 +8,10 @@ import BtnProfile from "./components/navbar-buttons/BtnProfile";
 import BtnLogin from "./components/navbar-buttons/BtnLogin";
 import BtnSignup from "./components/navbar-buttons/BtnSignup";
 
+// Import necessary modules for the global post listener
+import { AppDispatcher } from './flux/Dispatcher';
+import { PostActionTypes } from './types/feed/PostActionTypes';
+
 customElements.define("nav-bar", NavBarLog);
 customElements.define("nav-bar-login-signup", NavBarLoginSignup);
 customElements.define("back-button", BackButton);
@@ -44,7 +48,7 @@ customElements.define("sign-up-component", SignUpComponent);
 import PostModal from "./components/feed-components/PostModal";
 import FloatingButtonAdd from "./components/FloatingButtonAdd";
 import ButtonsTags from "./components/feed-components/ButtonTags";
-import PostContainer from "./components/feed-components/PostContainer";
+import { PostContainer } from "./components/feed-components/PostContainer";
 import TagFiltersBar from "./components/feed-components/TagFiltersBar";
 import FeedPost from "./components/feed-components/FeedPost";
 import ProfilePost from "./components/profile-components/ProfilePost";
@@ -52,11 +56,10 @@ import ProfilePost from "./components/profile-components/ProfilePost";
 customElements.define("post-modal", PostModal);
 customElements.define("floating-btn", FloatingButtonAdd);
 customElements.define("button-tags", ButtonsTags);
-customElements.define("post-container", PostContainer);
 customElements.define("tag-filters-bar", TagFiltersBar);
 customElements.define("feed-post", FeedPost);
 customElements.define("profile-post", ProfilePost);
-
+customElements.define("post-container", PostContainer)
 // Componentes de Landing
 import StartButton from "./components/landing-components/StartButton";
 import LandingCards from "./components/landing-components/LandingCards";
@@ -135,3 +138,97 @@ import "./components/login-signup-components/checkbox";
 // Layout principal
 import AppContainer from "./layouts/AppContainer";
 customElements.define("app-container", AppContainer);
+
+// Global event listener for post publishing
+document.addEventListener("post-published", (event) => {
+  console.log("Global post-published listener received event:", event);
+  const customEvent = event as CustomEvent<{
+    content: string;
+    category: string;
+    image: File | null;
+    createdAt: string;
+  }>;
+  const postData = customEvent.detail;
+
+  // --- Logic moved from PostContainer.ts addNewPost --- START
+  // Get current user info from localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+  } catch (e) {
+    console.error("Global post-published listener: Error getting user from localStorage:", e);
+    alert("Error getting user information. Cannot create post.");
+    return;
+  }
+
+  if (!user) {
+    console.error("Global post-published listener: No logged in user found");
+    alert("You must be logged in to create a post.");
+    return;
+  }
+
+  const name = user?.username || "Unknown User";
+  const career = user?.degree || "Unknown Career";
+  const semestre = user?.semester || "";
+  let photo = user?.profilePic;
+  if (!photo && postData.image) {
+      photo = URL.createObjectURL(postData.image);
+  } else if (!photo) {
+      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+  }
+  console.log("Global post-published listener: User photo:", photo);
+
+  // Create a new post object with the data from the modal
+  const newPost: any = { // Using any for now, ideally use the Post type
+    id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+    photo: photo,
+    name: name,
+    date: new Date().toLocaleDateString(),
+    career: career,
+    semestre: semestre,
+    message: postData.content,
+    tag: postData.category,
+    likes: 0,
+    share: "0",
+    comments: [],
+  };
+
+  console.log("Global post-published listener: New post object created:", newPost);
+
+  // Get current posts from localStorage
+  const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+  console.log("Global post-published listener: Current posts from localStorage BEFORE adding new post:", currentPosts);
+
+  // Check if post with same ID already exists
+  const postExists = currentPosts.some((post: any) => post.id === newPost.id);
+  if (!postExists) {
+    // Add the new post to the array
+    currentPosts.unshift(newPost);
+    console.log("Global post-published listener: Posts array AFTER adding new post:", currentPosts);
+
+    // Update localStorage
+    localStorage.setItem('posts', JSON.stringify(currentPosts));
+    console.log("Global post-published listener: Posts updated in localStorage.");
+
+    // Dispatch action to update store
+    // Assuming AppDispatcher and PostActionTypes are available globally or imported
+    // You might need to import these in index.ts if not
+    // import { AppDispatcher } from './flux/Dispatcher';
+    // import { PostActionTypes } from './types/feed/PostActionTypes';
+    AppDispatcher.dispatch({
+      type: PostActionTypes.ADD_POST,
+      payload: newPost
+    });
+    console.log("Global post-published listener: ADD_POST action dispatched");
+  } else {
+    console.warn("Global post-published listener: Post with same ID already exists, not adding:", newPost.id);
+  }
+  // --- Logic moved from PostContainer.ts addNewPost --- END
+});
+
+// Initial navigation or application setup
+// (Keep your existing application initialization code here)
+// For example, if you have a router or initial page load logic:
+// document.dispatchEvent(new CustomEvent('navigate', { detail: '/landing' }));
+
+console.log("se cargó este archivo")

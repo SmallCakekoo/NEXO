@@ -1,12 +1,27 @@
+import { store } from "../../flux/Store";
+import { RatingActions } from "../../flux/RatingActions";
+
 class SubjectReviewForm extends HTMLElement {
   private selectedRating: number = 0;
+  private subjectName: string = '';
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
+  static get observedAttributes() {
+    return ["subject-name"];
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "subject-name" && oldValue !== newValue) {
+      this.subjectName = newValue;
+    }
+  }
+
   connectedCallback() {
+    this.subjectName = this.getAttribute('subject-name') || '';
     this.render();
     this.setupEventListeners();
   }
@@ -47,8 +62,10 @@ class SubjectReviewForm extends HTMLElement {
 
       const reviewText = reviewInput?.value || "";
 
-      // Fallback avatar if user doesn't have one
-      const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E`;
+      if (reviewText.trim() === "") {
+        alert("Por favor, escribe un comentario antes de publicar tu reseña.");
+        return;
+      }
 
       // Reset form
       const oldRating = this.selectedRating;
@@ -57,13 +74,35 @@ class SubjectReviewForm extends HTMLElement {
       this.updateStars();
 
       // Crear el objeto de reseña
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const author = user?.username || "Current User";
+      const image = user?.profilePic || `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E`;
+
       const review = {
         rating: oldRating,
         text: reviewText,
         date: new Date().toLocaleDateString(),
-        author: "Current User",
-        image: defaultAvatar,
+        author,
+        image,
       };
+
+      // Dispatch rating action
+      RatingActions.addSubjectRating(
+        this.subjectName,
+        oldRating,
+        reviewText,
+        author,
+        image
+      );
+
+      // Update the average rating
+      RatingActions.updateSubjectRating(
+        this.subjectName,
+        oldRating
+      );
 
       // Despachar el evento directamente en este elemento
       this.dispatchEvent(

@@ -1,5 +1,9 @@
+import { store } from "../../flux/Store";
+import { RatingActions } from "../../flux/RatingActions";
+
 class TeacherReviewForm extends HTMLElement {
   private selectedRating: number = 0;
+  public teacherName: string = '';
 
   constructor() {
     super();
@@ -61,13 +65,41 @@ class TeacherReviewForm extends HTMLElement {
       }
 
       // Create the review object
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      } catch (e) {}
+      const author = user?.username || "Current User";
+      const image = user?.profilePic || '';
+
       const review = {
         rating: this.selectedRating,
         text: reviewText,
         date: new Date().toLocaleDateString(),
-        author: "Current User",
-        image: "",
+        author,
+        image,
       };
+
+      // Use the teacherName property directly
+      if (!this.teacherName) {
+        console.error('Teacher name not found on component property');
+        return;
+      }
+
+      // Dispatch rating action
+      RatingActions.addTeacherRating(
+        this.teacherName,
+        this.selectedRating,
+        reviewText,
+        author,
+        image
+      );
+
+      // Update the average rating
+      RatingActions.updateTeacherRating(
+        this.teacherName,
+        this.selectedRating
+      );
 
       // Dispatch custom event to notify other components
       this.dispatchEvent(
