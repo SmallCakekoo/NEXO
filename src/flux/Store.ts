@@ -3,6 +3,7 @@ import { NavigateActionsType } from "./NavigationActions";
 import { SignUpActionsType, SelectionActionsType } from "./Actions";
 import { PostActionTypes } from "../types/feed/PostActionTypes";
 import { Post } from "../types/feed/feeds.types";
+import { AuthActionsType } from "./AuthActions";
 
 export interface Rating {
   rating: number;
@@ -47,6 +48,10 @@ interface UpdateSubjectRatingPayload {
 export interface State {
   currentPath: string;
   history: string[];
+  auth: {
+    isAuthenticated: boolean;
+    user: any | null;
+  };
   signUp: {
     loading: boolean;
     error: string | null;
@@ -65,6 +70,10 @@ class Store {
   private _myState: State = {
     currentPath: "",
     history: [],
+    auth: {
+      isAuthenticated: false,
+      user: null,
+    },
     signUp: {
       loading: false,
       error: null,
@@ -94,11 +103,24 @@ class Store {
   }
 
   private _handleRouteChange(newPath: string) {
-    this._myState = {
-      ...this._myState,
-      currentPath: newPath,
-      history: [...this._myState.history, newPath],
-    };
+    // Lista de rutas públicas
+    const publicRoutes = ["/", "/login", "/signup"];
+
+    // Si la ruta no es pública y el usuario no está autenticado, redirigir a la landing
+    if (!publicRoutes.includes(newPath) && !this._myState.auth.isAuthenticated) {
+      window.history.replaceState({}, "", "/");
+      this._myState = {
+        ...this._myState,
+        currentPath: "/",
+        history: [...this._myState.history, "/"],
+      };
+    } else {
+      this._myState = {
+        ...this._myState,
+        currentPath: newPath,
+        history: [...this._myState.history, newPath],
+      };
+    }
     this._emitChange();
   }
 
@@ -108,6 +130,35 @@ class Store {
 
   _handleActions(action: Action): void {
     switch (action.type) {
+      case AuthActionsType.CHECK_AUTH:
+      case AuthActionsType.LOGIN_SUCCESS:
+        if (action.payload) {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: true,
+              user: action.payload,
+            },
+          };
+          // Si el usuario está en una ruta pública, redirigir al feed
+          if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
+            window.history.replaceState({}, "", "/feed");
+            this._handleRouteChange("/feed");
+          }
+        }
+        break;
+
+      case AuthActionsType.LOGOUT:
+        this._myState = {
+          ...this._myState,
+          auth: {
+            isAuthenticated: false,
+            user: null,
+          },
+        };
+        window.history.replaceState({}, "", "/");
+        this._handleRouteChange("/");
+        break;
       case NavigateActionsType.NAVIGATE:
         if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
           const newPath = String(action.payload.path);
@@ -353,10 +404,10 @@ class Store {
         type: SignUpActionsType.SIGN_UP_SUCCESS,
       });
 
-      // Navigate to feed page (instead of login)
+      // Hacer login automático después del registro
       AppDispatcher.dispatch({
-        type: NavigateActionsType.NAVIGATE,
-        payload: { path: "/login" },
+        type: AuthActionsType.LOGIN_SUCCESS,
+        payload: userData,
       });
     } catch (error) {
       AppDispatcher.dispatch({
@@ -385,6 +436,25 @@ class Store {
   }
 
   load(): void {
+    // Cargar datos existentes
+    const user = localStorage.getItem("loggedInUser");
+    if (user) {
+      this._myState = {
+        ...this._myState,
+        auth: {
+          isAuthenticated: true,
+          user: JSON.parse(user),
+        },
+      };
+
+      // Si el usuario está en una ruta pública, redirigir al feed
+      if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+        window.history.replaceState({}, "", "/feed");
+        this._handleRouteChange("/feed");
+        return;
+      }
+    }
+
     const persistedState = localStorage.getItem("flux:state");
     if (persistedState) {
       this._myState = JSON.parse(persistedState);

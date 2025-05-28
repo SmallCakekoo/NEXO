@@ -10,7 +10,7 @@ class FeedPage extends HTMLElement {
     // Check if user is logged in
     const loggedInUser = localStorage.getItem('loggedInUser');
     if (!loggedInUser) {
-      alert('You must log in first!');
+     
       const event = new CustomEvent('navigate', {
         detail: '/login',
         composed: true

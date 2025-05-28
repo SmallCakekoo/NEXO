@@ -1,5 +1,6 @@
 import { store, State } from "../flux/Store";
 import { NavigationActions } from "../flux/NavigationActions";
+import { AuthActions } from "../flux/AuthActions";
 
 class AppContainer extends HTMLElement {
   constructor() {
@@ -10,13 +11,24 @@ class AppContainer extends HTMLElement {
 
   connectedCallback() {
     store.load();
+
+    // Verificar autenticación al inicio
+    AuthActions.checkAuth();
+
+    // Actualizar la ruta inicial
     NavigationActions.updateRoute(window.location.pathname);
 
+    // Suscribirse a cambios en el store
     store.subscribe((state: State) => {
       this.handleRouteChange(state);
     });
 
-    // Add event listener for navigation events
+    // Agregar manejador para el evento popstate (navegación del navegador)
+    window.addEventListener("popstate", () => {
+      NavigationActions.updateRoute(window.location.pathname);
+    });
+
+    // Agregar manejador para eventos de navegación personalizados
     document.addEventListener("navigate", ((event: CustomEvent) => {
       console.log("AppContainer: 'navigate' event received", event.detail);
       const path = event.detail;

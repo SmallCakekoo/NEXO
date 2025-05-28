@@ -1,3 +1,5 @@
+import { AuthActions } from "../flux/AuthActions";
+
 class LoginComponent extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
@@ -61,32 +63,31 @@ class LoginComponent extends HTMLElement {
   }
 
   setupLoginHandler() {
-    const loginButton = this.querySelector('primary-button');
-    loginButton?.addEventListener('click', () => {
-      const form = this.querySelector('#login-form') as HTMLFormElement;
+    const loginButton = this.querySelector("primary-button");
+    loginButton?.addEventListener("click", () => {
+      const form = this.querySelector("#login-form") as HTMLFormElement;
       if (!form) return;
       const usernameInput = form.querySelector('input[type="text"]') as HTMLInputElement;
       const passwordInput = form.querySelector('input[type="password"]') as HTMLInputElement;
       const username = usernameInput?.value.trim();
       const password = passwordInput?.value;
+
       if (!username || !password) {
-        alert('Please enter both username and password.');
+        alert("Please enter both username and password.");
         return;
       }
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const user = users.find((u:any) => u.username === username && u.password === password);
+
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const user = users.find((u: any) => u.username === username && u.password === password);
+
       if (!user) {
-        alert('Invalid username or password.');
+        alert("Usuario o contraseña inválidos.");
         return;
       }
-      // Set logged in user
-      localStorage.setItem('loggedInUser', JSON.stringify(user));
-      // Navigate to feed
-      const event = new CustomEvent('navigate', {
-        detail: '/feed',
-        composed: true
-      });
-      document.dispatchEvent(event);
+
+      // Usar AuthActions para el login
+      AuthActions.loginSuccess(user);
+      // La navegación al feed se manejará automáticamente en el Store
     });
   }
 }
