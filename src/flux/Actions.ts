@@ -10,11 +10,32 @@ export const SignUpActionsType = {
   SIGN_UP_ERROR: "SIGN_UP_ERROR",
 };
 
+export const SelectionActionsType = {
+  SELECT_TEACHER: "SELECT_TEACHER",
+  SELECT_SUBJECT: "SELECT_SUBJECT",
+};
+
 export const NavigateActions = {
   navigate: (path: string) => {
     AppDispatcher.dispatch({
       type: NavigateActionsType.NAVIGATE,
       payload: { path },
+    });
+  },
+};
+
+export const SelectionActions = {
+  selectTeacher: (teacherData: any) => {
+    AppDispatcher.dispatch({
+      type: SelectionActionsType.SELECT_TEACHER,
+      payload: teacherData,
+    });
+  },
+
+  selectSubject: (subjectData: any) => {
+    AppDispatcher.dispatch({
+      type: SelectionActionsType.SELECT_SUBJECT,
+      payload: subjectData,
     });
   },
 };

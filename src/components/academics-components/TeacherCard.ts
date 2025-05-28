@@ -1,5 +1,7 @@
 import { TeacherCardAttributes } from "../../types/academics/TeacherCard.types";
 import { store, State, Rating } from "../../flux/Store";
+import { NavigationActions } from "../../flux/NavigationActions";
+import { SelectionActions } from "../../flux/Actions";
 
 class TeacherCard extends HTMLElement {
   private unsubscribeStore: (() => void) | null = null;
@@ -17,8 +19,6 @@ class TeacherCard extends HTMLElement {
   connectedCallback() {
     console.log("TeacherCard: connectedCallback");
     this.render();
-    this.setupStarInteraction();
-    this.setupCardClickHandler();
     this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
 
@@ -32,95 +32,53 @@ class TeacherCard extends HTMLElement {
     this.render();
   }
 
-  // Adds click event to the card for the navigation
-  setupCardClickHandler() {
-    console.log("TeacherCard: setupCardClickHandler");
-    const card = this.shadowRoot?.querySelector(".card");
-    console.log("TeacherCard: querySelector(.card) result", card);
-    if (card) {
-      console.log("TeacherCard: Attaching click listener to card");
-      card.addEventListener("click", () => {
-        console.log("TeacherCard: card clicked");
-        // Guardar los datos del profesor en sessionStorage
-        const teacherData = {
-          name: this.getAttribute("name") || "",
-          subject: this.getAttribute("subject") || "",
-          nucleus: this.getAttribute("nucleus") || "",
-          rating: this.getAttribute("rating") || "0", // Store the original rating attribute
-          image: this.getAttribute("image") || Math.floor(Math.random() * 30).toString()
-        };
-        
-        sessionStorage.setItem("selectedTeacher", JSON.stringify(teacherData));
-        
-        const customEvent = new CustomEvent("navigate", {
-          detail: "/teacher-detail",
-        });
-        document.dispatchEvent(customEvent);
-      });
-    } else {
-      console.error("TeacherCard: Could not find .card element to attach listener");
-    }
-  }
+  private handleClick = (event: Event) => {
+    console.log("TeacherCard: Card clicked");
+    const name = this.getAttribute("name") || "";
+    const subject = this.getAttribute("subject") || "";
+    const nucleus = this.getAttribute("nucleus") || "";
+    const rating = this.getAttribute("rating") || "0";
 
-  private calculateAverageRating(): number {
-    const teacherName = this.getAttribute("name") || "";
-    const state = store.getState();
-    const ratings = state.teacherRatings[teacherName] || [];
-    
-    if (ratings.length === 0) {
-      return 0;
-    }
-    
-    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
-    return Number((sum / ratings.length).toFixed(1));
-  }
+    // Generar el ID de imagen consistente
+    const hash = this.hashString(name);
+    const imageId = Math.abs(hash % 30);
+    const image = `https://picsum.photos/id/${imageId}/250/150`;
 
-  // Adds hover interaction to the star icons to simulate rating behavior (only visual)
-  setupStarInteraction() {
-    const rating = this.calculateAverageRating();
-    const stars = this.shadowRoot?.querySelectorAll(".star-icon");
-    if (stars) {
-      stars.forEach((star, index) => {
-        star.addEventListener("mouseover", () => {
-          stars.forEach((s, i) => {
-            s.setAttribute("fill", i <= index ? "#5354ED" : "#ccc");
-          });
-        });
+    const teacherData = {
+      name,
+      subject,
+      nucleus,
+      rating,
+      image,
+    };
 
-        star.addEventListener("mouseout", () => {
-          stars.forEach((s, i) => {
-            s.setAttribute("fill", i < rating ? "#5354ED" : "#ccc");
-          });
-        });
-      });
-    }
-  }
+    console.log("TeacherCard: Dispatching teacher data:", teacherData);
+    SelectionActions.selectTeacher(teacherData);
 
-  attributeChangedCallback(_name: keyof TeacherCardAttributes, oldValue: string, newValue: string) {
-    console.log("TeacherCard: attributeChangedCallback", _name, oldValue, newValue);
-    if (oldValue !== newValue) {
-          console.log('funciona eche')
-      this.render();
-      this.setupStarInteraction();
-      this.setupCardClickHandler();
-    }
-  }
+    console.log("TeacherCard: Navigating to /teacher-detail");
+    NavigationActions.navigate("/teacher-detail");
+  };
 
   render() {
     const name = this.getAttribute("name") || "Name not specified";
     const subject = this.getAttribute("subject") || "Subject not specified";
     const nucleus = this.getAttribute("nucleus") || "Nucleus not specified";
     const rating = this.calculateAverageRating();
-    const randomId = Math.floor(Math.random() * 30);
-    const image = `https://picsum.photos/id/${randomId}/250/150`;
+
+    // Usar el nombre del profesor para generar un ID consistente pero único
+    const hash = this.hashString(name);
+    const imageId = Math.abs(hash % 30); // Asegurarnos de que esté entre 0 y 29
+    const image = `https://picsum.photos/id/${imageId}/250/150`;
 
     const stars = Array(5)
       .fill(0)
       .map(
         (_, index) => `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${index < rating ? "#5354ED" : "#ccc"}" class="star-icon">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${
+            index < rating ? "#5354ED" : "#ccc"
+          }" class="star-icon">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          </svg>
         `
       )
       .join("");
@@ -225,7 +183,7 @@ class TeacherCard extends HTMLElement {
         }
       </style>
     
-      <div class="card">
+      <div class="card" id="teacherCard">
         <div class="image-container">
           <img src="${image}" alt="${name}">
         </div>
@@ -239,6 +197,45 @@ class TeacherCard extends HTMLElement {
         </div>
       </div>
     `;
+
+    // Agregar el event listener después de renderizar
+    const card = this.shadowRoot?.querySelector("#teacherCard");
+    if (card) {
+      console.log("TeacherCard: Adding click listener to card");
+      card.addEventListener("click", this.handleClick);
+    } else {
+      console.error("TeacherCard: Could not find #teacherCard element");
+    }
+  }
+
+  private calculateAverageRating(): number {
+    const teacherName = this.getAttribute("name") || "";
+    const state = store.getState();
+    const ratings = state.teacherRatings[teacherName] || [];
+
+    if (ratings.length === 0) {
+      return 0;
+    }
+
+    const sum = ratings.reduce((acc: number, curr: Rating) => acc + curr.rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
+  }
+
+  attributeChangedCallback(name: keyof TeacherCardAttributes, oldValue: string, newValue: string) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+
+  // Función para generar un hash numérico de un string
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convertir a entero de 32 bits
+    }
+    return hash;
   }
 }
 
