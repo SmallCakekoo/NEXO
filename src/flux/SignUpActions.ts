@@ -50,6 +50,25 @@ export class SignUpActions {
     });
   }
 
+  static validateSignUpForm(formData: FormData, degree: string, semester: string, checkbox: HTMLInputElement | null): { isValid: boolean; error?: string } {
+    const username = formData.get("username") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const password = formData.get("password") as string;
+
+    // Validate that all fields are complete
+    if (!username || !email || !phone || !password || !degree || !semester) {
+      return { isValid: false, error: "Please complete all fields" };
+    }
+
+    // Validate terms checkbox
+    if (!checkbox?.checked) {
+      return { isValid: false, error: "You must accept the terms of use" };
+    }
+
+    return { isValid: true };
+  }
+
   static initiateSignUp(userData: {
     username: string;
     email: string;
