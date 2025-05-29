@@ -1,5 +1,6 @@
 import { Post, Comment } from "../../types/feed/feeds.types";
 import { NavigationActions } from "../../flux/NavigationActions";
+import { PostActions } from "../../flux/PostActions";
 
 class ProfilePost extends HTMLElement {
   post: Post;
@@ -499,45 +500,29 @@ class ProfilePost extends HTMLElement {
           return;
         }
 
-        const userId = loggedInUser.username; // Using username as a simple user ID
+        const userId = loggedInUser.username;
         const postId = this.post.id;
 
-        // Get user likes from localStorage
-        const userLikesKey = 'userLikes';
-        let userLikes = JSON.parse(localStorage.getItem(userLikesKey) || '{}');
-
-        // Initialize user's liked list if it doesn't exist
-        if (!userLikes[userId]) {
-          userLikes[userId] = [];
-        }
-
         // Check if user has already liked this post
-        if (userLikes[userId].includes(postId)) {
-          console.log('User already liked this post.');
-          return; // User already liked it, do nothing
+        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+        const hasLiked = userLikes[userId]?.includes(postId);
+
+        if (hasLiked) {
+          // Unlike the post
+          PostActions.unlikePost(postId, userId);
+          this.liked = false;
+        } else {
+          // Like the post
+          PostActions.likePost(postId, userId);
+          this.liked = true;
         }
 
-        // User has not liked this post, proceed to like
-
-        // Add post ID to user's liked list and save userLikes
-        userLikes[userId].push(postId);
-        localStorage.setItem(userLikesKey, JSON.stringify(userLikes));
-
-        // Update the main posts array in localStorage
-        const postsKey = 'posts';
-        let allPosts = JSON.parse(localStorage.getItem(postsKey) || '[]');
+        // Update the post likes count from localStorage
+        const allPosts = JSON.parse(localStorage.getItem('posts') || '[]');
         const postIndex = allPosts.findIndex((p: any) => p.id === postId);
-
         if (postIndex !== -1) {
-          allPosts[postIndex].likes = (allPosts[postIndex].likes || 0) + 1;
-          localStorage.setItem(postsKey, JSON.stringify(allPosts));
-
-          // Update the current component instance
-          this.liked = true; // Mark as liked for this user in this session
-          this.post.likes = allPosts[postIndex].likes; // Update the post object within the component
-          this.render(); // Re-render to update the like count and button style
-        } else {
-          console.error('Post not found in localStorage posts array.');
+          this.post.likes = allPosts[postIndex].likes;
+          this.render();
         }
       });
 
