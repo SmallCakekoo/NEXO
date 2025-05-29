@@ -12,6 +12,7 @@ class CommentForm extends HTMLElement {
   setupEventListeners() {
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const commentInput = this.shadowRoot?.querySelector(".comment-input") as HTMLTextAreaElement;
+    const commentForm = this.shadowRoot?.querySelector("#comment-form") as HTMLFormElement;
 
     publishButton?.addEventListener("click", () => {
       const commentText = commentInput?.value || "";
@@ -51,6 +52,29 @@ class CommentForm extends HTMLElement {
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });
+
+    // Prevent form submission on Enter key press in the comment input
+    commentInput?.addEventListener('keydown', this.handleKeydown.bind(this));
+
+    // Prevent form submission on form submit
+    commentForm?.addEventListener('submit', this.handleSubmit.bind(this));
+  }
+
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+    console.log('CommentForm: Form submitted, preventDefault called.');
+    // Optional: Trigger the publish button click if you want form submission to act like button click
+    // this.shadowRoot?.querySelector(".publish-button")?.click();
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      console.log('CommentForm: Enter key pressed in comment input, preventDefault called.');
+      // Optional: Trigger submission here if you want Enter to submit the comment
+      // this.shadowRoot?.querySelector(".publish-button")?.click();
+    }
   }
 
   render() {
@@ -145,6 +169,7 @@ class CommentForm extends HTMLElement {
         }
       </style>
       
+      <form id="comment-form">
       <h3 class="form-title">Write a comment</h3>
       <textarea class="comment-input" placeholder="What do you think about this?"></textarea>
       <div class="button-container">
@@ -155,6 +180,7 @@ class CommentForm extends HTMLElement {
           </svg>
         </button>
       </div>
+      </form>
     `;
   }
 

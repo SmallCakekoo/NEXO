@@ -31,6 +31,7 @@ class SubjectReviewForm extends HTMLElement {
     const stars = this.shadowRoot?.querySelectorAll(".star-rating svg");
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const reviewInput = this.shadowRoot?.querySelector(".review-input") as HTMLTextAreaElement;
+    const reviewForm = this.shadowRoot?.querySelector("#subject-review-form") as HTMLFormElement;
 
     // Adds click, hover, and mouseout events for each star icon
     stars?.forEach((star, index) => {
@@ -54,7 +55,9 @@ class SubjectReviewForm extends HTMLElement {
     });
 
     // Handles the publish button click
-    publishButton?.addEventListener("click", () => {
+    publishButton?.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent default button click behavior
+      console.log('SubjectReviewForm: Publish button clicked, preventDefault called.');
       if (this.selectedRating === 0) {
         alert("Por favor selecciona una calificación antes de publicar tu reseña.");
         return;
@@ -113,6 +116,29 @@ class SubjectReviewForm extends HTMLElement {
         })
       );
     });
+
+    // Prevent form submission on Enter key press in the review input
+    reviewInput?.addEventListener('keydown', this.handleKeydown.bind(this));
+
+    // Prevent form submission on form submit
+    reviewForm?.addEventListener('submit', this.handleSubmit.bind(this));
+  }
+
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+    console.log('SubjectReviewForm: Form submitted, preventDefault called.');
+    // Optional: Trigger the publish button click if you want form submission to act like button click
+    // this.shadowRoot?.querySelector(".publish-button")?.click();
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      console.log('SubjectReviewForm: Enter key pressed in review input, preventDefault called.');
+      // Optional: Trigger submission here if you want Enter to submit the review
+      // this.shadowRoot?.querySelector(".publish-button")?.click();
+    }
   }
 
   // Updates the visual appearance of stars based on the rating
@@ -268,6 +294,7 @@ class SubjectReviewForm extends HTMLElement {
 }
 
                </style>
+                <form id="subject-review-form">
                 <div class="review-form">
                 <h3 class="form-title">Leave your review:</h3>
                 <div class="star-rating">
@@ -283,6 +310,7 @@ class SubjectReviewForm extends HTMLElement {
                     </button>
                 </div>
             </div>
+            </form>
         `;
   }
 }

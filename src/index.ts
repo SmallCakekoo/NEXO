@@ -75,7 +75,6 @@ import TabsComponent from "./components/academics-components/TabsComponent";
 import TeacherCard from "./components/academics-components/TeacherCard";
 import TeachersContainer from "./components/academics-components/TeachersContainer";
 
-customElements.define("search-bar", SearchBar);
 customElements.define("subject-card", SubjectCard);
 customElements.define("subjects-container", SubjectsContainer);
 customElements.define("tabs-component", TabsComponent);
@@ -103,6 +102,7 @@ import TeacherDetailCard from "./components/teacher-detail-components/TeacherDet
 import TeacherReviewForm from "./components/teacher-detail-components/TeacherReviewForm";
 import TeacherReviewList from "./components/teacher-detail-components/TeacherReviewList";
 
+customElements.define("search-bar", SearchBar);
 customElements.define("subject-detail-card", SubjectDetailCard);
 customElements.define("subject-review-form", SubjectReviewForm);
 customElements.define("subject-review-list", SubjectReviewList);

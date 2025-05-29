@@ -4,6 +4,7 @@ import { SignUpActionsType, SelectionActionsType } from "./Actions";
 import { PostActionTypes } from "../types/feed/PostActionTypes";
 import { Post } from "../types/feed/feeds.types";
 import { AuthActionsType } from "./AuthActions";
+import { SearchActionTypes } from "./SearchActions";
 
 export interface Rating {
   rating: number;
@@ -62,6 +63,7 @@ export interface State {
   subjectRatings: Ratings;
   selectedTeacher: any | null;
   selectedSubject: any | null;
+  searchQuery: string;
 }
 
 type Listener = (state: State) => void;
@@ -84,6 +86,7 @@ class Store {
     subjectRatings: {},
     selectedTeacher: null,
     selectedSubject: null,
+    searchQuery: '',
   };
 
   // Los componentes
@@ -250,7 +253,10 @@ class Store {
         if (
           action.payload &&
           typeof action.payload === "object" &&
-          "teacherName" in action.payload
+          "teacherName" in action.payload &&
+          "rating" in action.payload &&
+          "comment" in action.payload &&
+          "timestamp" in action.payload
         ) {
           const payload = action.payload as TeacherRatingPayload;
           const { teacherName, rating, comment, timestamp, author, image } = payload;
@@ -370,6 +376,24 @@ class Store {
           };
           this._emitChange();
         }
+        break;
+      case SearchActionTypes.SEARCH_SUBJECTS:
+      case SearchActionTypes.SEARCH_TEACHERS:
+        if (action.payload && typeof action.payload === 'object' && 'query' in action.payload) {
+          this._myState = {
+            ...this._myState,
+            searchQuery: String(action.payload.query),
+          };
+          this._emitChange();
+        }
+        break;
+      
+      case SearchActionTypes.CLEAR_SEARCH:
+        this._myState = {
+          ...this._myState,
+          searchQuery: '',
+        };
+        this._emitChange();
         break;
     }
   }

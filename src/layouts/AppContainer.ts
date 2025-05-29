@@ -51,48 +51,56 @@ class AppContainer extends HTMLElement {
 
   private updateView(route: string) {
     console.log("AppContainer: updateView to", route);
-    let newComponent = "";
+    
+    // Clear current view
+    this.shadowRoot!.innerHTML = '';
+
+    let newComponentElement: HTMLElement | null = null;
 
     switch (route) {
       case "/feed":
-        newComponent = "<feed-page></feed-page>";
+        newComponentElement = document.createElement('feed-page');
         break;
       case "/academic":
-        newComponent = "<academics-pages></academics-pages>";
+        newComponentElement = document.createElement('academics-pages');
         break;
       case "/profile":
-        newComponent = "<profile-page></profile-page>";
+        newComponentElement = document.createElement('profile-page');
         break;
       case "/profile-settings":
-        newComponent = "<profile-settings-page></profile-settings-page>";
+        newComponentElement = document.createElement('profile-settings-page');
         break;
       case "/teacher-detail":
-        newComponent = "<teacher-detail-page></teacher-detail-page>";
+        newComponentElement = document.createElement('teacher-detail-page');
         break;
       case "/subject-detail":
-        newComponent = "<subject-detail-page></subject-detail-page>";
+        newComponentElement = document.createElement('subject-detail-page');
         break;
       case "/comments-detail":
-        newComponent = "<comments-detail-page></comments-detail-page>";
+        newComponentElement = document.createElement('comments-detail-page');
         break;
       case "/comments-detail-profile":
-        newComponent = "<comments-detail-profile></comments-detail-profile>";
+        newComponentElement = document.createElement('comments-detail-profile');
         break;
       case "/login":
-        newComponent = "<login-component></login-component>";
+        newComponentElement = document.createElement('login-component');
         break;
       case "/signup":
-        newComponent = "<sign-up-component></sign-up-component>";
+        newComponentElement = document.createElement('sign-up-component');
         break;
       case "/":
-        newComponent = "<landing-page></landing-page>";
+        newComponentElement = document.createElement('landing-page');
         break;
       default:
         console.warn(`Unknown route: ${route}. Redirecting to landing page.`);
-        newComponent = "<landing-page></landing-page>";
+        newComponentElement = document.createElement('landing-page');
         break;
     }
-    this.shadowRoot!.innerHTML = newComponent;
+
+    if (newComponentElement) {
+      this.shadowRoot!.appendChild(newComponentElement);
+    }
+    
     window.scrollTo(0, 0);
   }
 }
