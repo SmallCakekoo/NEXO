@@ -1,3 +1,5 @@
+import { ProfileActions } from "../../flux/ProfileActions";
+
 class DeleteAccountConfirmation extends HTMLElement {
   constructor() {
     super();
@@ -193,47 +195,10 @@ class DeleteAccountConfirmation extends HTMLElement {
     const confirmBtn = this.shadowRoot!.querySelector(".confirm-btn");
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
-    // On confirm, animate out and dispatch a custom event (but this is static for now)
     if (confirmBtn) {
       confirmBtn.addEventListener("click", () => {
-        // Get current user data
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-        if (!loggedInUser) {
-          console.error('No logged in user found');
-          return;
-        }
-
-        // Remove user from users array
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = users.filter((u: any) => u.username !== loggedInUser.username);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-        // Remove user's posts
-        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-        const updatedPosts = posts.filter((p: any) => p.name !== loggedInUser.username);
-        localStorage.setItem('posts', JSON.stringify(updatedPosts));
-
-        // Remove user's likes
-        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
-        delete userLikes[loggedInUser.username];
-        localStorage.setItem('userLikes', JSON.stringify(userLikes));
-
-        // Remove user's teacher ratings
-        const teacherRatings = JSON.parse(localStorage.getItem('teacherRatings') || '{}');
-        Object.keys(teacherRatings).forEach(teacher => {
-          teacherRatings[teacher] = teacherRatings[teacher].filter((r: any) => r.userId !== loggedInUser.username);
-        });
-        localStorage.setItem('teacherRatings', JSON.stringify(teacherRatings));
-
-        // Remove user's subject ratings
-        const subjectRatings = JSON.parse(localStorage.getItem('subjectRatings') || '{}');
-        Object.keys(subjectRatings).forEach(subject => {
-          subjectRatings[subject] = subjectRatings[subject].filter((r: any) => r.userId !== loggedInUser.username);
-        });
-        localStorage.setItem('subjectRatings', JSON.stringify(subjectRatings));
-
-        // Remove logged in user
-        localStorage.removeItem('loggedInUser');
+        // Call the ProfileActions.deleteAccount method
+        ProfileActions.deleteAccount();
 
         this.animateOut().then(() => {
           const event = new CustomEvent("navigate", {
@@ -246,7 +211,6 @@ class DeleteAccountConfirmation extends HTMLElement {
       });
     }
 
-    // On cancel, animate out and remove
     cancelBtn?.addEventListener("click", () => {
       this.animateOut().then(() => {
         this.remove();
