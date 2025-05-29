@@ -1,3 +1,5 @@
+import { ProfileActions } from "../../flux/ProfileActions";
+
 class SettingsProfileContainer extends HTMLElement {
   constructor() {
     super();
@@ -368,55 +370,29 @@ input:focus, select:focus, textarea:focus {
 
     // Handles the save button click
     saveBtn?.addEventListener("click", () => {
-      // Save the updated profile info to localStorage
       const usernameInput = this.shadowRoot!.querySelector('#username') as HTMLInputElement;
       const phoneInput = this.shadowRoot!.querySelector('#phone') as HTMLInputElement;
       const degreeSelect = this.shadowRoot!.querySelector('#career') as HTMLSelectElement;
       const semesterSelect = this.shadowRoot!.querySelector('#Semester') as HTMLSelectElement;
       const bioText = this.shadowRoot!.querySelector('.bio-text') as HTMLTextAreaElement;
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-      } catch (e) {}
-      if (user) {
-        const oldUsername = user.username;
-        user.username = usernameInput.value;
-        user.phone = phoneInput.value;
-        user.degree = degreeSelect.value;
-        user.semester = semesterSelect.value;
-        user.bio = bioText.value;
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        // Update in users array
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const idx = users.findIndex((u: any) => u.username === oldUsername || u.email === user.email);
-        if (idx !== -1) {
-          users[idx] = user;
-          localStorage.setItem('users', JSON.stringify(users));
-        }
-        // Update all posts for this user
-        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-        for (let post of posts) {
-          if (post.name === oldUsername) {
-            post.name = user.username;
-            post.career = user.degree;
-            post.semestre = user.semester;
-            if (user.profilePic) post.photo = user.profilePic;
-          }
-        }
-        localStorage.setItem('posts', JSON.stringify(posts));
-        alert('Profile updated!');
-        // Dispatch event to notify profile update
-        document.dispatchEvent(new CustomEvent('profile-updated'));
-        
-        // Navigate back to the profile page
-        const navigationEvent = new CustomEvent("navigate", { detail: "/profile", composed: true });
-        document.dispatchEvent(navigationEvent);
-      }
+
+      // Call ProfileActions.updateProfile with the form data
+      ProfileActions.updateProfile({
+        username: usernameInput.value,
+        phone: phoneInput.value,
+        degree: degreeSelect.value,
+        semester: semesterSelect.value,
+        bio: bioText.value
+      });
+
+      // Navigate back to the profile page
+      const navigationEvent = new CustomEvent("navigate", { detail: "/profile", composed: true });
+      document.dispatchEvent(navigationEvent);
     });
 
     // Handles the unlog button click
     unlogBtn?.addEventListener("click", () => {
-      localStorage.removeItem('loggedInUser');
+      ProfileActions.logout();
       const event = new CustomEvent("navigate", {
         detail: "/login",
         composed: true,
@@ -426,13 +402,8 @@ input:focus, select:focus, textarea:focus {
 
     // Handles the delete account button click
     deleteAccount?.addEventListener("click", () => {
-      console.log("Delete account clicked");
       const confirmationDialog = document.createElement("delete-account-confirmation");
       document.body.appendChild(confirmationDialog);
-
-      confirmationDialog.addEventListener("delete-account-confirmed", () => {
-        console.log("Account deletion confirmed");
-      });
     });
   }
 }
