@@ -355,16 +355,6 @@ class Store {
           const payload = action.payload as SubjectRatingPayload;
           const { subjectName, rating, comment, timestamp, author, image } = payload;
           const currentRatings = this._myState.subjectRatings[subjectName] || [];
-          this._myState = {
-            ...this._myState,
-            subjectRatings: {
-              ...this._myState.subjectRatings,
-              [subjectName]: [...currentRatings, { rating, comment, timestamp, author, image }],
-            },
-          };
-          // Persist ratings to localStorage
-          localStorage.setItem("subjectRatings", JSON.stringify(this._myState.subjectRatings));
-          this._emitChange();
         }
         break;
       case PostActionTypes.UPDATE_TEACHER_RATING:
