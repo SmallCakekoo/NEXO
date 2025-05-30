@@ -1,4 +1,5 @@
 import { AuthActions } from "../flux/AuthActions";
+import { store } from "../flux/Store";
 
 class LoginComponent extends HTMLElement {
   connectedCallback() {
@@ -77,17 +78,17 @@ class LoginComponent extends HTMLElement {
         return;
       }
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find((u: any) => u.username === username && u.password === password);
+      // Use Store to validate credentials
+      const user = store.validateUserCredentials(username, password);
 
       if (!user) {
         alert("Usuario o contraseña inválidos.");
         return;
       }
 
-      // Usar AuthActions para el login
+      // Use AuthActions for login
       AuthActions.loginSuccess(user);
-      // La navegación al feed se manejará automáticamente en el Store
+      // Navigation to feed will be handled automatically in the Store
     });
   }
 }

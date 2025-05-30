@@ -1263,6 +1263,21 @@ class Store {
     return this._getUserLikeStatus(userId, postId);
   }
 
+  private _validateUserCredentials(username: string, password: string): any | null {
+    try {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      return users.find((u: any) => u.username === username && u.password === password) || null;
+    } catch (error) {
+      console.error("Error validating user credentials:", error);
+      return null;
+    }
+  }
+
+  // Public methods
+  validateUserCredentials(username: string, password: string): any | null {
+    return this._validateUserCredentials(username, password);
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
