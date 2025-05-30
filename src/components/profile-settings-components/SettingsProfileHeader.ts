@@ -1,15 +1,34 @@
 import { NavigationActions } from "../../flux/NavigationActions";
 import { ProfileActions } from "../../flux/ProfileActions";
+import { store, State } from "../../flux/Store";
 
 class SettingsProfileHeader extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
+    this.subscribeToStore();
     this.render();
     this.addEventListeners();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
+
+  private handleStoreChange(state: State) {
+    this.render();
   }
 
   // Adds event listeners to the close button and the image upload
@@ -37,28 +56,16 @@ class SettingsProfileHeader extends HTMLElement {
           const base64 = e.target?.result as string;
           if (!base64) return;
 
-          // Update the image immediately
-          img.src = base64;
-
-          // Get current user
-          let user = null;
-          try {
-            user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-          } catch (e) {
-            console.error("Error parsing loggedInUser:", e);
-            return;
-          }
+          // Get current user from store state
+          const user = store.getState().auth.user;
 
           if (!user) {
-            console.error("No logged in user found");
+            console.error("No logged in user found in store state");
             return;
           }
 
           // Update profile photo using Flux action
           ProfileActions.updateProfilePhoto(base64);
-
-          // Re-render the component to ensure the new photo is displayed
-          this.render();
         };
 
         reader.onerror = (error) => {
@@ -72,13 +79,9 @@ class SettingsProfileHeader extends HTMLElement {
   }
 
   render() {
-    // Get logged-in user info from localStorage
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-    } catch (e) {
-      console.error("Error parsing loggedInUser:", e);
-    }
+    // Get logged-in user info from the store state
+    const user = store.getState().auth.user;
+
     const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
     this.shadowRoot!.innerHTML = `
             <style>
