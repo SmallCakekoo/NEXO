@@ -1,5 +1,6 @@
 import { FeedActions } from "../../flux/FeedActions";
 import { store } from "../../flux/Store";
+import { PostActions } from "../../flux/PostActions";
 
 class PostModal extends HTMLElement {
   private isRendered: boolean = false;
@@ -280,7 +281,7 @@ class PostModal extends HTMLElement {
                 Post
                 <img src="https://api.iconify.design/lucide:send.svg" alt="Send">
               </button>
-            </div>!!
+            </div>
             <div class="categories">
               <div class="category">
                 <input type="radio" id="daily-life" name="category" value="Daily Life" checked>
@@ -347,18 +348,12 @@ class PostModal extends HTMLElement {
         return;
       }
 
-      document.dispatchEvent(
-        new CustomEvent("post-published", {
-          detail: {
-            content,
-            category,
-            image: file,
-            createdAt: new Date().toISOString(),
-          },
-          bubbles: true,
-          composed: true,
-        })
-      );
+      PostActions.createPost({
+        content,
+        category,
+        image: file,
+        createdAt: new Date().toISOString(),
+      });
 
       // Limpiar el formulario
       textarea.value = "";
