@@ -9,8 +9,8 @@ import BtnLogin from "./components/navbar-buttons/BtnLogin";
 import BtnSignup from "./components/navbar-buttons/BtnSignup";
 
 // Import necessary modules for the global post listener
-import { AppDispatcher } from './flux/Dispatcher';
-import { PostActionTypes } from './types/feed/PostActionTypes';
+import { AppDispatcher } from "./flux/Dispatcher";
+import { PostActionTypes } from "./types/feed/PostActionTypes";
 
 customElements.define("nav-bar", NavBarLog);
 customElements.define("nav-bar-login-signup", NavBarLoginSignup);
@@ -59,7 +59,7 @@ customElements.define("button-tags", ButtonsTags);
 customElements.define("tag-filters-bar", TagFiltersBar);
 customElements.define("feed-post", FeedPost);
 customElements.define("profile-post", ProfilePost);
-customElements.define("post-container", PostContainer)
+customElements.define("post-container", PostContainer);
 // Componentes de Landing
 import StartButton from "./components/landing-components/StartButton";
 import LandingCards from "./components/landing-components/LandingCards";
@@ -154,7 +154,7 @@ document.addEventListener("post-published", (event) => {
   // Get current user info from localStorage
   let user = null;
   try {
-    user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
   } catch (e) {
     console.error("Global post-published listener: Error getting user from localStorage:", e);
     alert("Error getting user information. Cannot create post.");
@@ -172,14 +172,15 @@ document.addEventListener("post-published", (event) => {
   const semestre = user?.semester || "";
   let photo = user?.profilePic;
   if (!photo && postData.image) {
-      photo = URL.createObjectURL(postData.image);
+    photo = URL.createObjectURL(postData.image);
   } else if (!photo) {
-      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
   }
   console.log("Global post-published listener: User photo:", photo);
 
   // Create a new post object with the data from the modal
-  const newPost: any = { // Using any for now, ideally use the Post type
+  const newPost: any = {
+    // Using any for now, ideally use the Post type
     id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     photo: photo,
     name: name,
@@ -196,8 +197,11 @@ document.addEventListener("post-published", (event) => {
   console.log("Global post-published listener: New post object created:", newPost);
 
   // Get current posts from localStorage
-  const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-  console.log("Global post-published listener: Current posts from localStorage BEFORE adding new post:", currentPosts);
+  const currentPosts = JSON.parse(localStorage.getItem("posts") || "[]");
+  console.log(
+    "Global post-published listener: Current posts from localStorage BEFORE adding new post:",
+    currentPosts
+  );
 
   // Check if post with same ID already exists
   const postExists = currentPosts.some((post: any) => post.id === newPost.id);
@@ -207,7 +211,7 @@ document.addEventListener("post-published", (event) => {
     console.log("Global post-published listener: Posts array AFTER adding new post:", currentPosts);
 
     // Update localStorage
-    localStorage.setItem('posts', JSON.stringify(currentPosts));
+    localStorage.setItem("posts", JSON.stringify(currentPosts));
     console.log("Global post-published listener: Posts updated in localStorage.");
 
     // Dispatch action to update store
@@ -217,11 +221,14 @@ document.addEventListener("post-published", (event) => {
     // import { PostActionTypes } from './types/feed/PostActionTypes';
     AppDispatcher.dispatch({
       type: PostActionTypes.ADD_POST,
-      payload: newPost
+      payload: newPost,
     });
     console.log("Global post-published listener: ADD_POST action dispatched");
   } else {
-    console.warn("Global post-published listener: Post with same ID already exists, not adding:", newPost.id);
+    console.warn(
+      "Global post-published listener: Post with same ID already exists, not adding:",
+      newPost.id
+    );
   }
   // --- Logic moved from PostContainer.ts addNewPost --- END
 });
@@ -231,4 +238,4 @@ document.addEventListener("post-published", (event) => {
 // For example, if you have a router or initial page load logic:
 // document.dispatchEvent(new CustomEvent('navigate', { detail: '/landing' }));
 
-console.log("se cargó este archivo")
+console.log("se cargó este archivo");

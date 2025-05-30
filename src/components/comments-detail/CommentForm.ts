@@ -1,3 +1,5 @@
+import { CommentActions } from "../../flux/CommentActions";
+
 class CommentForm extends HTMLElement {
   constructor() {
     super();
@@ -25,7 +27,7 @@ class CommentForm extends HTMLElement {
       // Crear un objeto de comentario con datos completos
       let user = null;
       try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
       } catch (e) {
         console.error("Error parsing loggedInUser from localStorage:", e);
       }
@@ -39,39 +41,33 @@ class CommentForm extends HTMLElement {
         name: userName,
         career: userCareer,
         date: new Date().toLocaleDateString(), // Fecha actual
-        message: commentText // El texto del comentario
+        message: commentText, // El texto del comentario
       };
       
-      // Disparar un evento con los datos del comentario
-      const commentEvent = new CustomEvent("comment-submitted", {
-        detail: newComment,
-        composed: true
-      });
-      
-      document.dispatchEvent(commentEvent);
+      CommentActions.addComment(newComment);
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });
 
     // Prevent form submission on Enter key press in the comment input
-    commentInput?.addEventListener('keydown', this.handleKeydown.bind(this));
+    commentInput?.addEventListener("keydown", this.handleKeydown.bind(this));
 
     // Prevent form submission on form submit
-    commentForm?.addEventListener('submit', this.handleSubmit.bind(this));
+    commentForm?.addEventListener("submit", this.handleSubmit.bind(this));
   }
 
   private handleSubmit(event: Event) {
     event.preventDefault();
-    console.log('CommentForm: Form submitted, preventDefault called.');
+    console.log("CommentForm: Form submitted, preventDefault called.");
     // Optional: Trigger the publish button click if you want form submission to act like button click
     // this.shadowRoot?.querySelector(".publish-button")?.click();
   }
 
   private handleKeydown(event: KeyboardEvent) {
     // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      console.log('CommentForm: Enter key pressed in comment input, preventDefault called.');
+      console.log("CommentForm: Enter key pressed in comment input, preventDefault called.");
       // Optional: Trigger submission here if you want Enter to submit the comment
       // this.shadowRoot?.querySelector(".publish-button")?.click();
     }
@@ -189,7 +185,7 @@ class CommentForm extends HTMLElement {
     const notification = document.createElement("div");
     notification.className = "comment-notification";
     notification.textContent = message;
-    
+
     // Style the notification
     notification.style.position = "fixed";
     notification.style.bottom = "20px";
@@ -201,15 +197,15 @@ class CommentForm extends HTMLElement {
     notification.style.borderRadius = "5px";
     notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
     notification.style.zIndex = "1000";
-    
+
     // Add to document
     document.body.appendChild(notification);
-    
+
     // Remove after 3 seconds
     setTimeout(() => {
       notification.style.opacity = "0";
       notification.style.transition = "opacity 0.5s ease";
-      
+
       setTimeout(() => {
         document.body.removeChild(notification);
       }, 500);

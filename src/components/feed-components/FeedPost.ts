@@ -1,5 +1,8 @@
 import { Post, Comment } from "../../types/feed/feeds.types";
 import { PostActions } from "../../flux/PostActions";
+import { FeedActions } from "../../flux/FeedActions";
+import { NavigationActions } from "../../flux/NavigationActions";
+import { store } from "../../flux/Store";
 
 class FeedPost extends HTMLElement {
   post: Post;
@@ -62,6 +65,46 @@ class FeedPost extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    // Manejar clic en el botón de comentarios
+    const commentsButton = this.shadowRoot?.querySelector(".just-comments");
+    commentsButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        store.saveCurrentPost(this.post);
+        store.setFromProfile(false);
+        NavigationActions.navigate("/comments-detail");
+      }
+    });
+
+    // Manejar clic en el botón de compartir
+    const shareButton = this.shadowRoot?.querySelector(".just-share");
+    shareButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        FeedActions.sharePost(this.post.id);
+      }
+    });
+
+    // Manejar clic en el botón de like
+    const likeButton = this.shadowRoot?.querySelector(".just-likes");
+    likeButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+        if (loggedInUser) {
+          const userId = loggedInUser.username;
+          const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+          const hasLiked = userLikes[userId]?.includes(this.post.id);
+
+          if (hasLiked) {
+            PostActions.unlikePost(this.post.id, userId);
+          } else {
+            PostActions.likePost(this.post.id, userId);
+          }
+        }
+      }
+    });
   }
 
   render() {
@@ -477,69 +520,8 @@ class FeedPost extends HTMLElement {
             </div>
           </div>
         </div>
+        <comments-modal></comments-modal>
       `;
-
-      const likeButton = this.shadowRoot.querySelector(".just-likes");
-      likeButton?.addEventListener("click", () => {
-        // Guardar la posición actual del scroll
-        const currentScrollPosition = window.scrollY;
-
-        // Check if user is logged in
-        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-        if (!loggedInUser) {
-          alert("Please log in to like posts.");
-          return;
-        }
-
-        // Ensure post has an ID
-        if (!this.post.id) {
-          console.error("Post is missing ID, cannot like.");
-          return;
-        }
-
-        const userId = loggedInUser.username;
-        const postId = this.post.id;
-
-        // Check if user has already liked this post
-        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-        const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
-
-        if (hasLiked) {
-          PostActions.unlikePost(postId, userId);
-        } else {
-          PostActions.likePost(postId, userId);
-        }
-
-        // Restaurar la posición del scroll después de un pequeño delay
-        requestAnimationFrame(() => {
-          window.scrollTo(0, currentScrollPosition);
-        });
-      });
-
-      const commentButton = this.shadowRoot.querySelector(".just-comments");
-      commentButton?.addEventListener("click", () => {
-        // Save the entire post object to sessionStorage
-        sessionStorage.setItem("currentPost", JSON.stringify(this.post));
-        sessionStorage.setItem("currentPostId", this.post.photo); // Keep this for now as CommentsDetailProfilePage might use it
-
-        const navigateEvent = new CustomEvent("navigate", {
-          detail: "/comments-detail",
-          composed: true,
-        });
-        document.dispatchEvent(navigateEvent);
-      });
-
-      const shareButton = this.shadowRoot.querySelector(".just-share");
-      shareButton?.addEventListener("click", () => {
-        navigator.clipboard
-          .writeText("https://www.icesi.edu.co/")
-          .then(() => {
-            this.showNotification("Link copied to clipboard");
-          })
-          .catch((err) => {
-            console.error("Error, sorry :c: ", err);
-          });
-      });
     }
   }
 

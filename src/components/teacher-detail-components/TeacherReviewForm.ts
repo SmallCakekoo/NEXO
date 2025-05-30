@@ -1,9 +1,10 @@
 import { store } from "../../flux/Store";
 import { RatingActions } from "../../flux/RatingActions";
+import { ReviewActions } from "../../flux/ReviewActions";
 
 class TeacherReviewForm extends HTMLElement {
   private selectedRating: number = 0;
-  public teacherName: string = '';
+  public teacherName: string = "";
 
   constructor() {
     super();
@@ -53,8 +54,8 @@ class TeacherReviewForm extends HTMLElement {
 
     // Handle publish button click
     publishButton?.addEventListener("click", (event) => {
-      event.preventDefault(); // Prevent default button click behavior
-      console.log('TeacherReviewForm: Publish button clicked, preventDefault called.');
+      event.preventDefault();
+      console.log("TeacherReviewForm: Publish button clicked, preventDefault called.");
       if (this.selectedRating === 0) {
         alert("Por favor, selecciona una calificación antes de publicar tu reseña.");
         return;
@@ -70,10 +71,10 @@ class TeacherReviewForm extends HTMLElement {
       // Create the review object
       let user = null;
       try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
       } catch (e) {}
       const author = user?.username || "Current User";
-      const image = user?.profilePic || '';
+      const image = user?.profilePic || "";
 
       const review = {
         rating: this.selectedRating,
@@ -81,11 +82,13 @@ class TeacherReviewForm extends HTMLElement {
         date: new Date().toLocaleDateString(),
         author,
         image,
+        teacherName: this.teacherName,
+        type: "teacher" as const,
       };
 
       // Use the teacherName property directly
       if (!this.teacherName) {
-        console.error('Teacher name not found on component property');
+        console.error("Teacher name not found on component property");
         return;
       }
 
@@ -99,19 +102,10 @@ class TeacherReviewForm extends HTMLElement {
       );
 
       // Update the average rating
-      RatingActions.updateTeacherRating(
-        this.teacherName,
-        this.selectedRating
-      );
+      RatingActions.updateTeacherRating(this.teacherName, this.selectedRating);
 
-      // Dispatch custom event to notify other components
-      this.dispatchEvent(
-        new CustomEvent("review-submitted", {
-          detail: review,
-          bubbles: true, // Allow event to bubble up
-          composed: true, // Allow event to cross shadow DOM boundary
-        })
-      );
+      // Dispatch review action instead of custom event
+      ReviewActions.submitReview(review);
 
       // Clear the form
       if (reviewInput) {
@@ -125,24 +119,24 @@ class TeacherReviewForm extends HTMLElement {
     });
 
     // Prevent form submission on Enter key press in the review input
-    reviewInput?.addEventListener('keydown', this.handleKeydown.bind(this));
+    reviewInput?.addEventListener("keydown", this.handleKeydown.bind(this));
 
     // Prevent form submission on form submit
-    reviewForm?.addEventListener('submit', this.handleSubmit.bind(this));
+    reviewForm?.addEventListener("submit", this.handleSubmit.bind(this));
   }
 
   private handleSubmit(event: Event) {
     event.preventDefault();
-    console.log('TeacherReviewForm: Form submitted, preventDefault called.');
+    console.log("TeacherReviewForm: Form submitted, preventDefault called.");
     // Optional: Trigger the publish button click if you want form submission to act like button click
     // this.shadowRoot?.querySelector(".publish-button")?.click();
   }
 
   private handleKeydown(event: KeyboardEvent) {
     // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      console.log('TeacherReviewForm: Enter key pressed in review input, preventDefault called.');
+      console.log("TeacherReviewForm: Enter key pressed in review input, preventDefault called.");
       // Optional: Trigger submission here if you want Enter to submit the review
       // this.shadowRoot?.querySelector(".publish-button")?.click();
     }

@@ -5,6 +5,10 @@ import { PostActionTypes } from "../types/feed/PostActionTypes";
 import { Post } from "../types/feed/feeds.types";
 import { AuthActionsType } from "./AuthActions";
 import { SearchActionTypes } from "./SearchActions";
+import { ProfileActionTypes } from "./ProfileActions";
+import { CommentActionsType } from "./CommentActions";
+import { FeedActionsType } from "./FeedActions";
+import { TagActionsType } from "./TagActions";
 
 export interface Rating {
   rating: number;
@@ -46,6 +50,30 @@ interface UpdateSubjectRatingPayload {
   rating: number;
 }
 
+interface DeleteAccountSuccessPayload {
+  username: string;
+}
+
+interface DeleteAccountErrorPayload {
+  error: string;
+}
+
+interface SignUpErrorPayload {
+  error: string;
+}
+
+interface PostModalPayload {
+  postId: string;
+}
+
+interface TagPayload {
+  tag: string;
+}
+
+interface PhotoPayload {
+  photo: string;
+}
+
 export interface State {
   currentPath: string;
   history: string[];
@@ -65,6 +93,12 @@ export interface State {
   selectedSubject: any | null;
   searchQuery: string;
   userLikes: { [userId: string]: string[] };
+  comments: { [postId: string]: any[] };
+  postModal: {
+    isOpen: boolean;
+    postId: string | null;
+  };
+  selectedTag: string;
 }
 
 type Listener = (state: State) => void;
@@ -87,8 +121,14 @@ class Store {
     subjectRatings: {},
     selectedTeacher: null,
     selectedSubject: null,
-    searchQuery: '',
+    searchQuery: "",
     userLikes: {},
+    comments: {},
+    postModal: {
+      isOpen: false,
+      postId: null,
+    },
+    selectedTag: "All",
   };
 
   // Los componentes
@@ -203,12 +243,13 @@ class Store {
         this._emitChange();
         break;
       case SignUpActionsType.SIGN_UP_ERROR:
-        if (action.payload && typeof action.payload === "object" && "error" in action.payload) {
+        if (action.payload) {
+          const payload = action.payload as SignUpErrorPayload;
           this._myState = {
             ...this._myState,
             signUp: {
               loading: false,
-              error: String(action.payload.error),
+              error: payload.error,
               success: false,
             },
           };
@@ -344,9 +385,13 @@ class Store {
         break;
       case PostActionTypes.LOAD_POSTS:
         if (action.payload && Array.isArray(action.payload)) {
+          // Cargar posts desde localStorage si existen
+          const storedPosts = localStorage.getItem("posts");
+          const posts = storedPosts ? JSON.parse(storedPosts) : action.payload;
+
           this._myState = {
             ...this._myState,
-            posts: action.payload,
+            posts: posts,
           };
           this._emitChange();
         }
@@ -354,9 +399,13 @@ class Store {
       case PostActionTypes.ADD_POST:
         if (action.payload && typeof action.payload === "object") {
           const newPost = action.payload as Post;
+          const updatedPosts = [newPost, ...this._myState.posts];
+
+          // Actualizar localStorage y estado
+          localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,
-            posts: [newPost, ...this._myState.posts],
+            posts: updatedPosts,
           };
           this._emitChange();
         }
@@ -381,7 +430,7 @@ class Store {
         break;
       case SearchActionTypes.SEARCH_SUBJECTS:
       case SearchActionTypes.SEARCH_TEACHERS:
-        if (action.payload && typeof action.payload === 'object' && 'query' in action.payload) {
+        if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
           this._myState = {
             ...this._myState,
             searchQuery: String(action.payload.query),
@@ -389,13 +438,153 @@ class Store {
           this._emitChange();
         }
         break;
-      
+
       case SearchActionTypes.CLEAR_SEARCH:
         this._myState = {
           ...this._myState,
-          searchQuery: '',
+          searchQuery: "",
         };
         this._emitChange();
+        break;
+
+      case ProfileActionTypes.DELETE_ACCOUNT_SUCCESS:
+        if (action.payload) {
+          const payload = action.payload as DeleteAccountSuccessPayload;
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            posts: this._myState.posts.filter((post) => post.name !== payload.username),
+            userLikes: {},
+          };
+        }
+        this._emitChange();
+        break;
+
+      case ProfileActionTypes.DELETE_ACCOUNT_ERROR:
+        if (action.payload) {
+          const payload = action.payload as DeleteAccountErrorPayload;
+          console.error("Error deleting account:", payload.error);
+        }
+        this._emitChange();
+        break;
+
+      case CommentActionsType.ADD_COMMENT:
+        if (action.payload) {
+          const currentPost = this._getCurrentPost();
+          if (currentPost) {
+            const postId = currentPost.id;
+            const currentComments = this._myState.comments[postId] || [];
+            this._myState = {
+              ...this._myState,
+              comments: {
+                ...this._myState.comments,
+                [postId]: [...currentComments, action.payload],
+              },
+            };
+            // Persist comments to localStorage
+            localStorage.setItem("comments", JSON.stringify(this._myState.comments));
+            this._emitChange();
+          }
+        }
+        break;
+
+      case FeedActionsType.OPEN_POST_MODAL:
+        this._myState = {
+          ...this._myState,
+          postModal: {
+            isOpen: true,
+            postId: (action.payload as PostModalPayload)?.postId || null,
+          },
+        };
+        this._emitChange();
+        break;
+
+      case FeedActionsType.CLOSE_POST_MODAL:
+        this._myState = {
+          ...this._myState,
+          postModal: {
+            isOpen: false,
+            postId: null,
+          },
+        };
+        this._emitChange();
+        break;
+
+      case FeedActionsType.SHARE_POST:
+        if (action.payload && typeof action.payload === "object" && "postId" in action.payload) {
+          const payload = action.payload as PostModalPayload;
+          const post = this._myState.posts.find((p) => p.id === payload.postId);
+          if (post) {
+            console.log("Compartiendo post:", post);
+          }
+        }
+        break;
+
+      case TagActionsType.SELECT_TAG:
+        if (action.payload && typeof action.payload === "object" && "tag" in action.payload) {
+          const payload = action.payload as TagPayload;
+          console.log("Store: Changing selected tag to:", payload.tag);
+          this._myState = {
+            ...this._myState,
+            selectedTag: payload.tag,
+          };
+          this._emitChange();
+        }
+        break;
+
+      case ProfileActionTypes.UPDATE_PROFILE_PHOTO:
+        if (action.payload && typeof action.payload === "object" && "photo" in action.payload) {
+          const payload = action.payload as PhotoPayload;
+          const user = this._myState.auth.user;
+          if (user) {
+            // Update user's profile picture in state
+            this._myState = {
+              ...this._myState,
+              auth: {
+                ...this._myState.auth,
+                user: {
+                  ...user,
+                  profilePic: payload.photo,
+                },
+              },
+            };
+
+            // Update user's profile picture in localStorage
+            localStorage.setItem("loggedInUser", JSON.stringify(this._myState.auth.user));
+
+            // Update in users array
+            const users = JSON.parse(localStorage.getItem("users") || "[]");
+            const idx = users.findIndex(
+              (u: any) => u.username === user.username || u.email === user.email
+            );
+            if (idx !== -1) {
+              users[idx].profilePic = payload.photo;
+              localStorage.setItem("users", JSON.stringify(users));
+            }
+
+            // Update all posts for this user
+            const posts = this._myState.posts.map((post) => {
+              if (post.name === user.username) {
+                return {
+                  ...post,
+                  photo: payload.photo,
+                };
+              }
+              return post;
+            });
+
+            this._myState = {
+              ...this._myState,
+              posts,
+            };
+
+            localStorage.setItem("posts", JSON.stringify(posts));
+            this._emitChange();
+          }
+        }
         break;
     }
   }
@@ -526,70 +715,133 @@ class Store {
 
   // Update load method to include userLikes
   load(): void {
-    // Cargar datos existentes
-    const user = localStorage.getItem("loggedInUser");
-    if (user) {
+    try {
+      // Cargar datos del usuario
+      const user = localStorage.getItem("loggedInUser");
+      if (user) {
+        const parsedUser = JSON.parse(user);
+        this._myState = {
+          ...this._myState,
+          auth: {
+            isAuthenticated: true,
+            user: parsedUser,
+          },
+        };
+
+        // Si el usuario está en una ruta pública, redirigir al feed
+        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+          window.history.replaceState({}, "", "/feed");
+          this._handleRouteChange("/feed");
+        }
+      }
+
+      // Cargar posts
+      const storedPosts = localStorage.getItem("posts");
+      if (storedPosts) {
+        this._myState.posts = JSON.parse(storedPosts);
+      }
+
+      // Cargar ratings de profesores
+      const storedTeacherRatings = localStorage.getItem("teacherRatings");
+      if (storedTeacherRatings) {
+        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+      }
+
+      // Cargar ratings de materias
+      const storedSubjectRatings = localStorage.getItem("subjectRatings");
+      if (storedSubjectRatings) {
+        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+      }
+
+      // Cargar likes de usuarios
+      const storedUserLikes = localStorage.getItem("userLikes");
+      if (storedUserLikes) {
+        this._myState.userLikes = JSON.parse(storedUserLikes);
+      }
+
+      // Cargar comentarios
+      const storedComments = localStorage.getItem("comments");
+      if (storedComments) {
+        this._myState.comments = JSON.parse(storedComments);
+      }
+
+      // Sincronizar el estado con localStorage
+      this.syncWithLocalStorage();
+
+      this._emitChange();
+    } catch (error) {
+      console.error("Error loading data from localStorage:", error);
+      // Reiniciar el estado en caso de error
       this._myState = {
         ...this._myState,
         auth: {
-          isAuthenticated: true,
-          user: JSON.parse(user),
+          isAuthenticated: false,
+          user: null,
         },
+        posts: [],
+        teacherRatings: {},
+        subjectRatings: {},
+        userLikes: {},
+        comments: {},
       };
+      this._emitChange();
+    }
+  }
 
-      // Si el usuario está en una ruta pública, redirigir al feed
-      if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-        window.history.replaceState({}, "", "/feed");
-        this._handleRouteChange("/feed");
-        return;
+  private syncWithLocalStorage(): void {
+    // Sincronizar usuarios
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (this._myState.auth.user) {
+      const currentUser = users.find((u: any) => u.username === this._myState.auth.user.username);
+      if (!currentUser) {
+        // Si el usuario no existe en la lista de usuarios, cerrar sesión
+        this._myState.auth = {
+          isAuthenticated: false,
+          user: null,
+        };
+        localStorage.removeItem("loggedInUser");
       }
     }
 
-    const persistedState = localStorage.getItem("flux:state");
-    if (persistedState) {
-      this._myState = JSON.parse(persistedState);
-    }
-    // Load posts from localStorage when the store loads
-    const storedPosts = localStorage.getItem("posts");
-    if (storedPosts) {
-      try {
-        this._myState.posts = JSON.parse(storedPosts);
-      } catch (e) {
-        console.error("Error loading posts from localStorage", e);
-        this._myState.posts = []; // Reset posts if there's an error
-      }
+    // Sincronizar posts con el usuario actual
+    if (this._myState.auth.user) {
+      this._myState.posts = this._myState.posts.filter((post) =>
+        users.some((u: any) => u.username === post.name)
+      );
     }
 
-    // Load ratings from localStorage
-    const storedTeacherRatings = localStorage.getItem("teacherRatings");
-    if (storedTeacherRatings) {
-      try {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      } catch (e) {
-        console.error("Error loading teacher ratings from localStorage", e);
+    // Sincronizar likes
+    if (this._myState.auth.user) {
+      const username = this._myState.auth.user.username;
+      if (!this._myState.userLikes[username]) {
+        this._myState.userLikes[username] = [];
       }
     }
+  }
 
-    const storedSubjectRatings = localStorage.getItem("subjectRatings");
-    if (storedSubjectRatings) {
-      try {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      } catch (e) {
-        console.error("Error loading subject ratings from localStorage", e);
-      }
+  // Método mejorado para obtener posts filtrados
+  getFilteredPosts(tag: string = "All"): Post[] {
+    const posts = this._myState.posts;
+
+    if (!posts || !Array.isArray(posts)) {
+      return [];
     }
 
-    // Load userLikes from localStorage
-    const storedUserLikes = localStorage.getItem("userLikes");
-    if (storedUserLikes) {
-      try {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      } catch (e) {
-        console.error("Error loading user likes from localStorage", e);
-      }
+    if (tag === "All") {
+      return [...posts];
     }
 
-    this._emitChange(); // Emit the new state
+    // Normalizar el tag de búsqueda
+    const searchTag = tag.toLowerCase().trim();
+
+    return posts.filter((post) => {
+      if (!post.tag) return false;
+
+      // Normalizar el tag del post
+      const postTag = post.tag.toLowerCase().trim();
+
+      return postTag === searchTag;
+    });
   }
 
   static getInstance(): Store {

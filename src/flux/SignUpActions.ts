@@ -1,5 +1,6 @@
 import { AppDispatcher } from "./Dispatcher";
 import { SignUpActionsType } from "./Actions";
+import { NavigationActions } from "./NavigationActions";
 
 export class SignUpVerification {
   static validateForm(
@@ -50,7 +51,12 @@ export class SignUpActions {
     });
   }
 
-  static validateSignUpForm(formData: FormData, degree: string, semester: string, checkbox: HTMLInputElement | null): { isValid: boolean; error?: string } {
+  static validateSignUpForm(
+    formData: FormData,
+    degree: string,
+    semester: string,
+    checkbox: HTMLInputElement | null
+  ): { isValid: boolean; error?: string } {
     const username = formData.get("username") as string;
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
@@ -113,12 +119,8 @@ export class SignUpActions {
         type: SignUpActionsType.SIGN_UP_SUCCESS,
       });
 
-      // Navigate to feed page instead of login
-      const navigationEvent = new CustomEvent("navigate", {
-        detail: "/feed",
-        composed: true,
-      });
-      document.dispatchEvent(navigationEvent);
+      // Navigate to feed page using NavigationActions
+      NavigationActions.navigate("/feed");
     } catch (error) {
       // Dispatch error action
       AppDispatcher.dispatch({

@@ -1,3 +1,5 @@
+import { ButtonActions } from "../../flux/ButtonActions";
+
 class PrimaryButton extends HTMLElement {
   constructor() {
     super();
@@ -49,7 +51,7 @@ class PrimaryButton extends HTMLElement {
     `;
 
     this.shadowRoot!.querySelector(".primary")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("primary-click", { bubbles: true, composed: true }));
+      ButtonActions.primaryButtonClick();
     });
   }
 }

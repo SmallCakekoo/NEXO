@@ -1,3 +1,5 @@
+import { FeedActions } from "../flux/FeedActions";
+
 class FloatingButtonAdd extends HTMLElement {
   constructor() {
     super();
@@ -49,8 +51,10 @@ class FloatingButtonAdd extends HTMLElement {
     `;
 
     const button = this.shadowRoot!.querySelector("button")!;
-    button.addEventListener("click", () => {
-      window.dispatchEvent(new CustomEvent("open-modal"));
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      FeedActions.openPostModal("");
     });
   }
 }

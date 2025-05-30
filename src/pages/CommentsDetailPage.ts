@@ -112,8 +112,10 @@ class CommentsDetailPage extends HTMLElement {
     const commentInput = this.shadowRoot?.querySelector("comment-form");
 
     backButton?.addEventListener("click", () => {
-      store.setFromProfile(false);
-      NavigationActions.navigate("/feed");
+      const fromProfile = store.getFromProfile();
+      const targetRoute = fromProfile ? "/profile" : "/feed";
+      store.setFromProfile(false); // Reseteamos el flag
+      NavigationActions.navigate(targetRoute);
     });
 
     likeButton?.addEventListener("click", () => {

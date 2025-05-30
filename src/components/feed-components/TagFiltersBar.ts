@@ -1,9 +1,22 @@
+import { TagActions } from "../../flux/TagActions";
+import { store } from "../../flux/Store";
+
 class TagFiltersBar extends HTMLElement {
   private activeTag: string = "All";
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.setupStoreSubscription();
+  }
+
+  setupStoreSubscription() {
+    store.subscribe((state) => {
+      if (this.activeTag !== state.selectedTag) {
+        this.activeTag = state.selectedTag;
+        this.updateActiveButton();
+      }
+    });
   }
 
   connectedCallback() {
@@ -16,25 +29,27 @@ class TagFiltersBar extends HTMLElement {
 
   addEventListeners() {
     const buttons = this.shadowRoot!.querySelectorAll("button-tags");
+
     buttons.forEach((button) => {
       button.addEventListener("click", () => {
         const tag = button.getAttribute("textbutton");
-        console.log(`Tag selected in filter bar: ${tag}`);
-        this.activeTag = tag || "All";
-        this.updateActiveButton();
-
-        const event = new CustomEvent("tagSelected", {
-          detail: { tag },
-
-          composed: true,
-        });
-        document.dispatchEvent(event);
+        if (tag) {
+          TagActions.selectTag(tag);
+          document.dispatchEvent(
+            new CustomEvent("tagSelected", {
+              detail: { tag },
+              bubbles: true,
+              composed: true,
+            })
+          );
+        }
       });
     });
   }
 
   updateActiveButton() {
     const buttons = this.shadowRoot!.querySelectorAll("button-tags");
+
     buttons.forEach((button) => {
       const buttonTag = button.getAttribute("textbutton");
       if (buttonTag === this.activeTag) {

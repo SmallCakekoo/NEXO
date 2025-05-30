@@ -1,3 +1,5 @@
+import { NavigationActions } from "../flux/NavigationActions";
+
 class FeedPage extends HTMLElement {
   private scrollPosition: number = 0;
 
@@ -10,11 +12,7 @@ class FeedPage extends HTMLElement {
     // Check if user is logged in
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (!loggedInUser) {
-      const event = new CustomEvent("navigate", {
-        detail: "/login",
-        composed: true,
-      });
-      document.dispatchEvent(event);
+      NavigationActions.navigate("/login");
       return;
     }
     this.render();

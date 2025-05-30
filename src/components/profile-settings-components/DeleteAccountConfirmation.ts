@@ -1,4 +1,5 @@
 import { ProfileActions } from "../../flux/ProfileActions";
+import { NavigationActions } from "../../flux/NavigationActions";
 
 class DeleteAccountConfirmation extends HTMLElement {
   constructor() {
@@ -201,11 +202,7 @@ class DeleteAccountConfirmation extends HTMLElement {
         ProfileActions.deleteAccount();
 
         this.animateOut().then(() => {
-          const event = new CustomEvent("navigate", {
-            detail: "/",
-            composed: true,
-          });
-          document.dispatchEvent(event);
+          NavigationActions.navigate("/");
           this.remove();
         });
       });

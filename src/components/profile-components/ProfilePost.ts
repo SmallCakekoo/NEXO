@@ -81,7 +81,7 @@ class ProfilePost extends HTMLElement {
 
   private handleStoreChange(state: any) {
     if (this.post.id) {
-      const userLikes = store.getUserLikes(state.auth.user?.username || '');
+      const userLikes = store.getUserLikes(state.auth.user?.username || "");
       this.liked = userLikes.includes(this.post.id);
       this.render();
     }
@@ -93,7 +93,7 @@ class ProfilePost extends HTMLElement {
       const state = store.getState();
       const loggedInUser = state.auth.user;
       let userLikedPost = false;
-      
+
       if (loggedInUser && this.post.id) {
         const userLikes = store.getUserLikes(loggedInUser.username);
         userLikedPost = userLikes.includes(this.post.id);
@@ -538,7 +538,7 @@ class ProfilePost extends HTMLElement {
         if (this.post.id) {
           store.saveCurrentPost(this.post);
           store.setFromProfile(true);
-          NavigationActions.navigate("/comments-detail-profile");
+          NavigationActions.navigate("/comments-detail");
         }
       });
 
