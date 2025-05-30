@@ -523,6 +523,17 @@ class Store {
         }
         break;
 
+      case FeedActionsType.LOAD_POSTS_FROM_STORAGE:
+        if (action.payload && typeof action.payload === "object" && "posts" in action.payload) {
+          const payload = action.payload as { posts: Post[] };
+          this._myState = {
+            ...this._myState,
+            posts: payload.posts
+          };
+          this._emitChange();
+        }
+        break;
+
       case TagActionTypes.SELECT_TAG:
         if (action.payload) {
           const tag = action.payload as string;

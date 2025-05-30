@@ -1,12 +1,10 @@
-import { PostsResponse } from "../types/feed/feeds.types";
+import { PostsResponse, Post } from "../types/feed/feeds.types";
+// import { AppDispatcher } from "../flux/Dispatcher";
+// import { FeedActionsType } from "../flux/FeedActions";
 
+// This function will be updated later to fetch posts from a real API.
+// For now, we are moving the localStorage logic to the Store's initialization.
 export async function fetchPosts(): Promise<PostsResponse> {
-  try {
-    // Get posts from localStorage instead of fetching from a file
-    const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-    return { posts };
-  } catch (error) {
-    console.error("Failed to fetch posts:", error);
-    return { posts: [] };
-  }
+  console.log("fetchPosts called - localStorage logic moved to Store initialization.");
+  return { posts: [] };
 }

@@ -3,6 +3,7 @@ import { fetchPosts } from "../../services/FeedService";
 import { store, State } from "../../flux/Store";
 import { AppDispatcher } from "../../flux/Dispatcher";
 import { PostActionTypes } from "../../types/feed/PostActionTypes";
+import { FeedActions } from "../../flux/FeedActions";
 
 // An interface to extend windows
 interface WindowWithPostContainer extends Window {
@@ -29,7 +30,8 @@ export class PostContainer extends HTMLElement {
   connectedCallback() {
     this.subscribeToStore();
     this.setupEventListeners();
-    this.loadPosts();
+    // Remove the direct call to loadPosts here. Initial load is handled by store.load()
+    // this.loadPosts();
   }
 
   disconnectedCallback() {
@@ -66,13 +68,13 @@ export class PostContainer extends HTMLElement {
 
       // Listen for new posts
       this.postPublishedListener = () => {
-        this.loadPosts();
+        FeedActions.refreshFeedFromStorage();
       };
       document.addEventListener("post-published", this.postPublishedListener);
 
       // Listen for profile updates
       this.profileUpdatedListener = () => {
-        this.loadPosts();
+        FeedActions.refreshFeedFromStorage();
       };
       document.addEventListener("profile-updated", this.profileUpdatedListener);
 
@@ -95,15 +97,16 @@ export class PostContainer extends HTMLElement {
     this.render();
   }
 
-  private async loadPosts() {
-    try {
-      const response = await fetchPosts();
-      this.filteredPosts = store.getFilteredPosts(store.getState().selectedTag);
-      this.render();
-    } catch (error) {
-      console.error("Error loading posts:", error);
-    }
-  }
+  // Keep loadPosts for explicit fetching actions if needed later, but not for initial render.
+  // private async loadPosts() {
+  //   try {
+  //     const response = await fetchPosts();
+  //     this.filteredPosts = store.getFilteredPosts(store.getState().selectedTag);
+  //     this.render();
+  //   } catch (error) {
+  //     console.error("Error loading posts:", error);
+  //   }
+  // }
 
   private render() {
     if (!this.shadowRoot) return;
