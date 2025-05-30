@@ -1,31 +1,58 @@
+import { store, State } from "../../flux/Store"; // Import store and State
+import { NavigationActions } from "../../flux/NavigationActions"; // Import NavigationActions
+
 class ProfileHeader extends HTMLElement {
+  private unsubscribe?: () => void;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    // Bind render and handleStoreChange to the component instance
+    this.render = this.render.bind(this);
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
-    this.render();
+    this.setupStoreListeners(); // Setup store listeners on connection
     this.addEventListeners();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+
+  private setupStoreListeners() {
+    this.unsubscribe = store.subscribe(this.handleStoreChange);
+    // Trigger an initial render with the current state after subscribing
+    this.handleStoreChange(store.getState());
+  }
+
+  private _lastUser: any | null = null;
+
+  private handleStoreChange(state: State) {
+    // Actualizar la UI cuando el store cambie based on relevant parts of the state
+    // In this case, we re-render if the auth.user state changes
+    if (state.auth.user !== this._lastUser) { // Check if user data actually changed
+        this._lastUser = state.auth.user;
+        this.render();
+    }
   }
 
   // Adds event listener to the "edit" button to trigger navigation
   addEventListeners() {
     const editButton = this.shadowRoot!.querySelector(".edit-button");
     editButton?.addEventListener("click", () => {
-      const navigationEvent = new CustomEvent("navigate", {
-        detail: "/profile-settings",
-      });
-      document.dispatchEvent(navigationEvent);
+      // Dispatch the Flux navigation action
+      NavigationActions.navigate("/profile-settings");
     });
   }
 
   render() {
-    // Get logged-in user info from localStorage
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    } catch (e) {}
+    // Get logged-in user info from the store state
+    const user = store.getState().auth.user;
+
     const name = user?.username || "Unknown User";
     const career = user?.degree || "Unknown Career";
     const bio = user?.bio || "";
