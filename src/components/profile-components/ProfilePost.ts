@@ -74,10 +74,10 @@ class ProfilePost extends HTMLElement {
     if (this.shadowRoot) {
       // Check if logged in user has liked this post
       let userLikedPost = false;
-      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
       if (loggedInUser && this.post.id) {
         const userId = loggedInUser.username;
-        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
+        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
         if (userLikes[userId] && userLikes[userId].includes(this.post.id)) {
           userLikedPost = true;
         }
@@ -456,7 +456,7 @@ class ProfilePost extends HTMLElement {
           <hr>
           <div class="footer">  
              <div class="align-likes">
-              <button class="just-likes ${userLikedPost ? 'liked' : ''}">
+              <button class="just-likes ${userLikedPost ? "liked" : ""}">
                 <svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
@@ -487,16 +487,19 @@ class ProfilePost extends HTMLElement {
 
       const likeButton = this.shadowRoot.querySelector(".just-likes");
       likeButton?.addEventListener("click", () => {
+        // Guardar la posición actual del scroll
+        const currentScrollPosition = window.scrollY;
+
         // Check if user is logged in
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
         if (!loggedInUser) {
-          alert('Please log in to like posts.');
+          alert("Please log in to like posts.");
           return;
         }
 
         // Ensure post has an ID
         if (!this.post.id) {
-          console.error('Post is missing ID, cannot like.');
+          console.error("Post is missing ID, cannot like.");
           return;
         }
 
@@ -504,26 +507,19 @@ class ProfilePost extends HTMLElement {
         const postId = this.post.id;
 
         // Check if user has already liked this post
-        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
-        const hasLiked = userLikes[userId]?.includes(postId);
+        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+        const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
 
         if (hasLiked) {
-          // Unlike the post
           PostActions.unlikePost(postId, userId);
-          this.liked = false;
         } else {
-          // Like the post
           PostActions.likePost(postId, userId);
-          this.liked = true;
         }
 
-        // Update the post likes count from localStorage
-        const allPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-        const postIndex = allPosts.findIndex((p: any) => p.id === postId);
-        if (postIndex !== -1) {
-          this.post.likes = allPosts[postIndex].likes;
-          this.render();
-        }
+        // Restaurar la posición del scroll después de un pequeño delay
+        requestAnimationFrame(() => {
+          window.scrollTo(0, currentScrollPosition);
+        });
       });
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");

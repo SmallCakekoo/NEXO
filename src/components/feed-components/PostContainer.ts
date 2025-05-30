@@ -62,7 +62,7 @@ export class PostContainer extends HTMLElement {
       // Create the profile-updated event listener
       this.profileUpdatedListener = (event: Event) => {
         const customEvent = event as CustomEvent<{ type: string; value: string }>;
-        if (customEvent.detail.type === 'photo') {
+        if (customEvent.detail.type === "photo") {
           // Reload posts to reflect the new profile photo
           this.loadPosts();
         }
@@ -72,7 +72,7 @@ export class PostContainer extends HTMLElement {
       document.addEventListener("tagSelected", this.tagSelectedListener);
       document.addEventListener("post-published", this.postPublishedListener);
       document.addEventListener("profile-updated", this.profileUpdatedListener);
-      
+
       // Mark listeners as attached
       this.isListenerAttached = true;
       windowWithPC.postContainerConnected = true;
@@ -98,7 +98,12 @@ export class PostContainer extends HTMLElement {
 
   private handleStoreChange(state: State) {
     if (state.posts) {
-      this.filteredPosts = state.posts;
+      // Aplicar el filtro actual a los nuevos posts
+      if (this.currentFilter === "All") {
+        this.filteredPosts = state.posts;
+      } else {
+        this.filteredPosts = state.posts.filter((post) => post.tag === this.currentFilter);
+      }
       this.render();
     }
   }
@@ -107,19 +112,18 @@ export class PostContainer extends HTMLElement {
     if (tag === "All") {
       this.filteredPosts = store.getState().posts;
     } else {
-      this.filteredPosts = store.getState().posts.filter(
-        (post) => post.tag === tag
-      );
+      this.filteredPosts = store.getState().posts.filter((post) => post.tag === tag);
     }
     this.render();
   }
 
   private render() {
     if (this.shadowRoot) {
-      const postsHTML = this.filteredPosts.length > 0 
-        ? this.filteredPosts
-            .map(
-              (post) => `
+      const postsHTML =
+        this.filteredPosts.length > 0
+          ? this.filteredPosts
+              .map(
+                (post) => `
               <feed-post
                 ${post.id ? `id="${post.id}"` : ""}
                 photo="${post.photo}"
@@ -134,9 +138,9 @@ export class PostContainer extends HTMLElement {
                 comments="${JSON.stringify(post.comments)}"
               ></feed-post>
             `
-            )
-            .join("")
-        : `
+              )
+              .join("")
+          : `
           <div class="no-posts">
             <p class="no-posts-title">No posts yet</p>
             <p class="subtitle">Be the first to share something interesting</p>
@@ -223,17 +227,17 @@ export class PostContainer extends HTMLElement {
     createdAt: string;
   }): void {
     console.log("PostContainer: addNewPost called with data:", postData);
-    
+
     // Get current user info from localStorage
     let user = null;
     try {
-      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+      user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
     } catch (e) {
       console.error("Error getting user from localStorage:", e);
       alert("Error getting user information. Cannot create post.");
       return;
     }
-    
+
     if (!user) {
       console.error("No logged in user found");
       alert("You must be logged in to create a post.");
@@ -245,9 +249,9 @@ export class PostContainer extends HTMLElement {
     const semestre = user?.semester || "";
     let photo = user?.profilePic;
     if (!photo && postData.image) {
-        photo = URL.createObjectURL(postData.image);
+      photo = URL.createObjectURL(postData.image);
     } else if (!photo) {
-        photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
     }
     console.log("PostContainer: User photo:", photo);
 
@@ -267,26 +271,29 @@ export class PostContainer extends HTMLElement {
     };
 
     console.log("PostContainer: New post object created:", newPost);
-    
+
     // Get current posts from localStorage
-    const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-    console.log("PostContainer: Current posts from localStorage BEFORE adding new post:", currentPosts);
-    
+    const currentPosts = JSON.parse(localStorage.getItem("posts") || "[]");
+    console.log(
+      "PostContainer: Current posts from localStorage BEFORE adding new post:",
+      currentPosts
+    );
+
     // Check if post with same ID already exists
     const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
     if (!postExists) {
       // Add the new post to the array
       currentPosts.unshift(newPost);
       console.log("PostContainer: Posts array AFTER adding new post:", currentPosts);
-      
+
       // Update localStorage
-      localStorage.setItem('posts', JSON.stringify(currentPosts));
+      localStorage.setItem("posts", JSON.stringify(currentPosts));
       console.log("PostContainer: Posts updated in localStorage.");
-      
+
       // Dispatch action to update store
       AppDispatcher.dispatch({
         type: PostActionTypes.ADD_POST,
-        payload: newPost
+        payload: newPost,
       });
       console.log("ADD_POST action dispatched");
     } else {
@@ -305,4 +312,4 @@ export class PostContainer extends HTMLElement {
 
 export default PostContainer;
 
-console.log("se cargó este archivo")
+console.log("se cargó este archivo");

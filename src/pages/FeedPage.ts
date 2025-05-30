@@ -8,12 +8,11 @@ class FeedPage extends HTMLElement {
 
   connectedCallback() {
     // Check if user is logged in
-    const loggedInUser = localStorage.getItem('loggedInUser');
+    const loggedInUser = localStorage.getItem("loggedInUser");
     if (!loggedInUser) {
-     
-      const event = new CustomEvent('navigate', {
-        detail: '/login',
-        composed: true
+      const event = new CustomEvent("navigate", {
+        detail: "/login",
+        composed: true,
       });
       document.dispatchEvent(event);
       return;

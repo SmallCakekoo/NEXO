@@ -1,15 +1,23 @@
+import { PostActions } from "../flux/PostActions";
+import { store, State } from "../flux/Store";
+
 class CommentsDetailPage extends HTMLElement {
   private liked: boolean = false;
   private postData: any = null;
   private postId: string = "";
   private fromProfile: boolean = false;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
+    // Subscribe to store changes
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+
     // Obtener el ID del post de la URL o sessionStorage
     this.postId = sessionStorage.getItem("currentPostId") || "";
     this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
@@ -17,6 +25,37 @@ class CommentsDetailPage extends HTMLElement {
 
     // Cargar los datos del post
     this.loadPostData();
+  }
+
+  disconnectedCallback() {
+    // Unsubscribe from store when component is removed
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange(state: State) {
+    // Update post data when store changes
+    if (state.posts && this.postData) {
+      const updatedPost = state.posts.find((post) => post.id === this.postData.id);
+      if (updatedPost) {
+        this.postData = updatedPost;
+        this.checkUserLikeStatus(); // Esto actualizará el estado visual
+        this.render();
+
+        // Después del render, necesitamos volver a aplicar el estado visual
+        requestAnimationFrame(() => {
+          const likeIcon = this.shadowRoot?.querySelector(".like-icon");
+          if (likeIcon) {
+            if (this.liked) {
+              likeIcon.classList.add("liked");
+            } else {
+              likeIcon.classList.remove("liked");
+            }
+          }
+        });
+      }
+    }
   }
 
   async loadPostData() {
@@ -95,16 +134,25 @@ class CommentsDetailPage extends HTMLElement {
     }
   }
 
-  checkUserLikeStatus() {
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    if (loggedInUser && this.postData && this.postData.photo) {
-      const userId = loggedInUser.username; // Assuming username is the user ID
-      const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
-      this.liked = userLikes[userId] && userLikes[userId].includes(this.postData.photo);
+  private checkUserLikeStatus() {
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    if (loggedInUser && this.postData && this.postData.id) {
+      const userId = loggedInUser.username;
+      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+      this.liked = userLikes[userId] && userLikes[userId].includes(this.postData.id);
+
+      // Actualizar visualmente el estado del like
+      const likeIcon = this.shadowRoot?.querySelector(".like-icon");
+      if (likeIcon) {
+        if (this.liked) {
+          likeIcon.classList.add("liked");
+        } else {
+          likeIcon.classList.remove("liked");
+        }
+      }
     } else {
       this.liked = false;
     }
-    console.log("User like status checked. Liked:", this.liked);
   }
 
   setupEventListeners() {
@@ -129,46 +177,26 @@ class CommentsDetailPage extends HTMLElement {
       }
     });
 
-    // Handle like button toggle
+    // Handle like button toggle using PostActions
     likeButton?.addEventListener("click", () => {
-      const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-      if (!loggedInUser || !this.postData || !this.postData.photo) {
+      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      if (!loggedInUser || !this.postData || !this.postData.id) {
         console.warn("Cannot toggle like: user not logged in or post data missing.");
         return;
       }
 
-      const userId = loggedInUser.username; // Assuming username is the user ID
-      const postId = this.postData.photo;
+      const userId = loggedInUser.username;
+      const postId = this.postData.id;
 
-      let userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
-      if (!userLikes[userId]) {
-        userLikes[userId] = [];
-      }
+      // Check if user has already liked this post
+      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+      const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
 
-      const postIndex = userLikes[userId].indexOf(postId);
-
-      if (postIndex === -1) {
-        // User likes the post
-        userLikes[userId].push(postId);
-        this.postData.likes = (this.postData.likes || 0) + 1;
-        this.liked = true;
-        console.log("User liked post:", postId);
+      if (hasLiked) {
+        PostActions.unlikePost(postId, userId);
       } else {
-        // User unlikes the post
-        userLikes[userId].splice(postIndex, 1);
-        this.postData.likes = Math.max(0, (this.postData.likes || 0) - 1);
-        this.liked = false;
-        console.log("User unliked post:", postId);
+        PostActions.likePost(postId, userId);
       }
-
-      // Save updated likes to localStorage
-      localStorage.setItem('userLikes', JSON.stringify(userLikes));
-
-      // Update the post data in sessionStorage as well
-      sessionStorage.setItem("currentPost", JSON.stringify(this.postData));
-
-      // Re-render to reflect changes
-      this.render();
     });
   }
 
@@ -184,6 +212,11 @@ class CommentsDetailPage extends HTMLElement {
       tag: "Daily Life",
       likes: 19,
     };
+
+    // Obtener el número actual de likes del store
+    const currentState = store.getState();
+    const updatedPost = currentState.posts?.find((p) => p.id === post.id);
+    const currentLikes = updatedPost ? updatedPost.likes : post.likes;
 
     this.shadowRoot!.innerHTML = `
       <style>
@@ -331,7 +364,7 @@ class CommentsDetailPage extends HTMLElement {
         }
         
         .just-likes:hover, .just-share:hover {
-          background-color: rgba(83, 84, 237, 0.1);
+          transform: scale(1.05);
         }
         
         .like-icon {
@@ -501,7 +534,7 @@ class CommentsDetailPage extends HTMLElement {
                 <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
-                <p class="likes-count">${post.likes} Likes</p>
+                <p class="likes-count">${currentLikes} Likes</p>
               </button>
             </div>  
 
