@@ -1,14 +1,11 @@
 import { AppDispatcher } from "./Dispatcher";
-
-export enum TagActionsType {
-  SELECT_TAG = "SELECT_TAG",
-}
+import { TagActionTypes } from "../types/feed/TagActionTypes";
 
 export const TagActions = {
   selectTag(tag: string) {
     AppDispatcher.dispatch({
-      type: TagActionsType.SELECT_TAG,
-      payload: { tag },
+      type: TagActionTypes.SELECT_TAG,
+      payload: tag
     });
-  },
+  }
 };

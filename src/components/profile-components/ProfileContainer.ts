@@ -20,7 +20,7 @@ class ProfileContainer extends HTMLElement {
     
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
-      console.log("ProfileContainer: 'profile-updated' event received. Loading posts."); // Log profile update event
+      console.log("ProfileContainer: 'profile-updated' event received. Loading posts.");
       this.loadPosts();
     });
 
@@ -28,7 +28,7 @@ class ProfileContainer extends HTMLElement {
     document.addEventListener('navigate', (event: Event) => {
       const customEvent = event as CustomEvent<string>;
       if (customEvent.detail === '/profile') {
-        console.log("ProfileContainer: 'navigate' to profile event received. Loading posts."); // Log navigation event
+        console.log("ProfileContainer: 'navigate' to profile event received. Loading posts.");
         this.loadPosts();
       }
     });
@@ -50,7 +50,7 @@ class ProfileContainer extends HTMLElement {
   }
 
   async loadPosts() {
-    console.log("ProfileContainer: loadPosts called."); // Log when loadPosts is called
+    console.log("ProfileContainer: loadPosts called.");
     try {
       // Always get the latest loggedInUser
       let user = null;
@@ -59,10 +59,10 @@ class ProfileContainer extends HTMLElement {
       } catch (e) {}
       const username = user?.username;
       const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      console.log("ProfileContainer: Posts from localStorage in loadPosts:", posts); // Log posts from localStorage
+      console.log("ProfileContainer: Posts from localStorage in loadPosts:", posts);
       // Filter posts by the current username
       this.posts = posts.filter((p: any) => p.name === username);
-      console.log("ProfileContainer: Filtered posts (this.posts) before render:", this.posts); // Log filtered posts
+      console.log("ProfileContainer: Filtered posts (this.posts) before render:", this.posts);
       this.render();
     } catch (error) {
       console.error("Error loading posts:", error);
@@ -76,98 +76,6 @@ class ProfileContainer extends HTMLElement {
     fab?.addEventListener("click", () => {
       window.dispatchEvent(new CustomEvent("open-modal"));
     });
-  }
-
-  async addNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): Promise<void> {
-    console.log("ProfileContainer: addNewPost called with data:", postData);
-    
-    // This method is no longer directly called by the post-published event listener
-    // The logic for adding the post to localStorage and dispatching the action
-    // is now handled solely by PostContainer.
-    // This method can potentially be removed if it's not called elsewhere,
-    // or refactored if ProfileContainer needs a different way to handle new posts
-    // (e.g., adding to its local state after the store is updated).
-    
-    // Get current user info from localStorage
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-    } catch (e) {
-      console.error("ProfileContainer: Error getting user from localStorage:", e);
-      alert("Error getting user information. Cannot create post.");
-      return;
-    }
-    
-    if (!user) {
-      console.error("ProfileContainer: No logged in user found");
-      alert("You must be logged in to create a post.");
-      return;
-    }
-
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    let photo = user?.profilePic;
-    // Handle potential image file upload (though not implemented in modal yet, keep for future)
-    if (!photo && postData.image) {
-        // For now, we can't easily save a File object to localStorage.
-        // If image upload is implemented, this would need to handle converting File to data URL or similar.
-        console.warn("Image file upload not fully supported for localStorage persistence in ProfileContainer.");
-        photo = "https://via.placeholder.com/150"; // Placeholder for uploaded image
-    } else if (!photo) {
-        photo = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`; // Fallback random avatar
-    }
-    console.log("ProfileContainer: User photo:", photo);
-
-    // Create a new post object with the data from the modal
-    const newPost: Post = {
-      // Generate a unique ID (more robust than just timestamp)
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(), // Use locale date string for consistent format
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0", // Default share count
-      comments: [], // New posts start with no comments
-    };
-
-    console.log("ProfileContainer: New post object created:", newPost);
-    
-    // Get current posts from localStorage
-    // Note: ProfileContainer should only manage *profile* posts, filtered by user.
-    // The 'posts' key in localStorage is used by FeedContainer for *all* posts.
-    // To keep it simple for now and avoid separate storage, we'll add to the main 'posts' key,
-    // but ideally, profile posts might be stored separately or filtered consistently.
-    const allPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-    console.log("ProfileContainer: Current posts from localStorage:", allPosts);
-    
-    // Check if post with same ID already exists (unlikely with robust ID, but good practice)
-    const postExists = allPosts.some((post: Post) => post.id === newPost.id);
-    if (!postExists) {
-      // Add the new post to the beginning of the array
-      allPosts.unshift(newPost);
-      console.log("ProfileContainer: Adding new post to allPosts array:", allPosts);
-      
-      // Update localStorage for all posts
-      localStorage.setItem('posts', JSON.stringify(allPosts));
-      console.log("ProfileContainer: All posts updated in localStorage");
-      
-      // Also add to the ProfileContainer's local posts array
-      // Since loadPosts filters by username, we can just reload the posts
-      this.loadPosts(); // This will refetch from localStorage and filter
-      console.log("ProfileContainer: Calling loadPosts to update view");
-    } else {
-      console.warn("ProfileContainer: Post with same ID already exists, not adding:", newPost.id);
-    }
   }
 
   render() {

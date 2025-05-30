@@ -26,64 +26,10 @@ export class PostContainer extends HTMLElement {
     this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
-  async connectedCallback() {
-    // Subscribe to store changes
-    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
-
-    // Initial load of posts
-    const response = await fetchPosts();
-    if (response.posts) {
-      this.filteredPosts = response.posts;
-      this.render();
-    }
-
-    // Only set up event listeners if they're not already attached
-    if (!this.isListenerAttached) {
-      // Create the tagSelected event listener
-      this.tagSelectedListener = (event: Event) => {
-        const customEvent = event as CustomEvent<{ tag: string }>;
-        const selectedTag = customEvent.detail.tag;
-        console.log("PostContainer: Filtering by tag:", selectedTag);
-        this.currentFilter = selectedTag;
-        this.filterPosts(selectedTag);
-      };
-
-      // Create the post-published event listener
-      this.postPublishedListener = (event: Event) => {
-        console.log("PostContainer: 'post-published' event received.", event);
-        const customEvent = event as CustomEvent<{
-          content: string;
-          category: string;
-          image: File | null;
-          createdAt: string;
-        }>;
-        this.addNewPost(customEvent.detail);
-      };
-
-      // Create the profile-updated event listener
-      this.profileUpdatedListener = (event: Event) => {
-        const customEvent = event as CustomEvent;
-        if (
-          customEvent.detail &&
-          typeof customEvent.detail === "object" &&
-          "type" in customEvent.detail
-        ) {
-          if (customEvent.detail.type === "photo") {
-            // Reload posts to reflect the new profile photo
-            this.loadPosts();
-          }
-        }
-      };
-
-      // Add the event listeners
-      document.addEventListener("tagSelected", this.tagSelectedListener);
-      document.addEventListener("post-published", this.postPublishedListener);
-      document.addEventListener("profile-updated", this.profileUpdatedListener);
-
-      // Mark listeners as attached
-      this.isListenerAttached = true;
-      windowWithPC.postContainerConnected = true;
-    }
+  connectedCallback() {
+    this.subscribeToStore();
+    this.setupEventListeners();
+    this.loadPosts();
   }
 
   disconnectedCallback() {
@@ -103,26 +49,60 @@ export class PostContainer extends HTMLElement {
     }
   }
 
-  private handleStoreChange(state: any) {
-    // Solo actualizar si el tag seleccionado ha cambiado o hay nuevos posts
-    const shouldUpdate =
-      this.currentFilter !== state.selectedTag ||
-      JSON.stringify(this.filteredPosts) !==
-        JSON.stringify(store.getFilteredPosts(this.currentFilter));
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
 
-    if (shouldUpdate) {
-      this.currentFilter = state.selectedTag;
-      this.filteredPosts = store.getFilteredPosts(this.currentFilter);
-      this.render();
+  private setupEventListeners() {
+    // Only set up event listeners if they're not already attached
+    if (!this.isListenerAttached) {
+      // Listen for tag selection
+      this.tagSelectedListener = (event: Event) => {
+        const customEvent = event as CustomEvent<string>;
+        const tag = customEvent.detail;
+        this.filterPostsByTag(tag);
+      };
+      document.addEventListener("tagSelected", this.tagSelectedListener);
+
+      // Listen for new posts
+      this.postPublishedListener = () => {
+        this.loadPosts();
+      };
+      document.addEventListener("post-published", this.postPublishedListener);
+
+      // Listen for profile updates
+      this.profileUpdatedListener = () => {
+        this.loadPosts();
+      };
+      document.addEventListener("profile-updated", this.profileUpdatedListener);
+
+      this.isListenerAttached = true;
+      windowWithPC.postContainerConnected = true;
     }
   }
 
-  private filterPosts(tag: string) {
-    if (this.currentFilter === tag) return;
-
-    this.currentFilter = tag;
-    this.filteredPosts = store.getFilteredPosts(tag);
+  private handleStoreChange(state: State) {
+    // Update filtered posts based on store state
+    this.filteredPosts = store.getFilteredPosts(state.selectedTag);
     this.render();
+  }
+
+  private filterPostsByTag(tag: string) {
+    const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+    this.filteredPosts = tag
+      ? posts.filter((post: Post) => post.tag === tag)
+      : posts;
+    this.render();
+  }
+
+  private async loadPosts() {
+    try {
+      const response = await fetchPosts();
+      this.filteredPosts = store.getFilteredPosts(store.getState().selectedTag);
+      this.render();
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    }
   }
 
   private render() {
@@ -160,7 +140,7 @@ export class PostContainer extends HTMLElement {
             .join("")
         : `
         <div class="no-posts">
-          <p class="no-posts-title">No hay posts en la categoría "${this.currentFilter}"</p>
+          <p class="no-posts-title">No hay posts en la categoría "${store.getState().selectedTag}"</p>
           <p class="subtitle">Intenta seleccionar otra categoría o crear un nuevo post</p>
         </div>
       `;
@@ -229,79 +209,6 @@ export class PostContainer extends HTMLElement {
         ${postsHTML}
       </div>
     `;
-  }
-
-  addNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): void {
-    // Get current user info from localStorage
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-    } catch (e) {
-      alert("Error getting user information. Cannot create post.");
-      return;
-    }
-
-    if (!user) {
-      alert("You must be logged in to create a post.");
-      return;
-    }
-
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    let photo = user?.profilePic;
-    if (!photo && postData.image) {
-      photo = URL.createObjectURL(postData.image);
-    } else if (!photo) {
-      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    }
-
-    // Create a new post object with the data from the modal
-    const newPost: Post = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-    };
-
-    // Get current posts from localStorage
-    const currentPosts = JSON.parse(localStorage.getItem("posts") || "[]");
-
-    // Check if post with same ID already exists
-    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
-    if (!postExists) {
-      // Add the new post to the array
-      currentPosts.unshift(newPost);
-
-      // Update localStorage
-      localStorage.setItem("posts", JSON.stringify(currentPosts));
-
-      // Dispatch action to update store
-      AppDispatcher.dispatch({
-        type: PostActionTypes.ADD_POST,
-        payload: newPost,
-      });
-    }
-  }
-
-  private async loadPosts() {
-    const response = await fetchPosts();
-    if (response.posts) {
-      this.filteredPosts = response.posts;
-      this.render();
-    }
   }
 }
 

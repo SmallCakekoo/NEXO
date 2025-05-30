@@ -8,7 +8,7 @@ import { SearchActionTypes } from "./SearchActions";
 import { ProfileActionTypes } from "./ProfileActions";
 import { CommentActionsType } from "./CommentActions";
 import { FeedActionsType } from "./FeedActions";
-import { TagActionsType } from "./TagActions";
+import { TagActionTypes } from "../types/feed/TagActionTypes";
 
 export interface Rating {
   rating: number;
@@ -523,13 +523,13 @@ class Store {
         }
         break;
 
-      case TagActionsType.SELECT_TAG:
-        if (action.payload && typeof action.payload === "object" && "tag" in action.payload) {
-          const payload = action.payload as TagPayload;
-          console.log("Store: Changing selected tag to:", payload.tag);
+      case TagActionTypes.SELECT_TAG:
+        if (action.payload) {
+          const tag = action.payload as string;
+          console.log("Store: Changing selected tag to:", tag);
           this._myState = {
             ...this._myState,
-            selectedTag: payload.tag,
+            selectedTag: tag,
           };
           this._emitChange();
         }
@@ -820,7 +820,7 @@ class Store {
   }
 
   // Método mejorado para obtener posts filtrados
-  getFilteredPosts(tag: string = "All"): Post[] {
+  getFilteredPosts(tag: string = this._myState.selectedTag): Post[] {
     const posts = this._myState.posts;
 
     if (!posts || !Array.isArray(posts)) {

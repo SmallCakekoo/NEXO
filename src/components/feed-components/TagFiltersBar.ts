@@ -35,13 +35,6 @@ class TagFiltersBar extends HTMLElement {
         const tag = button.getAttribute("textbutton");
         if (tag) {
           TagActions.selectTag(tag);
-          document.dispatchEvent(
-            new CustomEvent("tagSelected", {
-              detail: { tag },
-              bubbles: true,
-              composed: true,
-            })
-          );
         }
       });
     });
