@@ -1,5 +1,6 @@
 import { PostActions } from "../flux/PostActions";
 import { store, State } from "../flux/Store";
+import { NavigationActions } from "../flux/NavigationActions";
 
 class CommentsDetailPage extends HTMLElement {
   private liked: boolean = false;
@@ -162,19 +163,9 @@ class CommentsDetailPage extends HTMLElement {
 
     // Handle back button to preserve scroll position
     backButton?.addEventListener("click", () => {
-      if (this.fromProfile) {
-        sessionStorage.setItem("returnToProfile", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed",
-        });
-        document.dispatchEvent(navigationEvent);
-      } else {
-        sessionStorage.setItem("returnToFeed", "true");
-        const navigationEvent = new CustomEvent("navigate", {
-          detail: "/feed",
-        });
-        document.dispatchEvent(navigationEvent);
-      }
+      // Only handle feed navigation here
+      sessionStorage.setItem("returnToFeed", "true");
+      NavigationActions.navigate("/feed");
     });
 
     // Handle like button toggle using PostActions

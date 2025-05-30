@@ -524,11 +524,15 @@ class ProfilePost extends HTMLElement {
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
-        // Save the entire post object to sessionStorage
-        sessionStorage.setItem("currentPost", JSON.stringify(this.post));
+        // Save the post ID and mark that we're coming from profile
+        if (this.post.id) {
+          sessionStorage.setItem("currentPostId", this.post.id);
+          sessionStorage.setItem("fromProfile", "true");
+          sessionStorage.setItem("currentPost", JSON.stringify(this.post));
 
-        // Navigate to the comments detail page (using the same page as feed posts)
-        NavigationActions.navigate("/comments-detail");
+          // Navigate to the profile-specific comments detail page
+          NavigationActions.navigate("/comments-detail-profile");
+        }
       });
 
       const shareButton = this.shadowRoot.querySelector(".just-share");
