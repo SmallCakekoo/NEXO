@@ -4,7 +4,7 @@ export enum CommentActionsType {
   ADD_COMMENT = "ADD_COMMENT",
 }
 
-interface Comment {
+export interface Comment {
   photo: string;
   name: string;
   career: string;

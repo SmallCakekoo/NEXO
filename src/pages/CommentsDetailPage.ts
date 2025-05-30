@@ -59,13 +59,12 @@ class CommentsDetailPage extends HTMLElement {
 
       if (this.postId && data.posts) {
         console.log("Searching for post with ID in fetched data:", this.postId);
-        this.postData = data.posts.find((post: any) => post.photo === this.postId);
+        this.postData = data.posts.find((post: any) => post.id === this.postId);
 
         if (!this.postData && data.posts.length > 0) {
-          // Si no se encuentra el post, usar el primero como fallback
-          console.warn("Post not found with ID, using first post as fallback.");
+          console.warn("Post not found with ID:", this.postId, ", using first post as fallback.");
           this.postData = data.posts[0];
-          this.postId = this.postData.photo;
+          this.postId = this.postData.id;
         } else if (this.postData) {
           console.log("Found post in fetched data:", this.postData);
         } else {
@@ -78,11 +77,6 @@ class CommentsDetailPage extends HTMLElement {
         this.postData.comments = Array.isArray(this.postData.comments)
           ? this.postData.comments
           : JSON.parse(this.postData.comments);
-      }
-
-      // Set postId after successfully loading/finding postData
-      if (this.postData && this.postData.id) {
-        this.postId = this.postData.id;
       }
 
       this.checkUserLikeStatus(); // Check like status after fetching post
