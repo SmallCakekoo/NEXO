@@ -1234,6 +1234,35 @@ class Store {
     this._emitChange();
   }
 
+  private _getPostById(postId: string): Post | null {
+    try {
+      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      return posts.find((post: Post) => post.id === postId) || null;
+    } catch (error) {
+      console.error("Error getting post by ID:", error);
+      return null;
+    }
+  }
+
+  private _getUserLikeStatus(userId: string, postId: string): boolean {
+    try {
+      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+      return userLikes[userId] && userLikes[userId].includes(postId);
+    } catch (error) {
+      console.error("Error getting user like status:", error);
+      return false;
+    }
+  }
+
+  // Public methods
+  getPostById(postId: string): Post | null {
+    return this._getPostById(postId);
+  }
+
+  getUserLikeStatus(userId: string, postId: string): boolean {
+    return this._getUserLikeStatus(userId, postId);
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();

@@ -19,11 +19,11 @@ class CommentsDetailProfilePage extends HTMLElement {
     // Subscribe to store changes
     this.unsubscribeStore = store.subscribe(this.handleStoreChange);
 
-    // Obtener el ID del post de la URL o sessionStorage
+    // Get post ID from sessionStorage
     this.postId = sessionStorage.getItem("currentPostId") || "";
     this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
 
-    // Cargar los datos del post
+    // Load post data
     this.loadPostData();
   }
 
@@ -40,10 +40,10 @@ class CommentsDetailProfilePage extends HTMLElement {
       const updatedPost = state.posts.find((post) => post.id === this.postData.id);
       if (updatedPost) {
         this.postData = updatedPost;
-        this.checkUserLikeStatus(); // Esto actualizará el estado visual
+        this.checkUserLikeStatus();
         this.render();
 
-        // Después del render, necesitamos volver a aplicar el estado visual
+        // After render, reapply visual state
         requestAnimationFrame(() => {
           const likeIcon = this.shadowRoot?.querySelector(".like-icon");
           if (likeIcon) {
@@ -59,13 +59,12 @@ class CommentsDetailProfilePage extends HTMLElement {
   }
 
   private checkUserLikeStatus() {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    const loggedInUser = store.getState().auth.user;
     if (loggedInUser && this.postData && this.postData.id) {
       const userId = loggedInUser.username;
-      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-      this.liked = userLikes[userId] && userLikes[userId].includes(this.postData.id);
+      this.liked = store.getUserLikeStatus(userId, this.postData.id);
 
-      // Actualizar visualmente el estado del like
+      // Update visual state
       const likeIcon = this.shadowRoot?.querySelector(".like-icon");
       if (likeIcon) {
         if (this.liked) {
@@ -81,14 +80,11 @@ class CommentsDetailProfilePage extends HTMLElement {
 
   async loadPostData() {
     try {
-      // Get posts from localStorage
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      
-      if (this.postId && posts.length > 0) {
-        this.postData = posts.find((post: any) => post.id === this.postId);
+      if (this.postId) {
+        this.postData = store.getPostById(this.postId);
       }
 
-      if (!this.postData && posts.length > 0) {
+      if (!this.postData) {
         console.warn("Post not found with ID:", this.postId);
         return;
       }
@@ -119,7 +115,7 @@ class CommentsDetailProfilePage extends HTMLElement {
     // Handle like button toggle using PostActions
     const likeButton = this.shadowRoot?.querySelector(".just-likes");
     likeButton?.addEventListener("click", () => {
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      const loggedInUser = store.getState().auth.user;
       if (!loggedInUser || !this.postData || !this.postData.id) {
         console.warn("Cannot toggle like: user not logged in or post data missing.");
         return;
@@ -129,8 +125,7 @@ class CommentsDetailProfilePage extends HTMLElement {
       const postId = this.postData.id;
 
       // Check if user has already liked this post
-      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-      const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
+      const hasLiked = store.getUserLikeStatus(userId, postId);
 
       if (hasLiked) {
         PostActions.unlikePost(postId, userId);
@@ -155,7 +150,7 @@ class CommentsDetailProfilePage extends HTMLElement {
       comments: [],
     };
 
-    // Obtener el número actual de likes del store
+    // Get current likes from store
     const currentState = store.getState();
     const updatedPost = currentState.posts?.find((p) => p.id === post.id);
     const currentLikes = updatedPost ? updatedPost.likes : post.likes;
