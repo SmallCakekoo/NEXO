@@ -1,3 +1,6 @@
+import { ProfileActions } from "../../flux/ProfileActions";
+import { NavigationActions } from "../../flux/NavigationActions";
+
 class DeleteAccountConfirmation extends HTMLElement {
   constructor() {
     super();
@@ -22,7 +25,7 @@ class DeleteAccountConfirmation extends HTMLElement {
   render() {
     this.shadowRoot!.innerHTML = `
             <style>
-@import url('../colors.css');
+ 
 
 :host {
   display: block;
@@ -174,13 +177,14 @@ class DeleteAccountConfirmation extends HTMLElement {
                             <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"/>
                         </svg>
                     </div>
-                    <h2>¿Estás seguro de que deseas eliminar tu cuenta?</h2>
+                    <h2>Are you sure you want to delete your account?</h2>
+                    
                 </div>
                 <div class="dialog-content">
-                    <p class="message">Esta acción no se puede deshacer. Se eliminarán permanentemente todos tus datos, configuraciones y actividad de la plataforma.</p>
+                    <p class="message">This action is permanent</p>  Your data and activity will be permanently erased.</p>
                     <div class="action-buttons">
-                        <button class="btn cancel-btn">Cancelar</button>
-                        <button class="btn confirm-btn">Eliminar cuenta</button>
+                        <button class="btn cancel-btn">Cancel</button>
+                        <button class="btn confirm-btn">Delete account</button>
                     </div>
                 </div>
             </div>
@@ -192,19 +196,22 @@ class DeleteAccountConfirmation extends HTMLElement {
     const confirmBtn = this.shadowRoot!.querySelector(".confirm-btn");
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
-    // On confirm, animate out and dispatch a custom event (but this is static for now)
-    confirmBtn?.addEventListener("click", () => {
-      this.animateOut().then(() => {
-        const confirmEvent = new CustomEvent("delete-account-confirmed", {
-          bubbles: true, // Allows the event to bubble up to the parent
-          composed: true, // Allows the event to be composed
-        });
-        this.dispatchEvent(confirmEvent);
-        this.remove();
-      });
-    });
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        // Disable the button to prevent multiple clicks
+        (confirmBtn as HTMLButtonElement).disabled = true;
+        
+        // Call the ProfileActions.deleteAccount method
+        ProfileActions.deleteAccount();
 
-    // On cancel, animate out and remove
+        // Remove the component immediately
+        this.remove();
+        
+        // Navigate after removal
+        NavigationActions.navigate("/");
+      });
+    }
+
     cancelBtn?.addEventListener("click", () => {
       this.animateOut().then(() => {
         this.remove();

@@ -1,30 +1,66 @@
+import { store, State } from "../../flux/Store"; // Import store and State
+import { NavigationActions } from "../../flux/NavigationActions"; // Import NavigationActions
+
 class ProfileHeader extends HTMLElement {
+  private unsubscribe?: () => void;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    // Bind render and handleStoreChange to the component instance
+    this.render = this.render.bind(this);
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
-    this.render();
+    this.setupStoreListeners(); // Setup store listeners on connection
     this.addEventListeners();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+
+  private setupStoreListeners() {
+    this.unsubscribe = store.subscribe(this.handleStoreChange);
+    // Trigger an initial render with the current state after subscribing
+    this.handleStoreChange(store.getState());
+  }
+
+  private _lastUser: any | null = null;
+
+  private handleStoreChange(state: State) {
+    // Actualizar la UI cuando el store cambie based on relevant parts of the state
+    // In this case, we re-render if the auth.user state changes
+    if (state.auth.user !== this._lastUser) { // Check if user data actually changed
+        this._lastUser = state.auth.user;
+        this.render();
+    }
   }
 
   // Adds event listener to the "edit" button to trigger navigation
   addEventListeners() {
     const editButton = this.shadowRoot!.querySelector(".edit-button");
     editButton?.addEventListener("click", () => {
-      const navigationEvent = new CustomEvent("navigate", {
-        detail: "/profile-settings",
-        bubbles: true, // Allows the event to bubble up to the parent
-      });
-      document.dispatchEvent(navigationEvent);
+      // Dispatch the Flux navigation action
+      NavigationActions.navigate("/profile-settings");
     });
   }
 
   render() {
+    // Get logged-in user info from the store state
+    const user = store.getState().auth.user;
+
+    const name = user?.username || "Unknown User";
+    const career = user?.degree || "Unknown Career";
+    const bio = user?.bio || "";
+    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
+
     this.shadowRoot!.innerHTML = `
           <style>
-          @import url('../colors.css'); 
+            
 
 :host {
   display: block;
@@ -149,16 +185,16 @@ h1 {
                 </div>
             </div>
             <div class="profile-section">
-                <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture"  >
+                <img class="profile-picture" src="${profilePic}" alt="Profile picture"  >
                 <button class="edit-button">
                     <svg viewBox="0 0 24 24">
                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                     </svg>
                 </button>
                 <div class="profile-info">
-                    <h1>Rosa Elvira</h1>
-                    <p class="career">Medicine</p>
-                    <p class="bio">Hi! I'm Rosa (the girl of the right). I'm a medicine student that likes to have fun. Here's my insta @Rosa_Elvira</p>
+                    <h1>${name}</h1>
+                    <p class="career">${career}</p>
+                    <p class="bio">${bio}</p>
                 </div>
             </div>
         `;

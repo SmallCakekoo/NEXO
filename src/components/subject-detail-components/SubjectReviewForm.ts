@@ -1,21 +1,38 @@
+import { store } from "../../flux/Store";
+import { RatingActions } from "../../flux/RatingActions";
+import { ReviewActions } from "../../flux/ReviewActions";
+import { AuthActions } from "../../flux/AuthActions";
+
 class SubjectReviewForm extends HTMLElement {
   private selectedRating: number = 0;
+  private subjectName: string = "";
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
+  static get observedAttributes() {
+    return ["subject-name"];
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "subject-name" && oldValue !== newValue) {
+      this.subjectName = newValue;
+    }
+  }
+
   connectedCallback() {
+    this.subjectName = this.getAttribute("subject-name") || "";
     this.render();
     this.setupEventListeners();
   }
 
-  // Sets up all event listeners like star rating interaction and publish button click
   setupEventListeners() {
     const stars = this.shadowRoot?.querySelectorAll(".star-rating svg");
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const reviewInput = this.shadowRoot?.querySelector(".review-input") as HTMLTextAreaElement;
+    const reviewForm = this.shadowRoot?.querySelector("#subject-review-form") as HTMLFormElement;
 
     // Adds click, hover, and mouseout events for each star icon
     stars?.forEach((star, index) => {
@@ -39,7 +56,9 @@ class SubjectReviewForm extends HTMLElement {
     });
 
     // Handles the publish button click
-    publishButton?.addEventListener("click", () => {
+    publishButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      console.log("SubjectReviewForm: Publish button clicked, preventDefault called.");
       if (this.selectedRating === 0) {
         alert("Por favor selecciona una calificación antes de publicar tu reseña.");
         return;
@@ -47,36 +66,47 @@ class SubjectReviewForm extends HTMLElement {
 
       const reviewText = reviewInput?.value || "";
 
-      // TODO: Logs review data for now (probably can be replaced with backend logic)
-      // console.log("Review submitted:", {
-      //   rating: this.selectedRating,
-      //   text: reviewText,
-      // });
+      if (reviewText.trim() === "") {
+        alert("Por favor, escribe un comentario antes de publicar tu reseña.");
+        return;
+      }
 
-      // Fallback avatar if user doesn't have one
-      const defaultAvatar = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22150%22%20height%3D%22150%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23f0f2fa%22%2F%3E%3Ctext%20x%3D%2275%22%20y%3D%2275%22%20font-size%3D%2250%22%20alignment-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%235354ED%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E`;
+      // Submit review through store
+      store.submitReview({
+        rating: this.selectedRating,
+        text: reviewText,
+        type: 'subject',
+        name: this.subjectName
+      });
 
       // Reset form
-      const oldRating = this.selectedRating;
       this.selectedRating = 0;
       if (reviewInput) reviewInput.value = "";
       this.updateStars();
-
-      //Dispatch a custom event with review data to parent component
-      this.dispatchEvent(
-        new CustomEvent("review-submitted", {
-          detail: {
-            rating: oldRating,
-            text: reviewText,
-            date: new Date().toLocaleDateString(),
-            author: "Current User",
-            image: defaultAvatar,
-          },
-          bubbles: true,
-          composed: true,
-        })
-      );
     });
+
+    // Prevent form submission on Enter key press in the review input
+    reviewInput?.addEventListener("keydown", this.handleKeydown.bind(this));
+
+    // Prevent form submission on form submit
+    reviewForm?.addEventListener("submit", this.handleSubmit.bind(this));
+  }
+
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+    console.log("SubjectReviewForm: Form submitted, preventDefault called.");
+    // Optional: Trigger the publish button click if you want form submission to act like button click
+    // this.shadowRoot?.querySelector(".publish-button")?.click();
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      console.log("SubjectReviewForm: Enter key pressed in review input, preventDefault called.");
+      // Optional: Trigger submission here if you want Enter to submit the review
+      // this.shadowRoot?.querySelector(".publish-button")?.click();
+    }
   }
 
   // Updates the visual appearance of stars based on the rating
@@ -101,7 +131,7 @@ class SubjectReviewForm extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
           <style>
-@import url('../colors.css');
+ 
 
 .form-title {
   font-size: 18px;
@@ -232,6 +262,7 @@ class SubjectReviewForm extends HTMLElement {
 }
 
                </style>
+                <form id="subject-review-form">
                 <div class="review-form">
                 <h3 class="form-title">Leave your review:</h3>
                 <div class="star-rating">
@@ -247,6 +278,7 @@ class SubjectReviewForm extends HTMLElement {
                     </button>
                 </div>
             </div>
+            </form>
         `;
   }
 }

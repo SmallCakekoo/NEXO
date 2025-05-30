@@ -1,8 +1,13 @@
-import { Post } from "../../types/feed/feeds.types";
+import { Post, Comment } from "../../types/feed/feeds.types";
+import { PostActions } from "../../flux/PostActions";
+import { FeedActions } from "../../flux/FeedActions";
+import { NavigationActions } from "../../flux/NavigationActions";
+import { store, State } from "../../flux/Store";
 
 class FeedPost extends HTMLElement {
   post: Post;
   liked: boolean = false;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -17,7 +22,7 @@ class FeedPost extends HTMLElement {
       likes: 0,
       date: "",
       share: "",
-      comments: "",
+      comments: [],
     };
   }
 
@@ -33,6 +38,7 @@ class FeedPost extends HTMLElement {
       "date",
       "share",
       "comments",
+      "id",
     ];
   }
 
@@ -43,6 +49,14 @@ class FeedPost extends HTMLElement {
   ) {
     if (propName === "likes") {
       this.post.likes = newValue ? Number(newValue) : 0;
+    } else if (propName === "comments") {
+      try {
+        this.post.comments = JSON.parse(newValue as string);
+      } catch {
+        this.post.comments = [];
+      }
+    } else if (propName === "id") {
+      this.post.id = newValue as string;
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
     }
@@ -52,10 +66,93 @@ class FeedPost extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.setupEventListeners();
+    this.subscribeToStore();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  private handleStoreChange(state: State) {
+    const currentUser = state.auth.user;
+    const userId = currentUser?.username || '';
+    const currentUserLikes = state.userLikes[userId] || [];
+    
+    const postId = this.post.id || '';
+    const postLikedStatus = postId ? currentUserLikes.includes(postId) : false;
+
+    const currentLikedState = this.shadowRoot?.querySelector('.just-likes')?.classList.contains('liked');
+
+    if (postLikedStatus !== currentLikedState) {
+       this.render();
+    }
+  }
+
+  setupEventListeners() {
+    // Manejar clic en el botón de comentarios
+    const commentsButton = this.shadowRoot?.querySelector(".just-comments");
+    commentsButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        store.saveCurrentPost(this.post);
+        store.setFromProfile(false);
+        NavigationActions.navigate("/comments-detail");
+      }
+    });
+
+    // Manejar clic en el botón de compartir
+    const shareButton = this.shadowRoot?.querySelector(".just-share");
+    shareButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        FeedActions.sharePost(this.post.id);
+      }
+    });
+
+    // Manejar clic en el botón de like
+    const likeButton = this.shadowRoot?.querySelector(".just-likes");
+    likeButton?.addEventListener("click", () => {
+      if (this.post.id) {
+        const state = store.getState();
+        const loggedInUser = state.auth.user;
+
+        if (loggedInUser) {
+          const userId = loggedInUser.username;
+          const userLikes = state.userLikes[userId] || [];
+          const hasLiked = userLikes.includes(this.post.id);
+
+          if (hasLiked) {
+            PostActions.unlikePost(this.post.id, userId);
+          } else {
+            PostActions.likePost(this.post.id, userId);
+          }
+        } else {
+           console.log("User not logged in, cannot like post.");
+           this.showNotification("Please log in to like posts.");
+        }
+      }
+    });
   }
 
   render() {
     if (this.shadowRoot) {
+      let userLikedPost = false;
+      const state = store.getState();
+      const loggedInUser = state.auth.user;
+
+      if (loggedInUser && this.post.id) {
+        const userId = loggedInUser.username;
+        const userLikes = state.userLikes[userId] || [];
+        if (userLikes.includes(this.post.id)) {
+          userLikedPost = true;
+        }
+      }
+
       this.shadowRoot.innerHTML = `
         <style>
           .post {
@@ -429,8 +526,8 @@ class FeedPost extends HTMLElement {
           <hr>
           <div class="footer">  
              <div class="align-likes">
-              <button class="just-likes">
-                <svg class="like-icon ${this.liked ? "liked" : ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+              <button class="just-likes ${userLikedPost ? "liked" : ""}">
+                <svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
                 </svg>
                 <p class="likes-count">${this.post.likes} Likes</p>
@@ -442,7 +539,7 @@ class FeedPost extends HTMLElement {
                 <svg class="comment-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
                 </svg>
-                <p class="comments-count">Comment</p>
+                <p class="comments-count">${this.post.comments && this.post.comments.length > 0 ? this.post.comments.length + ' Comments' : ' comment'}</p>
               </button>
             </div>
 
@@ -456,40 +553,12 @@ class FeedPost extends HTMLElement {
             </div>
           </div>
         </div>
+        <comments-modal></comments-modal>
       `;
-
-      const likeButton = this.shadowRoot.querySelector(".just-likes");
-      likeButton?.addEventListener("click", () => {
-        this.liked = !this.liked;
-        this.render();
-      });
-
-      const commentButton = this.shadowRoot.querySelector(".just-comments");
-      commentButton?.addEventListener("click", () => {
-        const navigateEvent = new CustomEvent("navigate", {
-          detail: "/comments-detail",
-          bubbles: true,
-          composed: true,
-        });
-        this.dispatchEvent(navigateEvent);
-      });
-
-      const shareButton = this.shadowRoot.querySelector(".just-share");
-      shareButton?.addEventListener("click", () => {
-        navigator.clipboard
-          .writeText("https://www.icesi.edu.co/")
-          .then(() => {
-            this.showNotification("Link copied to clipboard");
-          })
-          .catch((err) => {
-            console.error("Error, sorry :c: ", err);
-          });
-      });
     }
   }
 
   showNotification(message: string) {
-    // Create a style element for the notification styles because they were not loading
     const style = document.createElement("style");
     style.textContent = `
       .feed-post-notification {
@@ -533,16 +602,13 @@ class FeedPost extends HTMLElement {
       }
     `;
 
-    // Create the notification
     const notification = document.createElement("div");
     notification.className = "feed-post-notification";
     notification.textContent = message;
 
-    // Add the styles and the notification to the body
     document.head.appendChild(style);
     document.body.appendChild(notification);
 
-    // Configure the disappearance
     setTimeout(() => {
       notification.classList.add("notification-exit");
       setTimeout(() => {

@@ -1,4 +1,4 @@
-@import url("colors.css");
+@import url("./colors.css");
 
 ::-webkit-scrollbar {
   width: 8px;

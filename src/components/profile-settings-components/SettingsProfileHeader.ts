@@ -1,36 +1,88 @@
+import { NavigationActions } from "../../flux/NavigationActions";
+import { ProfileActions } from "../../flux/ProfileActions";
+import { store, State } from "../../flux/Store";
+
 class SettingsProfileHeader extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
+    this.subscribeToStore();
     this.render();
     this.addEventListeners();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
+
+  private handleStoreChange(state: State) {
+    this.render();
   }
 
   // Adds event listeners to the close button and the image upload
   addEventListeners() {
     const xButton = this.shadowRoot!.querySelector(".x-button");
     xButton?.addEventListener("click", () => {
-      const navigationEvent = new CustomEvent("navigate", { detail: "/profile", bubbles: true });
-      document.dispatchEvent(navigationEvent);
+      NavigationActions.navigate("/profile");
     });
 
     const profilePicture = this.shadowRoot!.querySelector(".profile-picture-container");
-    const fileInput = this.shadowRoot!.querySelector("#profile-upload");
+    const fileInput = this.shadowRoot!.querySelector("#profile-upload") as HTMLInputElement;
+    const img = this.shadowRoot!.querySelector(".profile-picture") as HTMLImageElement;
 
     profilePicture?.addEventListener("click", () => {
       (fileInput as HTMLElement).click();
     });
 
-    // Handles the image upload (this is static and this is a simulation)
-    fileInput?.addEventListener("change", () => {
-      alert("Image uploaded successfully! (simulation)");
+    // Handles the image upload and persistence
+    fileInput?.addEventListener("change", async () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          if (!base64) return;
+
+          // Get current user from store state
+          const user = store.getState().auth.user;
+
+          if (!user) {
+            console.error("No logged in user found in store state");
+            return;
+          }
+
+          // Update profile photo using Flux action
+          ProfileActions.updateProfilePhoto(base64);
+        };
+
+        reader.onerror = (error) => {
+          console.error("Error reading file:", error);
+          alert("Error uploading image. Please try again.");
+        };
+
+        reader.readAsDataURL(file);
+      }
     });
   }
 
   render() {
+    // Get logged-in user info from the store state
+    const user = store.getState().auth.user;
+
+    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
     this.shadowRoot!.innerHTML = `
             <style>
 :host {
@@ -194,11 +246,11 @@ h1 {
             </div>
             <div class="profile-section">
                 <div class="profile-picture-container">
-                    <img class="profile-picture" src="https://picsum.photos/seed/picsum/200/300" alt="Profile picture">
+                    <img class="profile-picture" src="${profilePic}" alt="Profile picture">
                     <div class="profile-overlay">
                         <span>Change Image</span>
                     </div>
-                    <input type="file" id="profile-upload" accept="image/*">
+                    <input id="profile-upload" type="file" accept="image/*" style="display:none" />
                 </div>
                 <button class="x-button">
                     <svg viewBox="0 0 24 24">

@@ -1,4 +1,9 @@
+import { SearchActions } from '../../flux/SearchActions';
+
 class SearchBar extends HTMLElement {
+  private searchInput: HTMLInputElement | null = null;
+  private currentTab: string = 'subjects';
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -6,13 +11,54 @@ class SearchBar extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.setupEventListeners();
+  }
+
+  private setupEventListeners() {
+    this.searchInput = this.shadowRoot?.querySelector('#search-input') as HTMLInputElement;
+    
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+      this.searchInput.addEventListener('keydown', this.handleKeydown.bind(this));
+    }
+
+    // Listen for tab changes
+    document.addEventListener('tab-changed', ((event: CustomEvent) => {
+      this.currentTab = event.detail.tab;
+      if (this.searchInput) {
+        this.handleSearch();
+      }
+    }) as EventListener);
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Optionally trigger search here if you only want search on Enter
+      // Currently, search is triggered on input, which is generally better for a search bar
+    }
+  }
+
+  private handleSearch() {
+    if (!this.searchInput) return;
+    
+    const query = this.searchInput.value.trim();
+    
+    if (query === '') {
+      SearchActions.clearSearch();
+      return;
+    }
+
+    if (this.currentTab === 'subjects') {
+      SearchActions.searchSubjects(query);
+    } else {
+      SearchActions.searchTeachers(query);
+    }
   }
 
   render() {
     this.shadowRoot!.innerHTML = `
     <style>
-      @import url("../colors.css");
-
       .search-container {
         position: relative;
         width: 100%;
@@ -74,7 +120,7 @@ class SearchBar extends HTMLElement {
         fill="none"
         stroke="currentColor"
         stroke-width="2"
-        stroke-line="round">
+        stroke-linecap="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
@@ -85,7 +131,7 @@ class SearchBar extends HTMLElement {
         name="search-input"
       />
     </div>
-        `;
+    `;
   }
 }
 

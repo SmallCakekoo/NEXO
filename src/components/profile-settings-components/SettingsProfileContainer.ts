@@ -1,15 +1,46 @@
+import { ProfileActions } from "../../flux/ProfileActions";
+import { NavigationActions } from "../../flux/NavigationActions";
+import { store, State } from "../../flux/Store";
+
 class SettingsProfileContainer extends HTMLElement {
+  private unsubscribe?: () => void;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.render = this.render.bind(this);
+    this.handleStoreChange = this.handleStoreChange.bind(this);
+    this.setupStoreListeners();
+  }
+
+  private setupStoreListeners() {
+    this.unsubscribe = store.subscribe(this.handleStoreChange);
+    this.handleStoreChange(store.getState());
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
   connectedCallback() {
-    this.render();
     this.setupEventListeners();
   }
 
+  private handleStoreChange(state: State) {
+    this.render();
+  }
+
   render() {
+    const user = store.getState().auth.user;
+
+    const username = user?.username || "";
+    const phone = user?.phone || "";
+    const degree = user?.degree || "";
+    const semester = user?.semester || "";
+    const bio = user?.bio || "";
+
     this.shadowRoot!.innerHTML = `
     <style>
 :host {
@@ -255,66 +286,66 @@ input:focus, select:focus, textarea:focus {
                 <div class="profile-form">
                     <div class="form-group">
                         <label>Change Username</label>
-                        <input type="text" id="username" placeholder="Username" value="Rosa Elvira">
+                        <input type="text" id="username" placeholder="Username" value="${username}">
                     </div>
                     
                     <div class="form-group">
                         <label>Change Semester info</label>
                         <select id="Semester">
-                            <option selected>Select a semester</option>
-                            <option>First semester</option>
-                            <option>Second semester</option>
-                            <option>Third semester</option>
-                            <option>Fourth semester</option>
-                            <option>Fifth semester</option>
-                            <option>Sixth semester</option>
-                            <option>Seventh semester</option>
-                            <option>Eighth semester</option>
-                            <option>Ninth semester</option>
-                            <option>Tenth semester</option>
-                            <option>+Tenth semester</option>
+                            <option value="" ${semester === "" ? "selected" : ""}>Select a semester</option>
+                            <option value="First semester" ${semester === "First semester" ? "selected" : ""}>First semester</option>
+                            <option value="Second semester" ${semester === "Second semester" ? "selected" : ""}>Second semester</option>
+                            <option value="Third semester" ${semester === "Third semester" ? "selected" : ""}>Third semester</option>
+                            <option value="Fourth semester" ${semester === "Fourth semester" ? "selected" : ""}>Fourth semester</option>
+                            <option value="Fifth semester" ${semester === "Fifth semester" ? "selected" : ""}>Fifth semester</option>
+                            <option value="Sixth semester" ${semester === "Sixth semester" ? "selected" : ""}>Sixth semester</option>
+                            <option value="Seventh semester" ${semester === "Seventh semester" ? "selected" : ""}>Seventh semester</option>
+                            <option value="Eighth semester" ${semester === "Eighth semester" ? "selected" : ""}>Eighth semester</option>
+                            <option value="Ninth semester" ${semester === "Ninth semester" ? "selected" : ""}>Ninth semester</option>
+                            <option value="Tenth semester" ${semester === "Tenth semester" ? "selected" : ""}>Tenth semester</option>
+                            <option value="+Tenth semester" ${semester === "+Tenth semester" ? "selected" : ""}>+Tenth semester</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Change career info</label>
                         <select id="career">
-                            <option selected>Select a career</option>
-                            <option>Business Administration with an Emphasis in International Business</option>
-                            <option>Anthropology</option>
-                            <option>Biology</option>
-                            <option>Political Science with an Emphasis in International Relations</option>
-                            <option>Communication with a Digital Approach</option>
-                            <option>Public Accounting and International Finance</option>
-                            <option>Law</option>
-                            <option>Interactive Media Design</option>
-                            <option>Industrial Design</option>
-                            <option>Economics</option>
-                            <option>Economics and International Business</option>
-                            <option>Finance</option>
-                            <option>Biochemical Engineering</option>
-                            <option>Systems Engineering</option>
-                            <option>Industrial Engineering</option>
-                            <option>Telematics Engineering</option>
-                            <option>Bachelor's Degree in Social Sciences</option>
-                            <option>Bachelor's Degree in Foreign Languages with an Emphasis in English</option>
-                            <option>Medicine</option>
-                            <option>Music</option>
-                            <option>International Marketing and Advertising</option>
-                            <option>Psychology</option>
-                            <option>Chemistry</option>
-                            <option>Pharmaceutical Chemistry</option>
-                            <option>Sociology</option>
+                            <option value="" ${degree === "" ? "selected" : ""}>Select a career</option>
+                            <option value="Business Administration with an Emphasis in International Business" ${degree === "Business Administration with an Emphasis in International Business" ? "selected" : ""}>Business Administration with an Emphasis in International Business</option>
+                            <option value="Anthropology" ${degree === "Anthropology" ? "selected" : ""}>Anthropology</option>
+                            <option value="Biology" ${degree === "Biology" ? "selected" : ""}>Biology</option>
+                            <option value="Political Science with an Emphasis in International Relations" ${degree === "Political Science with an Emphasis in International Relations" ? "selected" : ""}>Political Science with an Emphasis in International Relations</option>
+                            <option value="Communication with a Digital Approach" ${degree === "Communication with a Digital Approach" ? "selected" : ""}>Communication with a Digital Approach</option>
+                            <option value="Public Accounting and International Finance" ${degree === "Public Accounting and International Finance" ? "selected" : ""}>Public Accounting and International Finance</option>
+                            <option value="Law" ${degree === "Law" ? "selected" : ""}>Law</option>
+                            <option value="Interactive Media Design" ${degree === "Interactive Media Design" ? "selected" : ""}>Interactive Media Design</option>
+                            <option value="Industrial Design" ${degree === "Industrial Design" ? "selected" : ""}>Industrial Design</option>
+                            <option value="Economics" ${degree === "Economics" ? "selected" : ""}>Economics</option>
+                            <option value="Economics and International Business" ${degree === "Economics and International Business" ? "selected" : ""}>Economics and International Business</option>
+                            <option value="Finance" ${degree === "Finance" ? "selected" : ""}>Finance</option>
+                            <option value="Biochemical Engineering" ${degree === "Biochemical Engineering" ? "selected" : ""}>Biochemical Engineering</option>
+                            <option value="Systems Engineering" ${degree === "Systems Engineering" ? "selected" : ""}>Systems Engineering</option>
+                            <option value="Industrial Engineering" ${degree === "Industrial Engineering" ? "selected" : ""}>Industrial Engineering</option>
+                            <option value="Telematics Engineering" ${degree === "Telematics Engineering" ? "selected" : ""}>Telematics Engineering</option>
+                            <option value="Bachelor's Degree in Social Sciences" ${degree === "Bachelor's Degree in Social Sciences" ? "selected" : ""}>Bachelor's Degree in Social Sciences</option>
+                            <option value="Bachelor's Degree in Foreign Languages with an Emphasis in English" ${degree === "Bachelor's Degree in Foreign Languages with an Emphasis in English" ? "selected" : ""}>Bachelor's Degree in Foreign Languages with an Emphasis in English</option>
+                            <option value="Medicine" ${degree === "Medicine" ? "selected" : ""}>Medicine</option>
+                            <option value="Music" ${degree === "Music" ? "selected" : ""}>Music</option>
+                            <option value="International Marketing and Advertising" ${degree === "International Marketing and Advertising" ? "selected" : ""}>International Marketing and Advertising</option>
+                            <option value="Psychology" ${degree === "Psychology" ? "selected" : ""}>Psychology</option>
+                            <option value="Chemistry" ${degree === "Chemistry" ? "selected" : ""}>Chemistry</option>
+                            <option value="Pharmaceutical Chemistry" ${degree === "Pharmaceutical Chemistry" ? "selected" : ""}>Pharmaceutical Chemistry</option>
+                            <option value="Sociology" ${degree === "Sociology" ? "selected" : ""}>Sociology</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Change Phone number</label>
-                        <input type="tel" id="phone" placeholder="Phone number" value="315798754">
+                        <input type="tel" id="phone" placeholder="Phone number" value="${phone}">
                     </div>
                     
                     <div class="bio-container">
-                        <textarea class="bio-text">Hi I'm Rosa (the girl of the right), I'm a medicine student that likes to have fun. Here's my insta @Rosa_Elvira.</textarea>
+                        <textarea class="bio-text">${bio}</textarea>
                         <span class="char-counter">0/280 caracteres</span>
                     </div>
                     
@@ -328,10 +359,22 @@ input:focus, select:focus, textarea:focus {
             </div>
         `;
 
+    // Explicitly set the values of the select elements after rendering
+    const semesterSelect = this.shadowRoot!.querySelector("#Semester") as HTMLSelectElement;
+    const careerSelect = this.shadowRoot!.querySelector("#career") as HTMLSelectElement;
+
+    if (semesterSelect && semester) {
+        semesterSelect.value = semester;
+    }
+    if (careerSelect && degree) {
+        careerSelect.value = degree;
+    }
+
     this.updateCharCounter();
+    // Re-setup event listeners after rendering, as the DOM is replaced
+    this.setupEventListeners();
   }
 
-  // Updates the character counter based on the bio text length
   updateCharCounter() {
     const bioText = this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement;
     const charCounter = this.shadowRoot!.querySelector(".char-counter");
@@ -342,39 +385,56 @@ input:focus, select:focus, textarea:focus {
     }
   }
 
-  // This is static for now, but it will be dynamic in the future, again, jiji
-  // Sets up event listeners for form interaction
   setupEventListeners() {
-    const saveBtn = this.shadowRoot!.querySelector(".save-btn");
+    const form = this.shadowRoot!.querySelector(".profile-form");
+    const bioTextarea = this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement;
+    const deleteAccountBtn = this.shadowRoot!.querySelector(".delete-account");
     const unlogBtn = this.shadowRoot!.querySelector(".unlog-btn");
-    const deleteAccount = this.shadowRoot!.querySelector(".delete-account");
-    const bioText = this.shadowRoot!.querySelector(".bio-text");
+    const saveBtn = this.shadowRoot!.querySelector(".save-btn");
 
-    // Updates the character counter when the bio text changes
-    bioText?.addEventListener("input", () => {
-      this.updateCharCounter();
-    });
+    if (saveBtn) {
+      saveBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const username = (this.shadowRoot!.querySelector("#username") as HTMLInputElement).value;
+        const phone = (this.shadowRoot!.querySelector("#phone") as HTMLInputElement).value;
+        const degree = (this.shadowRoot!.querySelector("#career") as HTMLSelectElement).value;
+        const semester = (this.shadowRoot!.querySelector("#Semester") as HTMLSelectElement).value;
+        const bio = (this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement).value;
 
-    // Handles the save button click
-    saveBtn?.addEventListener("click", () => {
-      console.log("Save button clicked");
-    });
+        const userData = {
+          username: username || "",
+          phone: phone || "",
+          degree: degree || "",
+          semester: semester || "",
+          bio: bio || "",
+        };
 
-    // Handles the unlog button click
-    unlogBtn?.addEventListener("click", () => {
-      console.log("Unlog button clicked");
-    });
-
-    // Handles the delete account button click
-    deleteAccount?.addEventListener("click", () => {
-      console.log("Delete account clicked");
-      const confirmationDialog = document.createElement("delete-account-confirmation");
-      document.body.appendChild(confirmationDialog);
-
-      confirmationDialog.addEventListener("delete-account-confirmed", () => {
-        console.log("Account deletion confirmed");
+        ProfileActions.updateProfile(userData);
+        NavigationActions.navigate("/profile");
       });
-    });
+    }
+
+    if (bioTextarea) {
+      bioTextarea.addEventListener("input", () => this.updateCharCounter());
+    }
+
+    if (deleteAccountBtn) {
+      deleteAccountBtn.addEventListener("click", () => {
+        // Check if a confirmation dialog already exists
+        const existingDialog = document.querySelector('delete-account-confirmation');
+        if (!existingDialog) {
+          const confirmationDialog = document.createElement('delete-account-confirmation');
+          document.body.appendChild(confirmationDialog);
+        }
+      });
+    }
+
+    if (unlogBtn) {
+      unlogBtn.addEventListener("click", () => {
+        ProfileActions.logout();
+        NavigationActions.navigate("/");
+      });
+    }
   }
 }
 

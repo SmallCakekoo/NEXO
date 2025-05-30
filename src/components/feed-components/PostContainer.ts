@@ -1,321 +1,219 @@
 import { Post } from "../../types/feed/feeds.types";
 import { fetchPosts } from "../../services/FeedService";
+import { store, State } from "../../flux/Store";
+import { AppDispatcher } from "../../flux/Dispatcher";
+import { PostActionTypes } from "../../types/feed/PostActionTypes";
+import { FeedActions } from "../../flux/FeedActions";
 
 // An interface to extend windows
 interface WindowWithPostContainer extends Window {
   postContainerConnected?: boolean;
 }
 
-class PostContainer extends HTMLElement {
-  private posts: Post[] = [];
+const windowWithPC = window as WindowWithPostContainer;
+
+export class PostContainer extends HTMLElement {
   private filteredPosts: Post[] = [];
   private currentFilter: string = "All";
   private tagSelectedListener: ((event: Event) => void) | null = null;
   private postPublishedListener: ((event: Event) => void) | null = null;
+  private profileUpdatedListener: ((event: Event) => void) | null = null;
   private isListenerAttached: boolean = false;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
-  async connectedCallback() {
-    // Check if a connected instance of this component already exists
-    const windowWithPC = window as WindowWithPostContainer;
-    if (windowWithPC.postContainerConnected) {
-      await this.loadPosts();
-      return;
+  connectedCallback() {
+    this.subscribeToStore();
+    this.setupEventListeners();
+    // Remove the direct call to loadPosts here. Initial load is handled by store.load()
+    // this.loadPosts();
+  }
+
+  disconnectedCallback() {
+    // Clean up event listeners
+    if (this.tagSelectedListener) {
+      document.removeEventListener("tagSelected", this.tagSelectedListener);
     }
+    if (this.postPublishedListener) {
+      document.removeEventListener("post-published", this.postPublishedListener);
+    }
+    if (this.profileUpdatedListener) {
+      document.removeEventListener("profile-updated", this.profileUpdatedListener);
+    }
+    // Unsubscribe from store
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
 
-    await this.loadPosts();
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
 
+  private setupEventListeners() {
     // Only set up event listeners if they're not already attached
     if (!this.isListenerAttached) {
-      // Create the tagSelected event listener
+      // Listen for tag selection
       this.tagSelectedListener = (event: Event) => {
-        const customEvent = event as CustomEvent<{ tag: string }>;
-        const selectedTag = customEvent.detail.tag;
-        this.currentFilter = selectedTag;
-        this.filterPosts(selectedTag);
+        const customEvent = event as CustomEvent<string>;
+        const tag = customEvent.detail;
+        // Filtering is handled by the store
       };
-
-      // Create the post-published event listener
-      this.postPublishedListener = (event: Event) => {
-        const customEvent = event as CustomEvent<{
-          content: string;
-          category: string;
-          image: File | null;
-          createdAt: string;
-        }>;
-        this.addNewPost(customEvent.detail);
-      };
-
-      // Add the event listeners
       document.addEventListener("tagSelected", this.tagSelectedListener);
+
+      // Listen for new posts
+      this.postPublishedListener = () => {
+        FeedActions.refreshFeedFromStorage();
+      };
       document.addEventListener("post-published", this.postPublishedListener);
-      // Mark listeners as attached
+
+      // Listen for profile updates
+      this.profileUpdatedListener = () => {
+        FeedActions.refreshFeedFromStorage();
+      };
+      document.addEventListener("profile-updated", this.profileUpdatedListener);
+
       this.isListenerAttached = true;
-      // Mark that an instance is already connected
       windowWithPC.postContainerConnected = true;
     }
   }
 
-  disconnectedCallback() {
-    // Remove the event listeners when the component is removed from the DOM
-    if (this.tagSelectedListener && this.isListenerAttached) {
-      document.removeEventListener("tagSelected", this.tagSelectedListener);
-      this.tagSelectedListener = null;
-    }
-
-    if (this.postPublishedListener && this.isListenerAttached) {
-      document.removeEventListener("post-published", this.postPublishedListener);
-      this.postPublishedListener = null;
-    }
-
-    // Reset the flag
-    this.isListenerAttached = false;
-    // Remove the global flag
-    const windowWithPC = window as WindowWithPostContainer;
-    if (windowWithPC.postContainerConnected) {
-      windowWithPC.postContainerConnected = false;
-    }
-  }
-
-  async loadPosts(): Promise<void> {
-    try {
-      // Only fetch posts from server if we don't have any posts yet
-      if (this.posts.length === 0) {
-        const data = await fetchPosts();
-        this.posts = data.posts;
-      }
-
-      // Apply current filter
-      this.applyCurrentFilter();
-      this.render();
-    } catch (error) {
-      console.error("Error loading posts:", error);
-    }
-  }
-
-  // Helper method to apply the current filter
-  private applyCurrentFilter(): void {
-    if (this.currentFilter === "All") {
-      this.filteredPosts = [...this.posts];
-    } else {
-      this.filteredPosts = this.posts.filter((post) => post.tag === this.currentFilter);
-    }
-  }
-
-  addNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): void {
-    // Generate a unique ID for each post using timestamp and a random value
-    // Use the date and a random string and cut use the last 9 characters
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-
-    // Create a new post object with the data from the modal
-    const newPost: Post = {
-      id: uniqueId,
-      photo: postData.image
-        ? URL.createObjectURL(postData.image)
-        : `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`,
-      name: "Current User",
-      date: new Date().toLocaleDateString(),
-      career: "Student",
-      semestre: "Current",
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: "0",
-    };
-
-    // Add the new post to the beginning (top) of the posts array
-    this.posts.unshift(newPost);
-    // Apply the current filter
-    this.applyCurrentFilter();
-    // Re-render the component
+  private handleStoreChange(state: State) {
+    // Update filtered posts based on store state
+    this.filteredPosts = store.getFilteredPosts(state.selectedTag);
     this.render();
   }
 
-  filterPosts(tag: string) {
-    this.currentFilter = tag; // update the current filter
-    this.applyCurrentFilter();
-    this.render();
-  }
+  // Keep loadPosts for explicit fetching actions if needed later, but not for initial render.
+  // private async loadPosts() {
+  //   try {
+  //     const response = await fetchPosts();
+  //     this.filteredPosts = store.getFilteredPosts(store.getState().selectedTag);
+  //     this.render();
+  //   } catch (error) {
+  //     console.error("Error loading posts:", error);
+  //   }
+  // }
 
-  initAnimations() {
-    // Use "animate.css" classes directly
+  private render() {
     if (!this.shadowRoot) return;
 
-    const posts = this.shadowRoot.querySelectorAll("feed-post");
-    posts.forEach((post, index) => {
-      setTimeout(() => {
-        post.classList.add("post-animated");
-      }, index * 150);
-    });
+    const postsHTML =
+      this.filteredPosts.length > 0
+        ? this.filteredPosts
+            .map((post) => {
+              const escapedPhoto = post.photo ? post.photo.replace(/"/g, "&quot;") : "";
+              const escapedName = post.name ? post.name.replace(/"/g, "&quot;") : "";
+              const escapedDate = post.date ? post.date.replace(/"/g, "&quot;") : "";
+              const escapedCareer = post.career ? post.career.replace(/"/g, "&quot;") : "";
+              const escapedSemestre = post.semestre ? post.semestre.replace(/"/g, "&quot;") : "";
+              const escapedMessage = post.message ? post.message.replace(/"/g, "&quot;") : "";
+              const escapedTag = post.tag ? post.tag.replace(/"/g, "&quot;") : "";
+              const escapedShare = post.share ? post.share.replace(/"/g, "&quot;") : "";
 
-    const emptyState = this.shadowRoot.querySelector(".empty-state");
-    if (emptyState) {
-      emptyState.classList.add("empty-animated");
-      const emptyTitle = emptyState.querySelector("h3");
-      const emptyText = emptyState.querySelector("p");
-      if (emptyTitle) emptyTitle.classList.add("title-animated");
-      if (emptyText) {
-        setTimeout(() => {
-          emptyText.classList.add("text-animated");
-        }, 1000);
-      }
-    }
-  }
+              return `
+              <feed-post
+                ${post.id ? `id="${post.id}"` : ""}
+                photo="${escapedPhoto}"
+                name="${escapedName}"
+                date="${escapedDate}"
+                career="${escapedCareer}"
+                semestre="${escapedSemestre}"
+                message="${escapedMessage}"
+                tag="${escapedTag}"
+                likes="${post.likes || 0}"
+                share="${escapedShare}"
+                comments='${JSON.stringify(post.comments || [])}'
+              ></feed-post>
+            `;
+            })
+            .join("")
+        : `
+        <div class="no-posts">
+          <p class="no-posts-title">No posts yet</p>
+          <p class="subtitle">Be the first to share something interesting</p>
+        </div>
+      `;
 
-  // Function to remove duplicates from an array of posts based on ID
-  private removeDuplicatePosts(posts: Post[]): Post[] {
-    // Use a set to track seen post IDs
-    const seenPostIds = new Set<string>();
-
-    // Filter posts to keep only the unique ones based on ID
-    return posts.filter((post) => {
-      if (!post.id) return true; // If the post doesn't have an ID, keep it
-      // If we've seen this ID, it's a duplicate
-      if (seenPostIds.has(post.id)) {
-        return false;
-      }
-      // If we haven't seen this ID, add it and keep it
-      seenPostIds.add(post.id);
-      return true;
-    });
-  }
-
-  render() {
-    // Check and remove duplicates before rendering
-    this.filteredPosts = this.removeDuplicatePosts(this.filteredPosts);
-
-    if (!this.shadowRoot) return;
     this.shadowRoot.innerHTML = `
-            <style>
-              @import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
-              
-              .post-animated {
-                animation: fadeInUp 0.8s ease forwards;
-              }
-              
-              .empty-animated {
-                animation: fadeIn 1s ease forwards;
-              }
-              
-              .title-animated {
-                animation: pulse 2s infinite;
-              }
-              
-              .text-animated {
-                animation: fadeIn 1s ease forwards;
-              }
-              
-              @keyframes fadeInUp {
-                from {
-                  opacity: 0;
-                  transform: translate3d(0, 30px, 0);
-                }
-                to {
-                  opacity: 1;
-                  transform: translate3d(0, 0, 0);
-                }
-              }
-              
-              @keyframes fadeIn {
-                from {
-                  opacity: 0;
-                }
-                to {
-                  opacity: 1;
-                }
-              }
-              
-              @keyframes pulse {
-                0% {
-                  transform: scale(1);
-                }
-                50% {
-                  transform: scale(1.05);
-                }
-                100% {
-                  transform: scale(1);
-                }
-              }
-              
-              .end-message {
-                text-align: center;
-                padding: 1.5rem;
-                margin-top: 1rem;
-                color: #6c757d;
-                font-style: italic;
-                animation: zoomIn 0.8s ease forwards;
-              }
-              
-              .empty-state {
-                text-align: center;
-                padding: 2rem;
-                margin: 1rem 0;  
-              } 
-              
-              .empty-state h3 {
-                color: #495057;
-                margin-bottom: 0.5rem;
-              }
-              
-              .empty-state p {
-                color: #6c757d;
-              }
-              
-              @keyframes zoomIn {
-                from {
-                  opacity: 0;
-                  transform: scale3d(0.3, 0.3, 0.3);
-                }
-                50% {
-                  opacity: 1;
-                }
-              }
-            </style>
-            <div>
-                ${
-                  this.filteredPosts.length > 0
-                    ? `${this.filteredPosts
-                        .map(
-                          (post) => `
-                            <feed-post 
-                                ${post.id ? `id="${post.id}"` : ""}
-                                photo="${post.photo}"
-                                name="${post.name}"
-                                date="${post.date}"
-                                career="${post.career}"
-                                semestre="${post.semestre}"
-                                message="${post.message}"
-                                tag="${post.tag}"
-                                likes="${post.likes}"
-                                share="${post.share}"
-                                comments="${post.comments}"
-                            ></feed-post>`
-                        )
-                        .join("")}
-                        <div class="end-message">
-                          <p>No more posts to show</p>
-                        </div>`
-                    : `<div class="empty-state"> 
-                        <h3>No posts yet</h3>
-                        <p>Be the first to share something interesting</p>
-                       </div>`
-                }
-            </div>
-        `;
+      <style>
+        :host {
+          display: block;
+          width: 100%;
+          min-height: 100vh;
+        }
 
-    // Initialize animations after rendering
-    setTimeout(() => this.initAnimations(), 100);
+        .posts-container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+
+        .no-posts {
+          text-align: center;
+          padding: 40px 20px;
+          background: white;
+          border-radius: 15px;
+          margin: 20px auto;
+          max-width: 690px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .no-posts p {
+          margin: 0;
+          color: #1f2937;
+        }
+
+        .no-posts-title {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #4a4a4a;
+          margin-bottom: 10px !important;
+          animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
+        }
+
+        .no-posts .subtitle {
+          color: #6b7280;
+          font-size: 1rem;
+        }
+
+        @media (max-width: 576px) {
+          .posts-container {
+            padding: 10px;
+          }
+
+          .no-posts {
+            margin: 10px;
+            padding: 30px 15px;
+          }
+
+          .no-posts-title {
+            font-size: 1.2rem;
+          }
+
+          .no-posts .subtitle {
+            font-size: 0.9rem;
+          }
+        }
+      </style>
+      <div class="posts-container">
+        ${postsHTML}
+      </div>
+    `;
   }
 }
 
 export default PostContainer;
+
+console.log("se cargó este archivo");

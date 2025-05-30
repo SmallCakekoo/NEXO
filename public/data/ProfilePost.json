@@ -1,0 +1,81 @@
+{
+  "posts": [
+    {
+      "id": "default-1",
+      "photo": "https://picsum.photos/seed/picsum/200/300",
+      "name": "Rosa Elvira",
+      "date": "2 hours ago",
+      "career": "Medicine",
+      "semestre": "2nd",
+      "message": "Did anyone else stump against a guy using boots in the stairs???",
+      "tag": "Daily Life",
+      "likes": 19,
+      "share": "0",
+      "comments": [
+        {
+          "photo": "https://picsum.photos/800/450?random=2",
+          "name": "Carlos Méndez",
+          "career": "Medicine",
+          "date": "1 hour ago",
+          "message": "Yes! It happened to me yesterday!"
+        },
+        {
+          "photo": "https://picsum.photos/800/450?random=3",
+          "name": "Ana García",
+          "career": "Psychology",
+          "date": "30 minutes ago",
+          "message": "That's so dangerous!"
+        }
+      ]
+    },
+    {
+      "id": "default-2",
+      "photo": "https://picsum.photos/seed/picsum/200/300",
+      "name": "Rosa Elvira",
+      "date": "Yesterday",
+      "career": "Medicine",
+      "semestre": "2nd",
+      "message": "Looking for study partners for the anatomy exam next week. DM me if interested!",
+      "tag": "Daily Life",
+      "likes": 32,
+      "share": "0",
+      "comments": [
+        {
+          "photo": "https://picsum.photos/800/450?random=4",
+          "name": "Juan Pérez",
+          "career": "Medicine",
+          "date": "Yesterday",
+          "message": "I'm interested! I'll DM you"
+        }
+      ]
+    },
+    {
+      "id": "default-3",
+      "photo": "https://picsum.photos/seed/picsum/200/300",
+      "name": "Rosa Elvira",
+      "date": "Last week",
+      "career": "Medicine",
+      "semestre": "2nd",
+      "message": "Just finished my first lab session! So excited to continue learning.",
+      "tag": "Academic",
+      "likes": 45,
+      "share": "0",
+      "comments": [
+        {
+          "photo": "https://picsum.photos/800/450?random=5",
+          "name": "María López",
+          "career": "Medicine",
+          "date": "Last week",
+          "message": "Congratulations! The first lab is always exciting"
+        },
+        {
+          "photo": "https://picsum.photos/800/450?random=6",
+          "name": "Dr. Smith",
+          "career": "Professor",
+          "date": "Last week",
+          "message": "Great job! Keep up the enthusiasm"
+        }
+      ]
+    }
+  ]
+}

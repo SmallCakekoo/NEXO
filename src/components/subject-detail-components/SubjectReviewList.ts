@@ -1,62 +1,96 @@
 import { Review } from "../../types/subject-detail/SubjectReviewList.types";
+import { fetchSubjects } from "../../services/SubjectService";
+import { subjects } from "../../types/academics/SubjectsContainer.types";
+import { store, State } from '../../flux/Store';
 
 class SubjectReviewList extends HTMLElement {
   private reviews: Review[] = [];
+  private subjectName: string = "";
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  // Static reviews for now (Mock data)
-  connectedCallback() {
-    this.reviews = [
-      {
-        author: "John Smith",
-        date: "20/03/25",
-        rating: 5,
-        text: "The professor's explanations are crystal clear. Highly recommend taking detailed notes during lectures.",
-        image: "https://i.pravatar.cc/150?img=2",
-      },
-      {
-        author: "Michael Brown",
-        date: "17/03/25",
-        rating: 5,
-        text: "The practical assignments are challenging but rewarding. The feedback is constructive and helpful.",
-        image: "https://i.pravatar.cc/150?img=4",
-      },
-      {
-        author: "Emma Wilson",
-        date: "16/03/25",
-        rating: 4,
-        text: "Make sure to attend all the tutoring sessions - they're invaluable for exam preparation.",
-        image: "https://i.pravatar.cc/150?img=5",
-      },
-      {
-        author: "David Lee",
-        date: "15/03/25",
-        rating: 5,
-        text: "The course materials are well-organized and the online resources are comprehensive.",
-        image: "https://i.pravatar.cc/150?img=6",
-      },
-    ];
-
-    this.render();
-    this.setupEventListeners();
+  static get observedAttributes() {
+    return ["subject-name"];
   }
 
-  // Sets up event listeners for the review list
-  setupEventListeners() {
-    document.addEventListener("review-submitted", ((event: CustomEvent) => {
-      this.reviews.unshift(event.detail); // Adds new review to the top of the list
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "subject-name" && oldValue !== newValue) {
+      this.subjectName = newValue;
+      this.fetchReviews();
+    }
+  }
+
+  async fetchReviews() {
+    try {
+      if (!this.subjectName) {
+        this.subjectName = this.getAttribute('subject-name') || '';
+      }
+      const state = store.getState();
+      const subjectRatings = state.subjectRatings[this.subjectName] || [];
+      this.reviews = subjectRatings.map(rating => ({
+        rating: rating.rating,
+        text: rating.comment,
+        date: new Date(rating.timestamp).toLocaleDateString(),
+        author: rating.author || 'Anonymous',
+        image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+      }));
       this.render();
-    }) as EventListener);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      this.reviews = [];
+      this.render();
+    }
   }
 
-  // Public method to add a review from external code
-  addReview(review: Review) {
-    this.reviews.unshift(review);
+  connectedCallback() {
+    this.fetchReviews();
+    this.setupEventListeners();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  setupEventListeners() {
+    // Event listener removed to prevent duplicate submissions
+    // The event is now only handled by SubjectCommentsContainer
+  }
+
+  handleStoreChange(state: State) {
+    if (!this.isConnected || !this.subjectName) {
+      return;
+    }
+    const latestRatings = state.subjectRatings[this.subjectName] || [];
+    this.reviews = latestRatings.map(rating => ({
+      rating: rating.rating,
+      text: rating.comment,
+      date: new Date(rating.timestamp).toLocaleDateString(),
+      author: rating.author || 'Anonymous',
+      image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+    }));
     this.render();
+  }
+
+  addReview(review: Review) {
+    console.warn('addReview method in SubjectReviewList called. Consider using the store for updates.');
+    const localKey = `subjectReviews_${this.subjectName}`;
+    let localReviews: Review[] = [];
+    try {
+      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (e) {}
+    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      localReviews.unshift(review);
+      localStorage.setItem(localKey, JSON.stringify(localReviews));
+      this.reviews = localReviews;
+      this.render();
+    }
   }
 
   render() {
@@ -99,7 +133,7 @@ class SubjectReviewList extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
           <style>
-@import url('../colors.css');
+ 
 
 .reviews-title {
     top:-10;

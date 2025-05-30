@@ -1,0 +1,563 @@
+{
+  "subjects": [
+    {
+      "name": "Photography",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "James Martinez",
+          "date": "20/03/25",
+          "rating": 5,
+          "text": "The practical classes are excellent. The professor teaches very useful and current techniques.",
+          "image": "https://i.pravatar.cc/150?img=1"
+        },
+        {
+          "author": "Charles Wilson",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "The course material is well structured. The constructive critiques really help improve your skills.",
+          "image": "https://i.pravatar.cc/150?img=2"
+        },
+        {
+          "author": "Anna Garcia",
+          "date": "15/03/25",
+          "rating": 4,
+          "text": "I recommend bringing your own camera to practice more. The photo shoots are very enriching.",
+          "image": "https://i.pravatar.cc/150?img=3"
+        }
+      ]
+    },
+    {
+      "name": "Digital Design",
+      "career": "Design media",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Peter Sanders",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent course to learn the latest trends in digital design. The projects are very creative.",
+          "image": "https://i.pravatar.cc/150?img=4"
+        },
+        {
+          "author": "Mary Lopez",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The professor has great command of the tools and is always willing to help.",
+          "image": "https://i.pravatar.cc/150?img=5"
+        }
+      ]
+    },
+    {
+      "name": "Two-dimensional",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Diego Torres",
+          "date": "16/03/25",
+          "rating": 4,
+          "text": "The foundations they give you are very solid. Really helps develop your own style.",
+          "image": "https://i.pravatar.cc/150?img=6"
+        },
+        {
+          "author": "Sophie Ramirez",
+          "date": "14/03/25",
+          "rating": 5,
+          "text": "The practical exercises are fundamental. You learn a lot from the in-class corrections.",
+          "image": "https://i.pravatar.cc/150?img=7"
+        }
+      ]
+    },
+    {
+      "name": "Motion Graphics",
+      "career": "Design media",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Luke Fernandez",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Very comprehensive course. You learn advanced animation and visual effects techniques.",
+          "image": "https://i.pravatar.cc/150?img=8"
+        },
+        {
+          "author": "Valentine Diaz",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The final projects are challenging but very rewarding. The professor gives excellent feedback.",
+          "image": "https://i.pravatar.cc/150?img=9"
+        }
+      ]
+    },
+    {
+      "name": "Web Design",
+      "career": "Design media",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Andrew Morris",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent introduction to modern web design. All current trends are covered.",
+          "image": "https://i.pravatar.cc/150?img=10"
+        },
+        {
+          "author": "Carmen Vega",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The practice with modern frameworks is very useful. The professor is up-to-date with the latest technologies.",
+          "image": "https://i.pravatar.cc/150?img=11"
+        }
+      ]
+    },
+    {
+      "name": "Criminal Law",
+      "career": "Law",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "James Mendez",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "The professor uses very interesting real cases to explain concepts. Highly recommended.",
+          "image": "https://i.pravatar.cc/150?img=25"
+        },
+        {
+          "author": "Marina Lopez",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Class discussions are very enriching. You learn a lot from case analysis.",
+          "image": "https://i.pravatar.cc/150?img=26"
+        }
+      ]
+    },
+    {
+      "name": "Human Anatomy",
+      "career": "Medicine",
+      "credits": "5",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Paul Sanchez",
+          "date": "20/03/25",
+          "rating": 5,
+          "text": "The laboratory practices are excellent. The teaching material is top-notch.",
+          "image": "https://i.pravatar.cc/150?img=27"
+        },
+        {
+          "author": "Laura Gonzalez",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The professor explains with great clarity. The dissection sessions are very instructive.",
+          "image": "https://i.pravatar.cc/150?img=28"
+        }
+      ]
+    },
+    {
+      "name": "Digital Strategies",
+      "career": "Int. Mktg & Adv.",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Charles Ruiz",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "Very current course with real company case studies. You learn the latest digital trends.",
+          "image": "https://i.pravatar.cc/150?img=29"
+        },
+        {
+          "author": "Anna Martinez",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The group projects are very interesting. You learn a lot about digital strategy.",
+          "image": "https://i.pravatar.cc/150?img=30"
+        }
+      ]
+    },
+    {
+      "name": "Clinical Psychology",
+      "career": "Psychology",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Ellen Torres",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "The clinical case practices are very valuable. The professor has extensive experience.",
+          "image": "https://i.pravatar.cc/150?img=31"
+        },
+        {
+          "author": "Michael Angel",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Excellent balance between theory and practice. The role-playing exercises are very useful.",
+          "image": "https://i.pravatar.cc/150?img=32"
+        }
+      ]
+    },
+    {
+      "name": "Organic Chemistry",
+      "career": "Chemistry",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Diana Perez",
+          "date": "20/03/25",
+          "rating": 5,
+          "text": "The laboratory practices are very well structured. The professor explains complex concepts very well.",
+          "image": "https://i.pravatar.cc/150?img=33"
+        },
+        {
+          "author": "Robert Garcia",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "Excellent methodology. The experiments really help understand the theory.",
+          "image": "https://i.pravatar.cc/150?img=34"
+        }
+      ]
+    },
+    {
+      "name": "Algorithms",
+      "career": "Systems Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Louis Morales",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "The programming exercises are challenging but very instructive. Good foundation for data structures.",
+          "image": "https://i.pravatar.cc/150?img=35"
+        },
+        {
+          "author": "Sarah Vega",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The professor explains algorithmic complexity very well. The projects are very practical.",
+          "image": "https://i.pravatar.cc/150?img=36"
+        }
+      ]
+    },
+    {
+      "name": "Industrial Processes",
+      "career": "Industrial Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Frank Lopez",
+          "date": "18/03/25",
+          "rating": 4,
+          "text": "The industrial plant visits are very educational. You learn a lot about real processes.",
+          "image": "https://i.pravatar.cc/150?img=37"
+        },
+        {
+          "author": "Carmen Rodriguez",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The case studies are very relevant. The professor has extensive industry experience.",
+          "image": "https://i.pravatar.cc/150?img=38"
+        }
+      ]
+    },
+    {
+      "name": "Music Theory",
+      "career": "Music",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "David Jimenez",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "The practical classes with instruments help a lot. The professor makes theory very understandable.",
+          "image": "https://i.pravatar.cc/150?img=39"
+        },
+        {
+          "author": "Mary Sanchez",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Excellent methodology for learning harmony. The composition exercises are very useful.",
+          "image": "https://i.pravatar.cc/150?img=40"
+        }
+      ]
+    },
+    {
+      "name": "Corporate",
+      "career": "Finance",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Andrew Castro",
+          "date": "20/03/25",
+          "rating": 5,
+          "text": "The financial case analyses are very comprehensive. You learn a lot about corporate decision-making.",
+          "image": "https://i.pravatar.cc/150?img=41"
+        },
+        {
+          "author": "Patricia Flores",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The professor has great industry experience. The practical exercises are very realistic.",
+          "image": "https://i.pravatar.cc/150?img=42"
+        }
+      ]
+    },
+    {
+      "name": "Genetic Eng.",
+      "career": "Biochemical Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Richard Mendoza",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "The laboratory practices are fascinating. We work with very current techniques.",
+          "image": "https://i.pravatar.cc/150?img=43"
+        },
+        {
+          "author": "Laura Vargas",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "Excellent introduction to genetic engineering. The experiments are very well designed.",
+          "image": "https://i.pravatar.cc/150?img=44"
+        }
+      ]
+    },
+    {
+      "name": "Data Structures",
+      "career": "Computer Science",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "George Ramirez",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Fundamental course for programming. The practical exercises are very useful.",
+          "image": "https://i.pravatar.cc/150?img=45"
+        },
+        {
+          "author": "Sophie Torres",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The professor explains complex concepts very well. The projects really help understand the material.",
+          "image": "https://i.pravatar.cc/150?img=46"
+        }
+      ]
+    },
+    {
+      "name": "Machine Learning",
+      "career": "Artificial Intelligence",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Daniel Lopez",
+          "date": "20/03/25",
+          "rating": 5,
+          "text": "Excellent course with very interesting practical projects. You learn the latest techniques.",
+          "image": "https://i.pravatar.cc/150?img=47"
+        },
+        {
+          "author": "Anna Gomez",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The professor is very up-to-date in the field. The practice datasets are very good.",
+          "image": "https://i.pravatar.cc/150?img=48"
+        }
+      ]
+    },
+    {
+      "name": "Environmental Law",
+      "career": "Law",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Charles Herrera",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Very good focus on current legislation. The practical cases are very relevant.",
+          "image": "https://i.pravatar.cc/150?img=49"
+        },
+        {
+          "author": "Marina Diaz",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "You learn a lot about environmental regulation. The class discussions are very enriching.",
+          "image": "https://i.pravatar.cc/150?img=50"
+        }
+      ]
+    },
+    {
+      "name": "Neuroscience",
+      "career": "Medicine",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Robert Soto",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Fascinating course with excellent visual resources. The practices are very instructive.",
+          "image": "https://i.pravatar.cc/150?img=51"
+        },
+        {
+          "author": "Ellen Castro",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "The professor makes complex topics understandable. The clinical cases are very interesting.",
+          "image": "https://i.pravatar.cc/150?img=52"
+        }
+      ]
+    },
+    {
+      "name": "Microeconomics",
+      "career": "Int. Mktg & Adv.",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Michael Rivers",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Good practical examples of economic concepts. The exercises are very helpful.",
+          "image": "https://i.pravatar.cc/150?img=53"
+        },
+        {
+          "author": "Isabel Moore",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The professor relates theory well to real situations. Highly recommended.",
+          "image": "https://i.pravatar.cc/150?img=54"
+        }
+      ]
+    },
+    {
+      "name": "Child Psychology",
+      "career": "Psychology",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Laura Benitez",
+          "date": "20/03/25",
+          "rating": 4,
+          "text": "The practices with real cases are very valuable. Excellent professional preparation.",
+          "image": "https://i.pravatar.cc/150?img=55"
+        },
+        {
+          "author": "Peter Vargas",
+          "date": "17/03/25",
+          "rating": 5,
+          "text": "The professor has extensive clinical experience. The case videos are very useful.",
+          "image": "https://i.pravatar.cc/150?img=56"
+        }
+      ]
+    },
+    {
+      "name": "Physical Chemistry",
+      "career": "Chemistry",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Diego Morales",
+          "date": "19/03/25",
+          "rating": 5,
+          "text": "Excellent laboratory experiments. The professor explains theoretical concepts very well.",
+          "image": "https://i.pravatar.cc/150?img=57"
+        },
+        {
+          "author": "Carmen Luna",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The computational simulations are very useful. Great balance between theory and practice.",
+          "image": "https://i.pravatar.cc/150?img=58"
+        }
+      ]
+    },
+    {
+      "name": "Cloud Computing",
+      "career": "Systems Engineering",
+      "credits": "4",
+      "image": "https://picsum.photos/250/150",
+      "rating": "5",
+      "reviews": [
+        {
+          "author": "Andrew Ruiz",
+          "date": "18/03/25",
+          "rating": 5,
+          "text": "Very practical course with the latest cloud technologies. The projects are very relevant.",
+          "image": "https://i.pravatar.cc/150?img=59"
+        },
+        {
+          "author": "Valentine Sanz",
+          "date": "15/03/25",
+          "rating": 5,
+          "text": "Excellent introduction to cloud services. The AWS practices are very useful.",
+          "image": "https://i.pravatar.cc/150?img=60"
+        }
+      ]
+    },
+    {
+      "name": "Quality Control",
+      "career": "Industrial Engineering",
+      "credits": "3",
+      "image": "https://picsum.photos/250/150",
+      "rating": "4",
+      "reviews": [
+        {
+          "author": "Richard Torres",
+          "date": "19/03/25",
+          "rating": 4,
+          "text": "Very good practical approach to industrial quality control. The case studies are very useful.",
+          "image": "https://i.pravatar.cc/150?img=61"
+        },
+        {
+          "author": "Mary Jane",
+          "date": "16/03/25",
+          "rating": 5,
+          "text": "The professor has extensive industry experience. The factory visits are very educational.",
+          "image": "https://i.pravatar.cc/150?img=62"
+        }
+      ]
+    }
+  ]
+}

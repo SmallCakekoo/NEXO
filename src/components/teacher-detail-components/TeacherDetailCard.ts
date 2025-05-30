@@ -1,6 +1,9 @@
 import { TeacherDetailCardAttributes } from "../../types/teacher-detail/TeacherDetailCard.types";
+import { store } from "../../flux/Store";
 
 class TeacherDetailCard extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -13,6 +16,30 @@ class TeacherDetailCard extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange() {
+    this.render();
+  }
+
+  private calculateAverageRating(): number {
+    const teacherName = this.getAttribute("name") || "";
+    const state = store.getState();
+    const ratings = state.teacherRatings[teacherName] || [];
+    
+    if (ratings.length === 0) {
+      return 0;
+    }
+    
+    const sum = ratings.reduce((acc, curr) => acc + curr.rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
   }
 
   // Called when one of the observed attributes is changed
@@ -30,11 +57,11 @@ class TeacherDetailCard extends HTMLElement {
     // Retrieves attribute values or assigns default values (bc this is static for now)
     const name = this.getAttribute("name") || "Jimmy Ramirez";
     const subject = this.getAttribute("subject") || "Logic & Argumentation";
-    const rating = parseInt(this.getAttribute("rating") || "0");
-    const imageId = this.getAttribute("image") || "425";
+    const rating = this.calculateAverageRating();
     const nucleus = this.getAttribute("nucleus") || "basic";
 
-    const image = `https://picsum.photos/id/${imageId}/400/300`;
+    // Usar una imagen aleatoria de picsum.photos
+    const image = "https://picsum.photos/id/301/400/300";
 
     const stars = Array(5)
       .fill(0)
@@ -50,7 +77,7 @@ class TeacherDetailCard extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
            <style>
-                @import url("../colors.css");
+               
 
 .teacher-card {
   display: flex;
