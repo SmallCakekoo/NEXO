@@ -64,6 +64,7 @@ export interface State {
   selectedTeacher: any | null;
   selectedSubject: any | null;
   searchQuery: string;
+  userLikes: { [userId: string]: string[] };
 }
 
 type Listener = (state: State) => void;
@@ -87,6 +88,7 @@ class Store {
     selectedTeacher: null,
     selectedSubject: null,
     searchQuery: '',
+    userLikes: {},
   };
 
   // Los componentes
@@ -459,6 +461,70 @@ class Store {
     };
   }
 
+  // Add new methods for localStorage management
+  private _saveUserLikes(userId: string, postId: string, liked: boolean) {
+    const userLikes = this._myState.userLikes[userId] || [];
+    if (liked && !userLikes.includes(postId)) {
+      userLikes.push(postId);
+    } else if (!liked) {
+      const index = userLikes.indexOf(postId);
+      if (index > -1) {
+        userLikes.splice(index, 1);
+      }
+    }
+    this._myState.userLikes[userId] = userLikes;
+    localStorage.setItem("userLikes", JSON.stringify(this._myState.userLikes));
+    this._emitChange();
+  }
+
+  private _getUserLikes(userId: string): string[] {
+    return this._myState.userLikes[userId] || [];
+  }
+
+  private _saveCurrentPost(post: any) {
+    sessionStorage.setItem("currentPostId", post.id);
+    sessionStorage.setItem("currentPost", JSON.stringify(post));
+  }
+
+  private _getCurrentPost(): any {
+    const postStr = sessionStorage.getItem("currentPost");
+    return postStr ? JSON.parse(postStr) : null;
+  }
+
+  private _setFromProfile(value: boolean) {
+    sessionStorage.setItem("fromProfile", value.toString());
+  }
+
+  private _getFromProfile(): boolean {
+    return sessionStorage.getItem("fromProfile") === "true";
+  }
+
+  // Add public methods to access the private ones
+  saveUserLikes(userId: string, postId: string, liked: boolean) {
+    this._saveUserLikes(userId, postId, liked);
+  }
+
+  getUserLikes(userId: string): string[] {
+    return this._getUserLikes(userId);
+  }
+
+  saveCurrentPost(post: any) {
+    this._saveCurrentPost(post);
+  }
+
+  getCurrentPost(): any {
+    return this._getCurrentPost();
+  }
+
+  setFromProfile(value: boolean) {
+    this._setFromProfile(value);
+  }
+
+  getFromProfile(): boolean {
+    return this._getFromProfile();
+  }
+
+  // Update load method to include userLikes
   load(): void {
     // Cargar datos existentes
     const user = localStorage.getItem("loggedInUser");
@@ -510,6 +576,16 @@ class Store {
         this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
       } catch (e) {
         console.error("Error loading subject ratings from localStorage", e);
+      }
+    }
+
+    // Load userLikes from localStorage
+    const storedUserLikes = localStorage.getItem("userLikes");
+    if (storedUserLikes) {
+      try {
+        this._myState.userLikes = JSON.parse(storedUserLikes);
+      } catch (e) {
+        console.error("Error loading user likes from localStorage", e);
       }
     }
 

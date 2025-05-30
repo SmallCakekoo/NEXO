@@ -1,10 +1,12 @@
 import { Post, Comment } from "../../types/feed/feeds.types";
 import { NavigationActions } from "../../flux/NavigationActions";
 import { PostActions } from "../../flux/PostActions";
+import { store } from "../../flux/Store";
 
 class ProfilePost extends HTMLElement {
   post: Post;
   liked: boolean = false;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -67,20 +69,34 @@ class ProfilePost extends HTMLElement {
   }
 
   connectedCallback() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
     this.render();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private handleStoreChange(state: any) {
+    if (this.post.id) {
+      const userLikes = store.getUserLikes(state.auth.user?.username || '');
+      this.liked = userLikes.includes(this.post.id);
+      this.render();
+    }
   }
 
   render() {
     if (this.shadowRoot) {
-      // Check if logged in user has liked this post
+      // Check if logged in user has liked this post using Store
+      const state = store.getState();
+      const loggedInUser = state.auth.user;
       let userLikedPost = false;
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      
       if (loggedInUser && this.post.id) {
-        const userId = loggedInUser.username;
-        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-        if (userLikes[userId] && userLikes[userId].includes(this.post.id)) {
-          userLikedPost = true;
-        }
+        const userLikes = store.getUserLikes(loggedInUser.username);
+        userLikedPost = userLikes.includes(this.post.id);
       }
 
       this.shadowRoot.innerHTML = `
@@ -487,17 +503,15 @@ class ProfilePost extends HTMLElement {
 
       const likeButton = this.shadowRoot.querySelector(".just-likes");
       likeButton?.addEventListener("click", () => {
-        // Guardar la posición actual del scroll
         const currentScrollPosition = window.scrollY;
+        const state = store.getState();
+        const loggedInUser = state.auth.user;
 
-        // Check if user is logged in
-        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
         if (!loggedInUser) {
           alert("Please log in to like posts.");
           return;
         }
 
-        // Ensure post has an ID
         if (!this.post.id) {
           console.error("Post is missing ID, cannot like.");
           return;
@@ -505,10 +519,8 @@ class ProfilePost extends HTMLElement {
 
         const userId = loggedInUser.username;
         const postId = this.post.id;
-
-        // Check if user has already liked this post
-        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-        const hasLiked = userLikes[userId] && userLikes[userId].includes(postId);
+        const userLikes = store.getUserLikes(userId);
+        const hasLiked = userLikes.includes(postId);
 
         if (hasLiked) {
           PostActions.unlikePost(postId, userId);
@@ -516,7 +528,6 @@ class ProfilePost extends HTMLElement {
           PostActions.likePost(postId, userId);
         }
 
-        // Restaurar la posición del scroll después de un pequeño delay
         requestAnimationFrame(() => {
           window.scrollTo(0, currentScrollPosition);
         });
@@ -524,13 +535,9 @@ class ProfilePost extends HTMLElement {
 
       const commentButton = this.shadowRoot.querySelector(".just-comments");
       commentButton?.addEventListener("click", () => {
-        // Save the post ID and mark that we're coming from profile
         if (this.post.id) {
-          sessionStorage.setItem("currentPostId", this.post.id);
-          sessionStorage.setItem("fromProfile", "true");
-          sessionStorage.setItem("currentPost", JSON.stringify(this.post));
-
-          // Navigate to the profile-specific comments detail page
+          store.saveCurrentPost(this.post);
+          store.setFromProfile(true);
           NavigationActions.navigate("/comments-detail-profile");
         }
       });

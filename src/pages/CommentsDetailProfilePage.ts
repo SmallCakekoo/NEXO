@@ -81,24 +81,19 @@ class CommentsDetailProfilePage extends HTMLElement {
 
   async loadPostData() {
     try {
-      const response = await fetch("/data/ProfilePost.json");
-      const data = await response.json();
-
-      if (this.postId && data.posts) {
-        this.postData = data.posts.find((post: any) => post.id === this.postId);
-
-        if (!this.postData && data.posts.length > 0) {
-          // Si no se encuentra el post, usar el primero como fallback
-          this.postData = data.posts[0];
-          this.postId = this.postData.id;
-        }
-      } else if (data.posts && data.posts.length > 0) {
-        // Si no hay ID, usar el primer post
-        this.postData = data.posts[0];
-        this.postId = this.postData.id;
+      // Get posts from localStorage
+      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      
+      if (this.postId && posts.length > 0) {
+        this.postData = posts.find((post: any) => post.id === this.postId);
       }
 
-      // Asegurarse de que los comentarios estén en formato array
+      if (!this.postData && posts.length > 0) {
+        console.warn("Post not found with ID:", this.postId);
+        return;
+      }
+
+      // Ensure comments are in array format
       if (this.postData && this.postData.comments) {
         this.postData.comments = Array.isArray(this.postData.comments)
           ? this.postData.comments
@@ -109,7 +104,7 @@ class CommentsDetailProfilePage extends HTMLElement {
       this.addEventListeners();
     } catch (error) {
       console.error("Error loading post data:", error);
-      this.render(); // Renderizar con datos por defecto
+      this.render(); // Render with default data
       this.addEventListeners();
     }
   }
