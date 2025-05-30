@@ -597,6 +597,19 @@ class Store {
           }
         }
         break;
+
+      case ProfileActionTypes.UPDATE_PROFILE_SUCCESS:
+        if (action.payload && typeof action.payload === 'object' && 'user' in action.payload) {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              ...this._myState.auth,
+              user: action.payload.user
+            }
+          };
+          this._emitChange();
+        }
+        break;
     }
   }
 
