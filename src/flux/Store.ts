@@ -1151,6 +1151,89 @@ class Store {
     this._emitChange();
   }
 
+  private _createReview(reviewData: {
+    rating: number;
+    text: string;
+    author: string;
+    image: string;
+    type: 'teacher' | 'subject';
+    name: string;
+  }): any {
+    return {
+      rating: reviewData.rating,
+      text: reviewData.text,
+      date: new Date().toLocaleDateString(),
+      author: reviewData.author,
+      image: reviewData.image,
+      [reviewData.type === 'teacher' ? 'teacherName' : 'subjectName']: reviewData.name,
+      type: reviewData.type
+    };
+  }
+
+  private _updateRating(type: 'teacher' | 'subject', name: string, rating: number): void {
+    const ratings = type === 'teacher' ? this._myState.teacherRatings : this._myState.subjectRatings;
+    const currentRatings = ratings[name] || [];
+    const averageRating = currentRatings.length > 0
+      ? currentRatings.reduce((acc, curr) => acc + curr.rating, 0) / currentRatings.length
+      : rating;
+
+    // Update the rating in localStorage for the card
+    const cardData = JSON.parse(localStorage.getItem(`selected${type === 'teacher' ? 'Teacher' : 'Subject'}`) || "{}");
+    if (cardData.name === name) {
+      cardData.rating = averageRating.toFixed(1);
+      localStorage.setItem(`selected${type === 'teacher' ? 'Teacher' : 'Subject'}`, JSON.stringify(cardData));
+    }
+  }
+
+  // Public methods
+  submitReview(reviewData: {
+    rating: number;
+    text: string;
+    type: 'teacher' | 'subject';
+    name: string;
+  }): void {
+    const userData = this._getUserData();
+    const review = this._createReview({
+      ...reviewData,
+      author: userData.name,
+      image: userData.photo
+    });
+
+    // Update ratings in state
+    if (reviewData.type === 'teacher') {
+      const currentRatings = this._myState.teacherRatings[reviewData.name] || [];
+      this._myState = {
+        ...this._myState,
+        teacherRatings: {
+          ...this._myState.teacherRatings,
+          [reviewData.name]: [...currentRatings, { rating: reviewData.rating, comment: reviewData.text, timestamp: new Date().toISOString(), author: userData.name, image: userData.photo }]
+        }
+      };
+      localStorage.setItem("teacherRatings", JSON.stringify(this._myState.teacherRatings));
+    } else {
+      const currentRatings = this._myState.subjectRatings[reviewData.name] || [];
+      this._myState = {
+        ...this._myState,
+        subjectRatings: {
+          ...this._myState.subjectRatings,
+          [reviewData.name]: [...currentRatings, { rating: reviewData.rating, comment: reviewData.text, timestamp: new Date().toISOString(), author: userData.name, image: userData.photo }]
+        }
+      };
+      localStorage.setItem("subjectRatings", JSON.stringify(this._myState.subjectRatings));
+    }
+
+    // Update average rating
+    this._updateRating(reviewData.type, reviewData.name, reviewData.rating);
+
+    // Dispatch review action
+    AppDispatcher.dispatch({
+      type: reviewData.type === 'teacher' ? 'ADD_TEACHER_RATING' : 'ADD_SUBJECT_RATING',
+      payload: review
+    });
+
+    this._emitChange();
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();

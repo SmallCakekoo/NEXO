@@ -68,44 +68,18 @@ class TeacherReviewForm extends HTMLElement {
         return;
       }
 
-      // Create the review object
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-      } catch (e) {}
-      const author = user?.username || "Current User";
-      const image = user?.profilePic || "";
-
-      const review = {
-        rating: this.selectedRating,
-        text: reviewText,
-        date: new Date().toLocaleDateString(),
-        author,
-        image,
-        teacherName: this.teacherName,
-        type: "teacher" as const,
-      };
-
-      // Use the teacherName property directly
       if (!this.teacherName) {
         console.error("Teacher name not found on component property");
         return;
       }
 
-      // Dispatch rating action
-      RatingActions.addTeacherRating(
-        this.teacherName,
-        this.selectedRating,
-        reviewText,
-        author,
-        image
-      );
-
-      // Update the average rating
-      RatingActions.updateTeacherRating(this.teacherName, this.selectedRating);
-
-      // Dispatch review action instead of custom event
-      ReviewActions.submitReview(review);
+      // Submit review through store
+      store.submitReview({
+        rating: this.selectedRating,
+        text: reviewText,
+        type: 'teacher',
+        name: this.teacherName
+      });
 
       // Clear the form
       if (reviewInput) {
@@ -113,9 +87,6 @@ class TeacherReviewForm extends HTMLElement {
       }
       this.selectedRating = 0;
       this.updateStars();
-
-      // Log for debugging
-      console.log("Review submitted:", review);
     });
 
     // Prevent form submission on Enter key press in the review input
