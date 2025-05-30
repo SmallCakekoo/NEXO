@@ -2,7 +2,10 @@ import { AppDispatcher } from './Dispatcher';
 
 export const NavigateActionsType = {
   NAVIGATE: 'NAVIGATE',
-  UPDATE_ROUTE: 'UPDATE_ROUTE'
+  UPDATE_ROUTE: 'UPDATE_ROUTE',
+  SET_RETURN_TO_FEED: 'SET_RETURN_TO_FEED',
+  SET_RETURN_TO_PROFILE: 'SET_RETURN_TO_PROFILE',
+  CLEAR_RETURN_FLAGS: 'CLEAR_RETURN_FLAGS',
 } as const;
 
 // type NavigatePayload = {
@@ -31,5 +34,23 @@ export const NavigationActions = {
       type: NavigateActionsType.UPDATE_ROUTE,
       payload: { path }
     });
-  }
+  },
+
+  setReturnToFeed: () => {
+    AppDispatcher.dispatch({
+      type: NavigateActionsType.SET_RETURN_TO_FEED,
+    });
+  },
+
+  setReturnToProfile: () => {
+    AppDispatcher.dispatch({
+      type: NavigateActionsType.SET_RETURN_TO_PROFILE,
+    });
+  },
+
+  clearReturnFlags: () => {
+    AppDispatcher.dispatch({
+      type: NavigateActionsType.CLEAR_RETURN_FLAGS,
+    });
+  },
 };

@@ -99,6 +99,10 @@ export interface State {
     postId: string | null;
   };
   selectedTag: string;
+  navigation: {
+    returnToFeed: boolean;
+    returnToProfile: boolean;
+  };
 }
 
 type Listener = (state: State) => void;
@@ -129,6 +133,10 @@ class Store {
       postId: null,
     },
     selectedTag: "All",
+    navigation: {
+      returnToFeed: false,
+      returnToProfile: false,
+    },
   };
 
   // Los componentes
@@ -257,44 +265,38 @@ class Store {
         }
         break;
       case PostActionTypes.LIKE_POST:
-        if (action.payload && typeof action.payload === "object" && "postId" in action.payload && "userId" in action.payload) {
+        if (
+          action.payload &&
+          typeof action.payload === "object" &&
+          "postId" in action.payload &&
+          "likes" in action.payload
+        ) {
           const postId = String(action.payload.postId);
-          const userId = String(action.payload.userId);
-          const updatedPosts = this._myState.posts.map(post => {
-            if (post.id === postId) {
-              return { ...post, likes: (post.likes || 0) + 1 };
-            }
-            return post;
-          });
-           // Update localStorage
-           localStorage.setItem("posts", JSON.stringify(updatedPosts));
+          const likes = Number(action.payload.likes);
           this._myState = {
             ...this._myState,
-            posts: updatedPosts,
+            posts: this._myState.posts.map((post) =>
+              post.id === postId ? { ...post, likes: likes } : post
+            ),
           };
-          // Update user likes state and localStorage (handled by saveUserLikes)
-          this.saveUserLikes(userId, postId, true);
           this._emitChange();
         }
         break;
       case PostActionTypes.UNLIKE_POST:
-         if (action.payload && typeof action.payload === "object" && "postId" in action.payload && "userId" in action.payload) {
+        if (
+          action.payload &&
+          typeof action.payload === "object" &&
+          "postId" in action.payload &&
+          "likes" in action.payload
+        ) {
           const postId = String(action.payload.postId);
-          const userId = String(action.payload.userId);
-          const updatedPosts = this._myState.posts.map(post => {
-            if (post.id === postId && post.likes > 0) {
-              return { ...post, likes: post.likes - 1 };
-            }
-            return post;
-          });
-           // Update localStorage
-           localStorage.setItem("posts", JSON.stringify(updatedPosts));
+          const likes = Number(action.payload.likes);
           this._myState = {
             ...this._myState,
-            posts: updatedPosts,
+            posts: this._myState.posts.map((post) =>
+              post.id === postId ? { ...post, likes: likes } : post
+            ),
           };
-           // Update user likes state and localStorage (handled by saveUserLikes)
-          this.saveUserLikes(userId, postId, false);
           this._emitChange();
         }
         break;
@@ -405,10 +407,9 @@ class Store {
       case PostActionTypes.ADD_POST:
         if (action.payload && typeof action.payload === "object") {
           const newPost = action.payload as Post;
-          // Add the new post to the beginning of the array
           const updatedPosts = [newPost, ...this._myState.posts];
 
-          // Update localStorage
+          // Actualizar localStorage y estado
           localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,
@@ -617,6 +618,43 @@ class Store {
           this._emitChange();
         }
         break;
+
+      case NavigateActionsType.SET_RETURN_TO_FEED:
+        this._myState = {
+          ...this._myState,
+          navigation: {
+            ...this._myState.navigation,
+            returnToFeed: true,
+          },
+        };
+        sessionStorage.setItem("returnToFeed", "true");
+        this._emitChange();
+        break;
+
+      case NavigateActionsType.SET_RETURN_TO_PROFILE:
+        this._myState = {
+          ...this._myState,
+          navigation: {
+            ...this._myState.navigation,
+            returnToProfile: true,
+          },
+        };
+        sessionStorage.setItem("returnToProfile", "true");
+        this._emitChange();
+        break;
+
+      case NavigateActionsType.CLEAR_RETURN_FLAGS:
+        this._myState = {
+          ...this._myState,
+          navigation: {
+            returnToFeed: false,
+            returnToProfile: false,
+          },
+        };
+        sessionStorage.removeItem("returnToFeed");
+        sessionStorage.removeItem("returnToProfile");
+        this._emitChange();
+        break;
     }
   }
 
@@ -796,6 +834,10 @@ class Store {
         this._myState.comments = JSON.parse(storedComments);
       }
 
+      // Load navigation state
+      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
+      this._myState.navigation.returnToProfile = sessionStorage.getItem("returnToProfile") === "true";
+
       // Sincronizar el estado con localStorage
       this.syncWithLocalStorage();
 
@@ -873,6 +915,15 @@ class Store {
 
       return postTag === searchTag;
     });
+  }
+
+  // Add new methods for navigation state management
+  getReturnToFeed(): boolean {
+    return this._myState.navigation.returnToFeed;
+  }
+
+  getReturnToProfile(): boolean {
+    return this._myState.navigation.returnToProfile;
   }
 
   static getInstance(): Store {
