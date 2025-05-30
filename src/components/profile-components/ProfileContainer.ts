@@ -1,5 +1,4 @@
 import { Post } from "../../types/feed/feeds.types";
-import { fetchProfilePosts } from "../../services/ProfileService";
 import { AppDispatcher } from "../../flux/Dispatcher";
 import { PostActionTypes } from "../../types/feed/PostActionTypes";
 import { store, State } from "../../flux/Store";
@@ -21,7 +20,7 @@ class ProfileContainer extends HTMLElement {
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
       console.log("ProfileContainer: 'profile-updated' event received. Loading posts.");
-      this.loadPosts();
+      store.loadProfilePosts();
     });
 
     // Listen for navigation events to reload posts when returning to profile
@@ -29,7 +28,7 @@ class ProfileContainer extends HTMLElement {
       const customEvent = event as CustomEvent<string>;
       if (customEvent.detail === '/profile') {
         console.log("ProfileContainer: 'navigate' to profile event received. Loading posts.");
-        this.loadPosts();
+        store.loadProfilePosts();
       }
     });
   }
@@ -46,28 +45,8 @@ class ProfileContainer extends HTMLElement {
   }
 
   private handleStoreChange(state: State) {
-    this.loadPosts();
-  }
-
-  async loadPosts() {
-    console.log("ProfileContainer: loadPosts called.");
-    try {
-      // Always get the latest loggedInUser
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-      } catch (e) {}
-      const username = user?.username;
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      console.log("ProfileContainer: Posts from localStorage in loadPosts:", posts);
-      // Filter posts by the current username
-      this.posts = posts.filter((p: any) => p.name === username);
-      console.log("ProfileContainer: Filtered posts (this.posts) before render:", this.posts);
-      this.render();
-    } catch (error) {
-      console.error("Error loading posts:", error);
-      this.render();
-    }
+    this.posts = store.getProfilePosts();
+    this.render();
   }
 
   // Sets up event listeners for the floating action button

@@ -1072,6 +1072,35 @@ class Store {
     this._emitChange();
   }
 
+  private _getProfilePosts(username: string): Post[] {
+    try {
+      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      return posts.filter((p: Post) => p.name === username);
+    } catch (error) {
+      console.error("Error getting profile posts:", error);
+      return [];
+    }
+  }
+
+  // Public methods
+  getProfilePosts(): Post[] {
+    const user = this._getLoggedInUser();
+    if (!user) return [];
+    return this._getProfilePosts(user.username);
+  }
+
+  loadProfilePosts(): void {
+    const user = this._getLoggedInUser();
+    if (!user) return;
+
+    const profilePosts = this._getProfilePosts(user.username);
+    this._myState = {
+      ...this._myState,
+      posts: profilePosts
+    };
+    this._emitChange();
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
