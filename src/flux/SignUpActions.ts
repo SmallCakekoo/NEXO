@@ -1,6 +1,7 @@
 import { AppDispatcher } from "./Dispatcher";
 import { SignUpActionsType } from "./Actions";
 import { NavigationActions } from "./NavigationActions";
+import { store } from "./Store";
 
 export class SignUpVerification {
   static validateForm(
@@ -11,19 +12,7 @@ export class SignUpVerification {
     degree: string,
     semester: string
   ): { isValid: boolean; error?: string } {
-    // Check if all fields are filled
-    if (!username || !email || !phone || !password || !degree || !semester) {
-      return { isValid: false, error: "Please fill in all fields" };
-    }
-
-    // Check for duplicate username or email
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const duplicate = users.find((u: any) => u.username === username || u.email === email);
-    if (duplicate) {
-      return { isValid: false, error: "Username or email already exists" };
-    }
-
-    return { isValid: true };
+    return store.validateSignUpForm(username, email, phone, password, degree, semester);
   }
 
   static saveUser(userData: {
@@ -34,12 +23,7 @@ export class SignUpVerification {
     degree: string;
     semester: string;
   }): void {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    users.push({
-      ...userData,
-      createdAt: new Date().toISOString(),
-    });
-    localStorage.setItem("users", JSON.stringify(users));
+    store.saveNewUser(userData);
   }
 }
 
@@ -108,11 +92,8 @@ export class SignUpActions {
     });
 
     try {
-      // Save user data
+      // Save user data using Store
       SignUpVerification.saveUser(userData);
-
-      // Set logged in user
-      localStorage.setItem("loggedInUser", JSON.stringify(userData));
 
       // Dispatch success action
       AppDispatcher.dispatch({

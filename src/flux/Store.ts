@@ -1278,6 +1278,73 @@ class Store {
     return this._validateUserCredentials(username, password);
   }
 
+  private _validateSignUpForm(
+    username: string,
+    email: string,
+    phone: string,
+    password: string,
+    degree: string,
+    semester: string
+  ): { isValid: boolean; error?: string } {
+    // Check if all fields are filled
+    if (!username || !email || !phone || !password || !degree || !semester) {
+      return { isValid: false, error: "Please fill in all fields" };
+    }
+
+    // Check for duplicate username or email
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const duplicate = users.find((u: any) => u.username === username || u.email === email);
+    if (duplicate) {
+      return { isValid: false, error: "Username or email already exists" };
+    }
+
+    return { isValid: true };
+  }
+
+  private _saveNewUser(userData: {
+    username: string;
+    email: string;
+    phone: string;
+    password: string;
+    degree: string;
+    semester: string;
+  }): void {
+    try {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      users.push({
+        ...userData,
+        createdAt: new Date().toISOString(),
+      });
+      localStorage.setItem("users", JSON.stringify(users));
+    } catch (error) {
+      console.error("Error saving new user:", error);
+      throw error;
+    }
+  }
+
+  // Public methods
+  validateSignUpForm(
+    username: string,
+    email: string,
+    phone: string,
+    password: string,
+    degree: string,
+    semester: string
+  ): { isValid: boolean; error?: string } {
+    return this._validateSignUpForm(username, email, phone, password, degree, semester);
+  }
+
+  saveNewUser(userData: {
+    username: string;
+    email: string;
+    phone: string;
+    password: string;
+    degree: string;
+    semester: string;
+  }): void {
+    this._saveNewUser(userData);
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
