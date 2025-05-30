@@ -198,13 +198,17 @@ class DeleteAccountConfirmation extends HTMLElement {
 
     if (confirmBtn) {
       confirmBtn.addEventListener("click", () => {
+        // Disable the button to prevent multiple clicks
+        (confirmBtn as HTMLButtonElement).disabled = true;
+        
         // Call the ProfileActions.deleteAccount method
         ProfileActions.deleteAccount();
 
-        this.animateOut().then(() => {
-          NavigationActions.navigate("/");
-          this.remove();
-        });
+        // Remove the component immediately
+        this.remove();
+        
+        // Navigate after removal
+        NavigationActions.navigate("/");
       });
     }
 

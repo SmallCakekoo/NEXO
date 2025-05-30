@@ -420,13 +420,11 @@ input:focus, select:focus, textarea:focus {
 
     if (deleteAccountBtn) {
       deleteAccountBtn.addEventListener("click", () => {
-        if (
-          confirm(
-            "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer."
-          )
-        ) {
-          ProfileActions.deleteAccount();
-          NavigationActions.navigate("/");
+        // Check if a confirmation dialog already exists
+        const existingDialog = document.querySelector('delete-account-confirmation');
+        if (!existingDialog) {
+          const confirmationDialog = document.createElement('delete-account-confirmation');
+          document.body.appendChild(confirmationDialog);
         }
       });
     }
