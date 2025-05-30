@@ -1,4 +1,5 @@
 import { CommentActions } from "../../flux/CommentActions";
+import { store } from "../../flux/Store";
 
 class CommentForm extends HTMLElement {
   constructor() {
@@ -24,27 +25,11 @@ class CommentForm extends HTMLElement {
         return;
       }
 
-      // Crear un objeto de comentario con datos completos
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-      } catch (e) {
-        console.error("Error parsing loggedInUser from localStorage:", e);
-      }
-
-      const userPhoto = user?.profilePic || "https://picsum.photos/seed/default/200/300"; // Default photo
-      const userName = user?.username || "Anonymous"; // Default name
-      const userCareer = user?.career || ""; // Default career, if available
-
       const newComment = {
-        photo: userPhoto,
-        name: userName,
-        career: userCareer,
-        date: new Date().toLocaleDateString(), // Fecha actual
-        message: commentText, // El texto del comentario
+        message: commentText
       };
       
-      CommentActions.addComment(newComment);
+      store.addComment(newComment);
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });
@@ -59,17 +44,12 @@ class CommentForm extends HTMLElement {
   private handleSubmit(event: Event) {
     event.preventDefault();
     console.log("CommentForm: Form submitted, preventDefault called.");
-    // Optional: Trigger the publish button click if you want form submission to act like button click
-    // this.shadowRoot?.querySelector(".publish-button")?.click();
   }
 
   private handleKeydown(event: KeyboardEvent) {
-    // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       console.log("CommentForm: Enter key pressed in comment input, preventDefault called.");
-      // Optional: Trigger submission here if you want Enter to submit the comment
-      // this.shadowRoot?.querySelector(".publish-button")?.click();
     }
   }
 
@@ -124,8 +104,6 @@ class CommentForm extends HTMLElement {
           justify-content: flex-end;
         }
         
-        
-
         .publish-button {
           background-color: #5354ed;
           color: white;
@@ -181,12 +159,10 @@ class CommentForm extends HTMLElement {
   }
 
   showNotification(message: string) {
-    // Create notification element
     const notification = document.createElement("div");
     notification.className = "comment-notification";
     notification.textContent = message;
 
-    // Style the notification
     notification.style.position = "fixed";
     notification.style.bottom = "20px";
     notification.style.left = "50%";
@@ -198,10 +174,8 @@ class CommentForm extends HTMLElement {
     notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
     notification.style.zIndex = "1000";
 
-    // Add to document
     document.body.appendChild(notification);
 
-    // Remove after 3 seconds
     setTimeout(() => {
       notification.style.opacity = "0";
       notification.style.transition = "opacity 0.5s ease";

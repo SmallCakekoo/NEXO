@@ -1101,6 +1101,56 @@ class Store {
     this._emitChange();
   }
 
+  private _getUserData(): { photo: string; name: string; career: string } {
+    try {
+      const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      return {
+        photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
+        name: user?.username || "Anonymous",
+        career: user?.career || ""
+      };
+    } catch (error) {
+      console.error("Error getting user data:", error);
+      return {
+        photo: "https://picsum.photos/seed/default/200/300",
+        name: "Anonymous",
+        career: ""
+      };
+    }
+  }
+
+  // Public methods
+  getUserData(): { photo: string; name: string; career: string } {
+    return this._getUserData();
+  }
+
+  addComment(comment: any): void {
+    const currentPost = this._getCurrentPost();
+    if (!currentPost) return;
+
+    const postId = currentPost.id;
+    const currentComments = this._myState.comments[postId] || [];
+    const userData = this._getUserData();
+    
+    const newComment = {
+      ...userData,
+      date: new Date().toLocaleDateString(),
+      message: comment.message
+    };
+
+    this._myState = {
+      ...this._myState,
+      comments: {
+        ...this._myState.comments,
+        [postId]: [...currentComments, newComment]
+      }
+    };
+
+    // Persist comments to localStorage
+    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
+    this._emitChange();
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
