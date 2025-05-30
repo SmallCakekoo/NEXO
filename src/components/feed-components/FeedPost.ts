@@ -2,11 +2,12 @@ import { Post, Comment } from "../../types/feed/feeds.types";
 import { PostActions } from "../../flux/PostActions";
 import { FeedActions } from "../../flux/FeedActions";
 import { NavigationActions } from "../../flux/NavigationActions";
-import { store } from "../../flux/Store";
+import { store, State } from "../../flux/Store";
 
 class FeedPost extends HTMLElement {
   post: Post;
   liked: boolean = false;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -66,6 +67,32 @@ class FeedPost extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setupEventListeners();
+    this.subscribeToStore();
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  private handleStoreChange(state: State) {
+    const currentUser = state.auth.user;
+    const userId = currentUser?.username || '';
+    const currentUserLikes = state.userLikes[userId] || [];
+    
+    const postId = this.post.id || '';
+    const postLikedStatus = postId ? currentUserLikes.includes(postId) : false;
+
+    const currentLikedState = this.shadowRoot?.querySelector('.just-likes')?.classList.contains('liked');
+
+    if (postLikedStatus !== currentLikedState) {
+       this.render();
+    }
   }
 
   setupEventListeners() {
@@ -91,17 +118,22 @@ class FeedPost extends HTMLElement {
     const likeButton = this.shadowRoot?.querySelector(".just-likes");
     likeButton?.addEventListener("click", () => {
       if (this.post.id) {
-        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+        const state = store.getState();
+        const loggedInUser = state.auth.user;
+
         if (loggedInUser) {
           const userId = loggedInUser.username;
-          const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-          const hasLiked = userLikes[userId]?.includes(this.post.id);
+          const userLikes = state.userLikes[userId] || [];
+          const hasLiked = userLikes.includes(this.post.id);
 
           if (hasLiked) {
             PostActions.unlikePost(this.post.id, userId);
           } else {
             PostActions.likePost(this.post.id, userId);
           }
+        } else {
+           console.log("User not logged in, cannot like post.");
+           this.showNotification("Please log in to like posts.");
         }
       }
     });
@@ -109,13 +141,14 @@ class FeedPost extends HTMLElement {
 
   render() {
     if (this.shadowRoot) {
-      // Check if logged in user has liked this post
       let userLikedPost = false;
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      const state = store.getState();
+      const loggedInUser = state.auth.user;
+
       if (loggedInUser && this.post.id) {
         const userId = loggedInUser.username;
-        const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-        if (userLikes[userId] && userLikes[userId].includes(this.post.id)) {
+        const userLikes = state.userLikes[userId] || [];
+        if (userLikes.includes(this.post.id)) {
           userLikedPost = true;
         }
       }
@@ -526,7 +559,6 @@ class FeedPost extends HTMLElement {
   }
 
   showNotification(message: string) {
-    // Create a style element for the notification styles because they were not loading
     const style = document.createElement("style");
     style.textContent = `
       .feed-post-notification {
@@ -570,16 +602,13 @@ class FeedPost extends HTMLElement {
       }
     `;
 
-    // Create the notification
     const notification = document.createElement("div");
     notification.className = "feed-post-notification";
     notification.textContent = message;
 
-    // Add the styles and the notification to the body
     document.head.appendChild(style);
     document.body.appendChild(notification);
 
-    // Configure the disappearance
     setTimeout(() => {
       notification.classList.add("notification-exit");
       setTimeout(() => {
