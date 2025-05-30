@@ -532,7 +532,7 @@ class Store {
         break;
 
       case FeedActionsType.LOAD_POSTS_FROM_STORAGE:
-        if (action.payload && typeof action.payload === "object" && "posts" in action.payload) {
+        if (action.payload && typeof action.payload === 'object' && 'posts' in action.payload) {
           const payload = action.payload as { posts: Post[] };
           this._myState = {
             ...this._myState,
@@ -924,6 +924,24 @@ class Store {
 
   getReturnToProfile(): boolean {
     return this._myState.navigation.returnToProfile;
+  }
+
+  private _loadPostsFromStorage(): Post[] {
+    try {
+      return JSON.parse(localStorage.getItem('posts') || '[]');
+    } catch (error) {
+      console.error("Failed to load posts from storage:", error);
+      return [];
+    }
+  }
+
+  loadPostsFromStorage(): void {
+    const posts = this._loadPostsFromStorage();
+    this._myState = {
+      ...this._myState,
+      posts
+    };
+    this._emitChange();
   }
 
   static getInstance(): Store {

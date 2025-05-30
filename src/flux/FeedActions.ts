@@ -1,4 +1,5 @@
 import { AppDispatcher } from "./Dispatcher";
+import { store } from "./Store";
 
 export enum FeedActionsType {
   OPEN_POST_MODAL = "OPEN_POST_MODAL",
@@ -29,15 +30,6 @@ export const FeedActions = {
   },
 
   refreshFeedFromStorage: () => {
-    try {
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      AppDispatcher.dispatch({
-        type: FeedActionsType.LOAD_POSTS_FROM_STORAGE,
-        payload: { posts }
-      });
-    } catch (error) {
-      console.error("Failed to refresh feed from storage:", error);
-      // Optionally dispatch an error action
-    }
+    store.loadPostsFromStorage();
   }
 };
