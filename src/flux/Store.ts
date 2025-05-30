@@ -184,8 +184,27 @@ class Store {
   _handleActions(action: Action): void {
     switch (action.type) {
       case AuthActionsType.CHECK_AUTH:
+        const user = localStorage.getItem("loggedInUser");
+        if (user) {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: true,
+              user: JSON.parse(user),
+            },
+          };
+          // Si el usuario está en una ruta pública, redirigir al feed
+          if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
+            window.history.replaceState({}, "", "/feed");
+            this._handleRouteChange("/feed");
+          }
+        }
+        this._emitChange();
+        break;
+
       case AuthActionsType.LOGIN_SUCCESS:
         if (action.payload) {
+          localStorage.setItem("loggedInUser", JSON.stringify(action.payload));
           this._myState = {
             ...this._myState,
             auth: {
@@ -199,9 +218,11 @@ class Store {
             this._handleRouteChange("/feed");
           }
         }
+        this._emitChange();
         break;
 
       case AuthActionsType.LOGOUT:
+        localStorage.removeItem("loggedInUser");
         this._myState = {
           ...this._myState,
           auth: {
@@ -211,6 +232,7 @@ class Store {
         };
         window.history.replaceState({}, "", "/");
         this._handleRouteChange("/");
+        this._emitChange();
         break;
       case NavigateActionsType.NAVIGATE:
         if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
