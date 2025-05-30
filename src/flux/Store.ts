@@ -257,38 +257,44 @@ class Store {
         }
         break;
       case PostActionTypes.LIKE_POST:
-        if (
-          action.payload &&
-          typeof action.payload === "object" &&
-          "postId" in action.payload &&
-          "likes" in action.payload
-        ) {
+        if (action.payload && typeof action.payload === "object" && "postId" in action.payload && "userId" in action.payload) {
           const postId = String(action.payload.postId);
-          const likes = Number(action.payload.likes);
+          const userId = String(action.payload.userId);
+          const updatedPosts = this._myState.posts.map(post => {
+            if (post.id === postId) {
+              return { ...post, likes: (post.likes || 0) + 1 };
+            }
+            return post;
+          });
+           // Update localStorage
+           localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,
-            posts: this._myState.posts.map((post) =>
-              post.id === postId ? { ...post, likes: likes } : post
-            ),
+            posts: updatedPosts,
           };
+          // Update user likes state and localStorage (handled by saveUserLikes)
+          this.saveUserLikes(userId, postId, true);
           this._emitChange();
         }
         break;
       case PostActionTypes.UNLIKE_POST:
-        if (
-          action.payload &&
-          typeof action.payload === "object" &&
-          "postId" in action.payload &&
-          "likes" in action.payload
-        ) {
+         if (action.payload && typeof action.payload === "object" && "postId" in action.payload && "userId" in action.payload) {
           const postId = String(action.payload.postId);
-          const likes = Number(action.payload.likes);
+          const userId = String(action.payload.userId);
+          const updatedPosts = this._myState.posts.map(post => {
+            if (post.id === postId && post.likes > 0) {
+              return { ...post, likes: post.likes - 1 };
+            }
+            return post;
+          });
+           // Update localStorage
+           localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,
-            posts: this._myState.posts.map((post) =>
-              post.id === postId ? { ...post, likes: likes } : post
-            ),
+            posts: updatedPosts,
           };
+           // Update user likes state and localStorage (handled by saveUserLikes)
+          this.saveUserLikes(userId, postId, false);
           this._emitChange();
         }
         break;
@@ -399,9 +405,10 @@ class Store {
       case PostActionTypes.ADD_POST:
         if (action.payload && typeof action.payload === "object") {
           const newPost = action.payload as Post;
+          // Add the new post to the beginning of the array
           const updatedPosts = [newPost, ...this._myState.posts];
 
-          // Actualizar localStorage y estado
+          // Update localStorage
           localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,

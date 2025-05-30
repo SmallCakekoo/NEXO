@@ -10,14 +10,8 @@ export const PostActions = {
     image: File | null;
     createdAt: string;
   }) {
-    // Get current user info from localStorage
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-    } catch (e) {
-      console.error("Error getting user information:", e);
-      return;
-    }
+    // Get current user info from the store
+    const user = store.getState().auth.user;
 
     if (!user) {
       console.error("No logged in user found");
@@ -49,68 +43,36 @@ export const PostActions = {
       comments: [],
     };
 
-    // Get current posts from localStorage
-    const currentPosts = JSON.parse(localStorage.getItem("posts") || "[]");
-
-    // Check if post with same ID already exists
-    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
-    if (!postExists) {
-      // Add the new post to the array
-      currentPosts.unshift(newPost);
-
-      // Update localStorage
-      localStorage.setItem("posts", JSON.stringify(currentPosts));
-
-      // Dispatch action to update store
-      AppDispatcher.dispatch({
-        type: PostActionTypes.ADD_POST,
-        payload: newPost,
-      });
-    }
+    // Dispatch action to add the new post to the store
+    // The store will handle updating its state and persisting to localStorage
+    AppDispatcher.dispatch({
+      type: PostActionTypes.ADD_POST,
+      payload: newPost,
+    });
   },
 
   likePost(postId: string, userId: string) {
-    // Get current likes from localStorage
-    const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-    const post = posts.find((p: any) => p.id === postId);
+    // Update user likes in the store (persists to localStorage)
+    store.saveUserLikes(userId, postId, true);
     
-    if (post) {
-      post.likes = (post.likes || 0) + 1;
-      localStorage.setItem("posts", JSON.stringify(posts));
-      
-      // Update store
-      store.saveUserLikes(userId, postId, true);
-      
-      AppDispatcher.dispatch({
-        type: PostActionTypes.LIKE_POST,
-        payload: {
-          postId,
-          likes: post.likes,
-        },
-      });
-    }
+    // Dispatch action to update the post's like count in the store
+    // The store will handle updating its state and persisting to localStorage
+    AppDispatcher.dispatch({
+      type: PostActionTypes.LIKE_POST,
+      payload: { postId, userId }, // Pass postId and userId for the store to handle the logic
+    });
   },
 
   unlikePost(postId: string, userId: string) {
-    // Get current likes from localStorage
-    const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-    const post = posts.find((p: any) => p.id === postId);
+    // Update user likes in the store (persists to localStorage)
+    store.saveUserLikes(userId, postId, false);
     
-    if (post && post.likes > 0) {
-      post.likes = post.likes - 1;
-      localStorage.setItem("posts", JSON.stringify(posts));
-      
-      // Update store
-      store.saveUserLikes(userId, postId, false);
-      
-      AppDispatcher.dispatch({
-        type: PostActionTypes.UNLIKE_POST,
-        payload: {
-          postId,
-          likes: post.likes,
-        },
-      });
-    }
+    // Dispatch action to update the post's like count in the store
+    // The store will handle updating its state and persisting to localStorage
+    AppDispatcher.dispatch({
+      type: PostActionTypes.UNLIKE_POST,
+      payload: { postId, userId }, // Pass postId and userId for the store to handle the logic
+    });
   },
 
   // ... rest of the existing code ...
