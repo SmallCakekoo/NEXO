@@ -1,24 +1,22 @@
 import { NavigationActions } from "../flux/NavigationActions";
+import { store, State } from "../flux/Store";
 
 class FeedPage extends HTMLElement {
   private scrollPosition: number = 0;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
-    // Check if user is logged in
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (!loggedInUser) {
-      NavigationActions.navigate("/login");
-      return;
-    }
+    this.subscribeToStore();
+
     this.render();
     this.setupEventListeners();
 
-    // Restore scroll position if returning from comments
     if (sessionStorage.getItem("returnToFeed") === "true") {
       const savedPosition = sessionStorage.getItem("feedScrollPosition");
       if (savedPosition) {
@@ -31,13 +29,25 @@ class FeedPage extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // Save the current scroll position when leaving the feed
     sessionStorage.setItem("feedScrollPosition", window.scrollY.toString());
     window.removeEventListener("scroll", this.handleScroll.bind(this));
+
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
+
+  private handleStoreChange(state: State) {
+    if (!state.auth.isAuthenticated) {
+      NavigationActions.navigate("/login");
+    }
   }
 
   setupEventListeners() {
-    // Track scroll position
     window.addEventListener("scroll", this.handleScroll.bind(this));
   }
 
