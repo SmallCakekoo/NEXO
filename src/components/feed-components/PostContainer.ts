@@ -62,7 +62,7 @@ export class PostContainer extends HTMLElement {
       this.tagSelectedListener = (event: Event) => {
         const customEvent = event as CustomEvent<string>;
         const tag = customEvent.detail;
-        this.filterPostsByTag(tag);
+        // Filtering is handled by the store
       };
       document.addEventListener("tagSelected", this.tagSelectedListener);
 
@@ -86,14 +86,6 @@ export class PostContainer extends HTMLElement {
   private handleStoreChange(state: State) {
     // Update filtered posts based on store state
     this.filteredPosts = store.getFilteredPosts(state.selectedTag);
-    this.render();
-  }
-
-  private filterPostsByTag(tag: string) {
-    const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-    this.filteredPosts = tag
-      ? posts.filter((post: Post) => post.tag === tag)
-      : posts;
     this.render();
   }
 
