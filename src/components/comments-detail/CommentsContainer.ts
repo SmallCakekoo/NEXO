@@ -70,7 +70,7 @@ class CommentsContainer extends HTMLElement {
 
         // Actualizar el atributo de comentarios
         commentsList.setAttribute("comments", JSON.stringify(currentComments));
-        // Save updated comments to localStorage
+        // Save updated comments to Storage
         localStorage.setItem(`comments_${this.postId}`, JSON.stringify(currentComments));
       }
     }) as EventListener;
@@ -98,15 +98,15 @@ class CommentsContainer extends HTMLElement {
         if (commentsList) {
           commentsList.setAttribute("comments", JSON.stringify(comments));
         }
-        console.log("Loaded comments from localStorage for postId:", this.postId);
-        return; // Exit if comments were loaded from localStorage
+        console.log("Loaded comments for postId:", this.postId);
+        return; // Exit if comments were loaded 
       } catch (error) {
-        console.error("Error parsing comments from localStorage:", error);
+        console.error("Error parsing comments from Storage:", error);
         // If parsing fails, proceed to fetch from JSON
       }
     }
 
-    // If no comments in localStorage or parsing failed, fetch from JSON
+    // If no comments stored parsing failed, fetch from JSON
     try {
       const response = await fetch("/data/Feed.json");
       const data = await response.json();
@@ -120,7 +120,7 @@ class CommentsContainer extends HTMLElement {
             const commentsToSave = Array.isArray(post.comments) ? post.comments : JSON.parse(post.comments);
             localStorage.setItem(`comments_${this.postId}`, JSON.stringify(commentsToSave));
             commentsList.setAttribute("comments", JSON.stringify(commentsToSave));
-            console.log("Loaded comments from JSON and saved to localStorage for postId:", this.postId);
+            console.log("Loaded comments from JSON and saved to Storage for postId:", this.postId);
           }
         }
       }
