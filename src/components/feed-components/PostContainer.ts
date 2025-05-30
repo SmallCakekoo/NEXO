@@ -135,8 +135,8 @@ export class PostContainer extends HTMLElement {
             .join("")
         : `
         <div class="no-posts">
-          <p class="no-posts-title">No hay posts en la categoría "${store.getState().selectedTag}"</p>
-          <p class="subtitle">Intenta seleccionar otra categoría o crear un nuevo post</p>
+          <p class="no-posts-title">No posts yet</p>
+          <p class="subtitle">Be the first to share something interesting</p>
         </div>
       `;
 
@@ -174,6 +174,13 @@ export class PostContainer extends HTMLElement {
           font-weight: bold;
           color: #4a4a4a;
           margin-bottom: 10px !important;
+          animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
         }
 
         .no-posts .subtitle {
