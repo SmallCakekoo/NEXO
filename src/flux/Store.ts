@@ -769,6 +769,41 @@ class Store {
     return sessionStorage.getItem("fromProfile") === "true";
   }
 
+  // Add scroll position management methods
+  private _saveScrollPosition(position: number): void {
+    sessionStorage.setItem("feedScrollPosition", position.toString());
+  }
+
+  private _getScrollPosition(): number {
+    const position = sessionStorage.getItem("feedScrollPosition");
+    return position ? parseInt(position) : 0;
+  }
+
+  private _clearReturnToFeed(): void {
+    sessionStorage.removeItem("returnToFeed");
+  }
+
+  private _getReturnToFeed(): boolean {
+    return sessionStorage.getItem("returnToFeed") === "true";
+  }
+
+  // Public methods for scroll position
+  saveScrollPosition(position: number): void {
+    this._saveScrollPosition(position);
+  }
+
+  getScrollPosition(): number {
+    return this._getScrollPosition();
+  }
+
+  clearReturnToFeed(): void {
+    this._clearReturnToFeed();
+  }
+
+  getReturnToFeed(): boolean {
+    return this._getReturnToFeed();
+  }
+
   // Add public methods to access the private ones
   saveUserLikes(userId: string, postId: string, liked: boolean) {
     this._saveUserLikes(userId, postId, liked);
@@ -930,10 +965,6 @@ class Store {
   }
 
   // Add new methods for navigation state management
-  getReturnToFeed(): boolean {
-    return this._myState.navigation.returnToFeed;
-  }
-
   getReturnToProfile(): boolean {
     return this._myState.navigation.returnToProfile;
   }
