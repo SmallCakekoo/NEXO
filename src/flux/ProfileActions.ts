@@ -1,4 +1,5 @@
 import { AppDispatcher } from "./Dispatcher";
+import { store } from "./Store";
 
 // Action Types
 export const ProfileActionTypes = {
@@ -27,41 +28,7 @@ export const ProfileActions = {
     }
 
     try {
-      // Remove user from users array
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const updatedUsers = users.filter((u: any) => u.username !== loggedInUser.username);
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-      // Remove user's posts
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.filter((p: any) => p.name !== loggedInUser.username);
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
-
-      // Remove user's likes
-      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-      delete userLikes[loggedInUser.username];
-      localStorage.setItem("userLikes", JSON.stringify(userLikes));
-
-      // Remove user's teacher ratings
-      const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
-      Object.keys(teacherRatings).forEach((teacher) => {
-        teacherRatings[teacher] = teacherRatings[teacher].filter(
-          (r: any) => r.userId !== loggedInUser.username
-        );
-      });
-      localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
-
-      // Remove user's subject ratings
-      const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
-      Object.keys(subjectRatings).forEach((subject) => {
-        subjectRatings[subject] = subjectRatings[subject].filter(
-          (r: any) => r.userId !== loggedInUser.username
-        );
-      });
-      localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
-
-      // Remove logged in user
-      localStorage.removeItem("loggedInUser");
+      store.deleteAccount(loggedInUser.username);
 
       // Dispatch success action
       AppDispatcher.dispatch({
@@ -103,34 +70,7 @@ export const ProfileActions = {
         ...profileData,
       };
 
-      // Update loggedInUser in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
-
-      // Update in users array
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex(
-        (u: any) => u.username === oldUsername || u.email === loggedInUser.email
-      );
-      if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
-        localStorage.setItem("users", JSON.stringify(users));
-      }
-
-      // Update all posts for this user
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.map((post: any) => {
-        if (post.name === oldUsername) {
-          return {
-            ...post,
-            name: updatedUser.username,
-            career: updatedUser.degree,
-            semestre: updatedUser.semester,
-            photo: updatedUser.profilePic || post.photo,
-          };
-        }
-        return post;
-      });
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+      store.updateProfile(oldUsername, updatedUser);
 
       // Dispatch success action
       AppDispatcher.dispatch({

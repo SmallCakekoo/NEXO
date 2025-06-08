@@ -1489,6 +1489,95 @@ class Store {
     return this._myState.navigation.activeAcademicTab;
   }
 
+  // Profile-related methods
+  private _deleteUserAccount(username: string): void {
+    try {
+      // Remove user from users array
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const updatedUsers = users.filter((u: any) => u.username !== username);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+      // Remove user's posts
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      const updatedPosts = posts.filter((p: any) => p.name !== username);
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+
+      // Remove user's likes
+      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+      delete userLikes[username];
+      localStorage.setItem("userLikes", JSON.stringify(userLikes));
+
+      // Remove user's teacher ratings
+      const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
+      Object.keys(teacherRatings).forEach((teacher) => {
+        teacherRatings[teacher] = teacherRatings[teacher].filter(
+          (r: any) => r.userId !== username
+        );
+      });
+      localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
+
+      // Remove user's subject ratings
+      const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
+      Object.keys(subjectRatings).forEach((subject) => {
+        subjectRatings[subject] = subjectRatings[subject].filter(
+          (r: any) => r.userId !== username
+        );
+      });
+      localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
+
+      // Remove logged in user
+      localStorage.removeItem("loggedInUser");
+    } catch (error) {
+      console.error("Error deleting user account:", error);
+      throw error;
+    }
+  }
+
+  private _updateUserProfile(oldUsername: string, updatedUser: any): void {
+    try {
+      // Update loggedInUser in localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+
+      // Update in users array
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const userIndex = users.findIndex(
+        (u: any) => u.username === oldUsername || u.email === updatedUser.email
+      );
+      if (userIndex !== -1) {
+        users[userIndex] = updatedUser;
+        localStorage.setItem("users", JSON.stringify(users));
+      }
+
+      // Update all posts for this user
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      const updatedPosts = posts.map((post: any) => {
+        if (post.name === oldUsername) {
+          return {
+            ...post,
+            name: updatedUser.username,
+            career: updatedUser.degree,
+            semestre: updatedUser.semester,
+            photo: updatedUser.profilePic || post.photo,
+          };
+        }
+        return post;
+      });
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      throw error;
+    }
+  }
+
+  // Public methods for profile management
+  deleteAccount(username: string): void {
+    this._deleteUserAccount(username);
+  }
+
+  updateProfile(oldUsername: string, updatedUser: any): void {
+    this._updateUserProfile(oldUsername, updatedUser);
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
