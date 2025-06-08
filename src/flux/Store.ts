@@ -1360,6 +1360,12 @@ class Store {
     return this._validateUserCredentials(username, password);
   }
 
+  private _validateEmail(email: string): boolean {
+    // Standard email regex pattern
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
+
   private _validateSignUpForm(
     username: string,
     email: string,
@@ -1371,6 +1377,11 @@ class Store {
     // Check if all fields are filled
     if (!username || !email || !phone || !password || !degree || !semester) {
       return { isValid: false, error: "Please fill in all fields" };
+    }
+
+    // Validate email format
+    if (!this._validateEmail(email)) {
+      return { isValid: false, error: "Please enter a valid email address" };
     }
 
     // Check for duplicate username or email

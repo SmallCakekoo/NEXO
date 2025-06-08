@@ -56,6 +56,20 @@ export class SignUpActions {
       return { isValid: false, error: "You must accept the terms of use" };
     }
 
+    // Use Store's validation for email format and duplicates
+    const validation = SignUpVerification.validateForm(
+      username,
+      email,
+      phone,
+      password,
+      degree,
+      semester
+    );
+
+    if (!validation.isValid) {
+      return validation;
+    }
+
     return { isValid: true };
   }
 
