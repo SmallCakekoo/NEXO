@@ -19,12 +19,20 @@ class BackButton extends HTMLElement {
     const button = this.shadowRoot?.querySelector(".back-button");
     button?.addEventListener("click", () => {
       const target = this.getAttribute("target") || "/feed";
+      const currentPath = window.location.pathname;
 
       // Set flag to maintain scroll position when returning to feed
       if (target === "/feed") {
         NavigationActions.setReturnToFeed();
       } else if (target === "/profile") {
         NavigationActions.setReturnToProfile();
+      } else if (target === "/academic") {
+        // Set the active tab based on where we're coming from
+        if (currentPath === "/subject-detail") {
+          NavigationActions.setActiveAcademicTab("subjects");
+        } else if (currentPath === "/teacher-detail") {
+          NavigationActions.setActiveAcademicTab("teacher");
+        }
       }
 
       NavigationActions.navigate(target);

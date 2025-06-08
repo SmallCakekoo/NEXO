@@ -103,6 +103,7 @@ export interface State {
   navigation: {
     returnToFeed: boolean;
     returnToProfile: boolean;
+    activeAcademicTab: string;
   };
 }
 
@@ -137,6 +138,7 @@ class Store {
     navigation: {
       returnToFeed: false,
       returnToProfile: false,
+      activeAcademicTab: "teacher"
     },
   };
 
@@ -660,6 +662,7 @@ class Store {
         this._myState = {
           ...this._myState,
           navigation: {
+            ...this._myState.navigation,
             returnToFeed: false,
             returnToProfile: false,
           },
@@ -667,6 +670,19 @@ class Store {
         sessionStorage.removeItem("returnToFeed");
         sessionStorage.removeItem("returnToProfile");
         this._emitChange();
+        break;
+
+      case NavigateActionsType.SET_ACTIVE_ACADEMIC_TAB:
+        if (action.payload && typeof action.payload === "object" && "tab" in action.payload) {
+          this._myState = {
+            ...this._myState,
+            navigation: {
+              ...this._myState.navigation,
+              activeAcademicTab: String(action.payload.tab)
+            }
+          };
+          this._emitChange();
+        }
         break;
     }
   }
@@ -1455,6 +1471,22 @@ class Store {
 
   saveTeacherReview(teacherName: string, review: Review): void {
     this._saveTeacherReview(teacherName, review);
+  }
+
+  // Add new methods for academic tab management
+  private _setActiveAcademicTab(tab: string): void {
+    this._myState = {
+      ...this._myState,
+      navigation: {
+        ...this._myState.navigation,
+        activeAcademicTab: tab
+      }
+    };
+    this._emitChange();
+  }
+
+  getActiveAcademicTab(): string {
+    return this._myState.navigation.activeAcademicTab;
   }
 
   static getInstance(): Store {

@@ -6,6 +6,7 @@ export const NavigateActionsType = {
   SET_RETURN_TO_FEED: 'SET_RETURN_TO_FEED',
   SET_RETURN_TO_PROFILE: 'SET_RETURN_TO_PROFILE',
   CLEAR_RETURN_FLAGS: 'CLEAR_RETURN_FLAGS',
+  SET_ACTIVE_ACADEMIC_TAB: 'SET_ACTIVE_ACADEMIC_TAB'
 } as const;
 
 // type NavigatePayload = {
@@ -53,4 +54,11 @@ export const NavigationActions = {
       type: NavigateActionsType.CLEAR_RETURN_FLAGS,
     });
   },
+
+  setActiveAcademicTab: (tab: string) => {
+    AppDispatcher.dispatch({
+      type: NavigateActionsType.SET_ACTIVE_ACADEMIC_TAB,
+      payload: { tab },
+    });
+  }
 };
