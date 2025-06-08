@@ -1425,6 +1425,38 @@ class Store {
     this._saveSubjectReview(subjectName, review);
   }
 
+  private _getTeacherReviews(teacherName: string): Review[] {
+    try {
+      const localKey = `teacherReviews_${teacherName}`;
+      return JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (error) {
+      console.error("Error getting teacher reviews:", error);
+      return [];
+    }
+  }
+
+  private _saveTeacherReview(teacherName: string, review: Review): void {
+    try {
+      const localKey = `teacherReviews_${teacherName}`;
+      const localReviews = this._getTeacherReviews(teacherName);
+      if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+        localReviews.unshift(review);
+        localStorage.setItem(localKey, JSON.stringify(localReviews));
+      }
+    } catch (error) {
+      console.error("Error saving teacher review:", error);
+    }
+  }
+
+  // Public methods for teacher reviews
+  getTeacherReviews(teacherName: string): Review[] {
+    return this._getTeacherReviews(teacherName);
+  }
+
+  saveTeacherReview(teacherName: string, review: Review): void {
+    this._saveTeacherReview(teacherName, review);
+  }
+
   static getInstance(): Store {
     if (!Store.instance) {
       Store.instance = new Store();
