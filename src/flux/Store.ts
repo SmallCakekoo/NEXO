@@ -9,6 +9,7 @@ import { ProfileActionTypes } from "./ProfileActions";
 import { CommentActionsType } from "./CommentActions";
 import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
+import { Review } from "../types/subject-detail/SubjectReviewList.types";
 
 export interface Rating {
   rating: number;
@@ -1390,6 +1391,38 @@ class Store {
     semester: string;
   }): void {
     this._saveNewUser(userData);
+  }
+
+  private _getSubjectReviews(subjectName: string): Review[] {
+    try {
+      const localKey = `subjectReviews_${subjectName}`;
+      return JSON.parse(localStorage.getItem(localKey) || '[]');
+    } catch (error) {
+      console.error("Error getting subject reviews:", error);
+      return [];
+    }
+  }
+
+  private _saveSubjectReview(subjectName: string, review: Review): void {
+    try {
+      const localKey = `subjectReviews_${subjectName}`;
+      const localReviews = this._getSubjectReviews(subjectName);
+      if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+        localReviews.unshift(review);
+        localStorage.setItem(localKey, JSON.stringify(localReviews));
+      }
+    } catch (error) {
+      console.error("Error saving subject review:", error);
+    }
+  }
+
+  // Public methods for subject reviews
+  getSubjectReviews(subjectName: string): Review[] {
+    return this._getSubjectReviews(subjectName);
+  }
+
+  saveSubjectReview(subjectName: string, review: Review): void {
+    this._saveSubjectReview(subjectName, review);
   }
 
   static getInstance(): Store {
