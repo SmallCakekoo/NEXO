@@ -1366,6 +1366,26 @@ class Store {
     return emailRegex.test(email);
   }
 
+  private _validatePassword(password: string): { isValid: boolean; error?: string } {
+    if (password.length < 6) {
+      return { isValid: false, error: "Password must be at least 6 characters long" };
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, error: "Password must contain at least one capital letter" };
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, error: "Password must contain at least one number" };
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return { isValid: false, error: "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>) " };
+    }
+
+    return { isValid: true };
+  }
+
   private _validateSignUpForm(
     username: string,
     email: string,
@@ -1382,6 +1402,12 @@ class Store {
     // Validate email format
     if (!this._validateEmail(email)) {
       return { isValid: false, error: "Please enter a valid email address" };
+    }
+
+    // Validate password requirements
+    const passwordValidation = this._validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return passwordValidation;
     }
 
     // Check for duplicate username or email
