@@ -1386,6 +1386,20 @@ class Store {
     return { isValid: true };
   }
 
+  private _validatePhone(phone: string): { isValid: boolean; error?: string } {
+    // First check if there are any non-digit characters
+    if (!/^\d+$/.test(phone)) {
+      return { isValid: false, error: "Phone number can only contain numbers (0-9)" };
+    }
+    
+    // Then check the length
+    if (phone.length !== 10) {
+      return { isValid: false, error: "Phone number must be exactly 10 digits long" };
+    }
+
+    return { isValid: true };
+  }
+
   private _validateSignUpForm(
     username: string,
     email: string,
@@ -1408,6 +1422,12 @@ class Store {
     const passwordValidation = this._validatePassword(password);
     if (!passwordValidation.isValid) {
       return passwordValidation;
+    }
+
+    // Validate phone number
+    const phoneValidation = this._validatePhone(phone);
+    if (!phoneValidation.isValid) {
+      return phoneValidation;
     }
 
     // Check for duplicate username or email

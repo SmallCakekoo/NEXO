@@ -56,7 +56,7 @@ export class SignUpActions {
       return { isValid: false, error: "You must accept the terms of use" };
     }
 
-    // Use Store's validation for email format, password requirements, and duplicates
+    // Use Store's validation for email format, password requirements, phone number, and duplicates
     const validation = SignUpVerification.validateForm(
       username,
       email,

@@ -181,7 +181,6 @@ class DeleteAccountConfirmation extends HTMLElement {
                     
                 </div>
                 <div class="dialog-content">
-                    <p class="message">This action is permanent</p>  Your data and activity will be permanently erased.</p>
                     <div class="action-buttons">
                         <button class="btn cancel-btn">Cancel</button>
                         <button class="btn confirm-btn">Delete account</button>
