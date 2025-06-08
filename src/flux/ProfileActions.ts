@@ -62,6 +62,19 @@ export const ProfileActions = {
         return;
       }
 
+      // Validate phone number
+      const phoneValidation = store.validatePhone(profileData.phone);
+      if (!phoneValidation.isValid) {
+        // Show alert for invalid phone number
+        alert("Change number action canceled, the new number should be 10 digits long and no letters");
+        
+        AppDispatcher.dispatch({
+          type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
+          payload: { error: phoneValidation.error },
+        });
+        return;
+      }
+
       const oldUsername = loggedInUser.username;
 
       // Update user data

@@ -1400,6 +1400,11 @@ class Store {
     return { isValid: true };
   }
 
+  // Public method for phone validation
+  validatePhone(phone: string): { isValid: boolean; error?: string } {
+    return this._validatePhone(phone);
+  }
+
   private _validateSignUpForm(
     username: string,
     email: string,
