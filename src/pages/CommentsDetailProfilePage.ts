@@ -19,9 +19,9 @@ class CommentsDetailProfilePage extends HTMLElement {
     // Subscribe to store changes
     this.unsubscribeStore = store.subscribe(this.handleStoreChange);
 
-    // Get post ID from sessionStorage
-    this.postId = sessionStorage.getItem("currentPostId") || "";
-    this.fromProfile = sessionStorage.getItem("fromProfile") === "true";
+    // Get post ID and fromProfile from store
+    this.postId = store.getCurrentPostId();
+    this.fromProfile = store.getFromProfile();
 
     // Load post data
     this.loadPostData();
@@ -108,7 +108,7 @@ class CommentsDetailProfilePage extends HTMLElement {
   addEventListeners() {
     const button = this.shadowRoot?.querySelector("back-button");
     button?.addEventListener("click", () => {
-      sessionStorage.setItem("returnToProfile", "true");
+      store.setReturnToProfile(true);
       NavigationActions.navigate("/profile");
     });
 

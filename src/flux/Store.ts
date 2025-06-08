@@ -787,6 +787,19 @@ class Store {
     return sessionStorage.getItem("returnToFeed") === "true";
   }
 
+  // Add current post management methods
+  private _saveCurrentPostId(postId: string): void {
+    sessionStorage.setItem("currentPostId", postId);
+  }
+
+  private _getCurrentPostId(): string {
+    return sessionStorage.getItem("currentPostId") || "";
+  }
+
+  private _setReturnToProfile(value: boolean): void {
+    sessionStorage.setItem("returnToProfile", value.toString());
+  }
+
   // Public methods for scroll position
   saveScrollPosition(position: number): void {
     this._saveScrollPosition(position);
@@ -804,6 +817,27 @@ class Store {
     return this._getReturnToFeed();
   }
 
+  // Public methods for current post management
+  saveCurrentPostId(postId: string): void {
+    this._saveCurrentPostId(postId);
+  }
+
+  getCurrentPostId(): string {
+    return this._getCurrentPostId();
+  }
+
+  setFromProfile(value: boolean): void {
+    this._setFromProfile(value);
+  }
+
+  getFromProfile(): boolean {
+    return this._getFromProfile();
+  }
+
+  setReturnToProfile(value: boolean): void {
+    this._setReturnToProfile(value);
+  }
+
   // Add public methods to access the private ones
   saveUserLikes(userId: string, postId: string, liked: boolean) {
     this._saveUserLikes(userId, postId, liked);
@@ -819,14 +853,6 @@ class Store {
 
   getCurrentPost(): any {
     return this._getCurrentPost();
-  }
-
-  setFromProfile(value: boolean) {
-    this._setFromProfile(value);
-  }
-
-  getFromProfile(): boolean {
-    return this._getFromProfile();
   }
 
   // Update load method to include userLikes
