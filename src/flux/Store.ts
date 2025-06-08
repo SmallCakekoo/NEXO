@@ -1033,9 +1033,27 @@ class Store {
     try {
       return JSON.parse(localStorage.getItem("loggedInUser") || "null");
     } catch (error) {
-      console.error("Error getting user information:", error);
+      console.error("Error getting logged in user:", error);
       return null;
     }
+  }
+
+  private _removeLoggedInUser(): void {
+    try {
+      localStorage.removeItem("loggedInUser");
+    } catch (error) {
+      console.error("Error removing logged in user:", error);
+      throw error;
+    }
+  }
+
+  // Public methods for profile management
+  getLoggedInUser(): any {
+    return this._getLoggedInUser();
+  }
+
+  removeLoggedInUser(): void {
+    this._removeLoggedInUser();
   }
 
   private _createNewPost(postData: {

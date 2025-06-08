@@ -18,7 +18,7 @@ export const ProfileActionTypes = {
 export const ProfileActions = {
   deleteAccount: () => {
     // Get current user data
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    const loggedInUser = store.getLoggedInUser();
     if (!loggedInUser) {
       AppDispatcher.dispatch({
         type: ProfileActionTypes.DELETE_ACCOUNT_ERROR,
@@ -53,7 +53,7 @@ export const ProfileActions = {
   }) => {
     try {
       // Get current user data
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+      const loggedInUser = store.getLoggedInUser();
       if (!loggedInUser) {
         AppDispatcher.dispatch({
           type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
@@ -90,7 +90,7 @@ export const ProfileActions = {
 
   logout: () => {
     try {
-      localStorage.removeItem("loggedInUser");
+      store.removeLoggedInUser();
 
       AppDispatcher.dispatch({
         type: ProfileActionTypes.LOGOUT_SUCCESS,
