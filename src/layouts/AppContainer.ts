@@ -1,6 +1,9 @@
 import { store, State } from "../flux/Store";
 import { NavigationActions } from "../flux/NavigationActions";
 import { AuthActions } from "../flux/AuthActions";
+import { auth, db } from "../services/Firebase/FirebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 class AppContainer extends HTMLElement {
   constructor() {
@@ -11,6 +14,22 @@ class AppContainer extends HTMLElement {
 
   connectedCallback() {
     store.load();
+
+    // Firebase Auth persistence: restore user on reload
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const userProfile = userDoc.data();
+          localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+          AuthActions.loginSuccess(userProfile);
+        }
+      } else {
+        // User is signed out, clear everything
+        localStorage.removeItem("loggedInUser");
+        AuthActions.logout(); // This will clear state and redirect
+      }
+    });
 
     // Verificar autenticación al inicio
     AuthActions.checkAuth();

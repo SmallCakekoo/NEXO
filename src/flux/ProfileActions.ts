@@ -18,7 +18,7 @@ export const ProfileActionTypes = {
 export const ProfileActions = {
   deleteAccount: () => {
     // Get current user data
-    const loggedInUser = store.getLoggedInUser();
+    const loggedInUser = store.getState().auth.user;
     if (!loggedInUser) {
       AppDispatcher.dispatch({
         type: ProfileActionTypes.DELETE_ACCOUNT_ERROR,
@@ -53,7 +53,7 @@ export const ProfileActions = {
   }) => {
     try {
       // Get current user data
-      const loggedInUser = store.getLoggedInUser();
+      const loggedInUser = store.getState().auth.user;
       if (!loggedInUser) {
         AppDispatcher.dispatch({
           type: ProfileActionTypes.UPDATE_PROFILE_ERROR,

@@ -10,6 +10,9 @@ import { CommentActionsType } from "./CommentActions";
 import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
 import { Review } from "../types/subject-detail/SubjectReviewList.types";
+import { auth, db } from "../services/Firebase/FirebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 
 export interface Rating {
   rating: number;
@@ -187,27 +190,12 @@ class Store {
   _handleActions(action: Action): void {
     switch (action.type) {
       case AuthActionsType.CHECK_AUTH:
-        const user = localStorage.getItem("loggedInUser");
-        if (user) {
-          this._myState = {
-            ...this._myState,
-            auth: {
-              isAuthenticated: true,
-              user: JSON.parse(user),
-            },
-          };
-          // Si el usuario está en una ruta pública, redirigir al feed
-          if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
-            window.history.replaceState({}, "", "/feed");
-            this._handleRouteChange("/feed");
-          }
-        }
+        this.setUserFromFirebase();
         this._emitChange();
         break;
 
       case AuthActionsType.LOGIN_SUCCESS:
         if (action.payload) {
-          localStorage.setItem("loggedInUser", JSON.stringify(action.payload));
           this._myState = {
             ...this._myState,
             auth: {
@@ -215,6 +203,8 @@ class Store {
               user: action.payload,
             },
           };
+          // Provisional fix: Save logged-in user to localStorage
+          localStorage.setItem("loggedInUser", JSON.stringify(action.payload));
           // Si el usuario está en una ruta pública, redirigir al feed
           if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
             window.history.replaceState({}, "", "/feed");
@@ -225,17 +215,19 @@ class Store {
         break;
 
       case AuthActionsType.LOGOUT:
-        localStorage.removeItem("loggedInUser");
-        this._myState = {
-          ...this._myState,
-          auth: {
-            isAuthenticated: false,
-            user: null,
-          },
-        };
-        window.history.replaceState({}, "", "/");
-        this._handleRouteChange("/");
-        this._emitChange();
+        signOut(auth).then(() => {
+          localStorage.removeItem("loggedInUser");
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+          };
+          window.history.replaceState({}, "", "/");
+          this._handleRouteChange("/");
+          this._emitChange();
+        });
         break;
       case NavigateActionsType.NAVIGATE:
         if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
@@ -589,16 +581,6 @@ class Store {
             // Update user's profile picture in localStorage
             localStorage.setItem("loggedInUser", JSON.stringify(this._myState.auth.user));
 
-            // Update in users array
-            const users = JSON.parse(localStorage.getItem("users") || "[]");
-            const idx = users.findIndex(
-              (u: any) => u.username === user.username || u.email === user.email
-            );
-            if (idx !== -1) {
-              users[idx].profilePic = payload.photo;
-              localStorage.setItem("users", JSON.stringify(users));
-            }
-
             // Update all posts for this user
             const posts = this._myState.posts.map((post) => {
               if (post.name === user.username) {
@@ -689,34 +671,6 @@ class Store {
 
   private _handleSignUp(userData: any): void {
     try {
-      // Get existing users from localStorage
-      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-
-      // Check for duplicate username or email
-      const isDuplicate = existingUsers.some(
-        (user: any) => user.username === userData.username || user.email === userData.email
-      );
-
-      if (isDuplicate) {
-        AppDispatcher.dispatch({
-          type: SignUpActionsType.SIGN_UP_ERROR,
-          payload: { error: "Username or email already exists" },
-        });
-        return;
-      }
-
-      // Add new user to localStorage
-      existingUsers.push({
-        ...userData,
-        createdAt: new Date().toISOString(),
-      });
-      localStorage.setItem("users", JSON.stringify(existingUsers));
-
-      // Dispatch success action
-      AppDispatcher.dispatch({
-        type: SignUpActionsType.SIGN_UP_SUCCESS,
-      });
-
       // Hacer login automático después del registro
       AppDispatcher.dispatch({
         type: AuthActionsType.LOGIN_SUCCESS,
@@ -886,12 +840,34 @@ class Store {
             user: parsedUser,
           },
         };
-
         // Si el usuario está en una ruta pública, redirigir al feed
         if (["/", "/login", "/signup"].includes(window.location.pathname)) {
           window.history.replaceState({}, "", "/feed");
           this._handleRouteChange("/feed");
         }
+      } else if (auth.currentUser) {
+        // If no local user but Firebase Auth user exists, fetch profile from Firestore
+        getDoc(doc(db, "users", auth.currentUser.uid)).then(userDoc => {
+          if (userDoc.exists()) {
+            const userProfile = userDoc.data();
+            this._myState = {
+              ...this._myState,
+              auth: {
+                isAuthenticated: true,
+                user: userProfile,
+              },
+            };
+            // Save to localStorage for provisional persistence
+            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+              window.history.replaceState({}, "", "/feed");
+              this._handleRouteChange("/feed");
+            } else {
+              this._handleRouteChange(window.location.pathname);
+            }
+            this._emitChange();
+          }
+        });
       }
 
       // Cargar posts
@@ -1528,11 +1504,6 @@ class Store {
   // Profile-related methods
   private _deleteUserAccount(username: string): void {
     try {
-      // Remove user from users array
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const updatedUsers = users.filter((u: any) => u.username !== username);
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-
       // Remove user's posts
       const posts = JSON.parse(localStorage.getItem("posts") || "[]");
       const updatedPosts = posts.filter((p: any) => p.name !== username);
@@ -1573,16 +1544,6 @@ class Store {
     try {
       // Update loggedInUser in localStorage
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
-
-      // Update in users array
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex(
-        (u: any) => u.username === oldUsername || u.email === updatedUser.email
-      );
-      if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
-        localStorage.setItem("users", JSON.stringify(users));
-      }
 
       // Update all posts for this user
       const posts = JSON.parse(localStorage.getItem("posts") || "[]");
@@ -1630,6 +1591,23 @@ class Store {
     semester: string
   ): { isValid: boolean; error?: string } {
     return this._validateSignUpForm(username, email, phone, password, degree, semester);
+  }
+
+  async setUserFromFirebase() {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        this._myState = {
+          ...this._myState,
+          auth: {
+            isAuthenticated: true,
+            user: userDoc.data(),
+          },
+        };
+        this._emitChange();
+      }
+    }
   }
 }
 
