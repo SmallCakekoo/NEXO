@@ -1,4 +1,8 @@
 import { AuthActions } from "../flux/AuthActions";
+import { store } from "../flux/Store";
+import { loginUser } from "../services/Firebase/FirebaseConfig";
+import { db } from "../services/Firebase/FirebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 class LoginComponent extends HTMLElement {
   connectedCallback() {
@@ -64,7 +68,7 @@ class LoginComponent extends HTMLElement {
 
   setupLoginHandler() {
     const loginButton = this.querySelector("primary-button");
-    loginButton?.addEventListener("click", () => {
+    loginButton?.addEventListener("click", async () => {
       const form = this.querySelector("#login-form") as HTMLFormElement;
       if (!form) return;
       const usernameInput = form.querySelector('input[type="text"]') as HTMLInputElement;
@@ -77,19 +81,32 @@ class LoginComponent extends HTMLElement {
         return;
       }
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find((u: any) => u.username === username && u.password === password);
-
-      if (!user) {
+      // Use Firebase Auth and Firestore for login
+      const result = await loginUser(username, password);
+      if (!result.isLoggedIn) {
         alert("Usuario o contraseña inválidos.");
         return;
       }
 
-      // Usar AuthActions para el login
-      AuthActions.loginSuccess(user);
-      // La navegación al feed se manejará automáticamente en el Store
+      // Fetch user profile from Firestore
+      if (!result.user || !result.user.user) {
+        alert("No user credential returned from Firebase.");
+        return;
+      }
+      const userCredential = result.user.user;
+      const userDoc = await getDoc(doc(db, "users", userCredential.uid));
+      if (!userDoc.exists()) {
+        alert("No user profile found in Firestore.");
+        return;
+      }
+      const userProfile = userDoc.data();
+
+      // Use AuthActions for login
+      AuthActions.loginSuccess(userProfile);
+      // Navigation to feed will be handled automatically in the Store
     });
   }
 }
 
 export default LoginComponent;
+

@@ -1,9 +1,10 @@
 import { store } from "../../flux/Store";
 import { RatingActions } from "../../flux/RatingActions";
+import { ReviewActions } from "../../flux/ReviewActions";
 
 class TeacherReviewForm extends HTMLElement {
   private selectedRating: number = 0;
-  public teacherName: string = '';
+  public teacherName: string = "";
 
   constructor() {
     super();
@@ -28,6 +29,7 @@ class TeacherReviewForm extends HTMLElement {
     const stars = this.shadowRoot?.querySelectorAll(".star-rating svg");
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const reviewInput = this.shadowRoot?.querySelector(".review-input") as HTMLTextAreaElement;
+    const reviewForm = this.shadowRoot?.querySelector("#review-form") as HTMLFormElement;
 
     // Add click, hover, and mouseout events for each star icon
     stars?.forEach((star, index) => {
@@ -51,7 +53,9 @@ class TeacherReviewForm extends HTMLElement {
     });
 
     // Handle publish button click
-    publishButton?.addEventListener("click", () => {
+    publishButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      console.log("TeacherReviewForm: Publish button clicked, preventDefault called.");
       if (this.selectedRating === 0) {
         alert("Por favor, selecciona una calificación antes de publicar tu reseña.");
         return;
@@ -64,51 +68,18 @@ class TeacherReviewForm extends HTMLElement {
         return;
       }
 
-      // Create the review object
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-      } catch (e) {}
-      const author = user?.username || "Current User";
-      const image = user?.profilePic || '';
-
-      const review = {
-        rating: this.selectedRating,
-        text: reviewText,
-        date: new Date().toLocaleDateString(),
-        author,
-        image,
-      };
-
-      // Use the teacherName property directly
       if (!this.teacherName) {
-        console.error('Teacher name not found on component property');
+        console.error("Teacher name not found on component property");
         return;
       }
 
-      // Dispatch rating action
-      RatingActions.addTeacherRating(
-        this.teacherName,
-        this.selectedRating,
-        reviewText,
-        author,
-        image
-      );
-
-      // Update the average rating
-      RatingActions.updateTeacherRating(
-        this.teacherName,
-        this.selectedRating
-      );
-
-      // Dispatch custom event to notify other components
-      this.dispatchEvent(
-        new CustomEvent("review-submitted", {
-          detail: review,
-          bubbles: true, // Allow event to bubble up
-          composed: true, // Allow event to cross shadow DOM boundary
-        })
-      );
+      // Submit review through store
+      store.submitReview({
+        rating: this.selectedRating,
+        text: reviewText,
+        type: 'teacher',
+        name: this.teacherName
+      });
 
       // Clear the form
       if (reviewInput) {
@@ -116,10 +87,30 @@ class TeacherReviewForm extends HTMLElement {
       }
       this.selectedRating = 0;
       this.updateStars();
-
-      // Log for debugging
-      console.log("Review submitted:", review);
     });
+
+    // Prevent form submission on Enter key press in the review input
+    reviewInput?.addEventListener("keydown", this.handleKeydown.bind(this));
+
+    // Prevent form submission on form submit
+    reviewForm?.addEventListener("submit", this.handleSubmit.bind(this));
+  }
+
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+    console.log("TeacherReviewForm: Form submitted, preventDefault called.");
+    // Optional: Trigger the publish button click if you want form submission to act like button click
+    // this.shadowRoot?.querySelector(".publish-button")?.click();
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    // Check if the pressed key is Enter and it's not Shift + Enter (for new lines)
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      console.log("TeacherReviewForm: Enter key pressed in review input, preventDefault called.");
+      // Optional: Trigger submission here if you want Enter to submit the review
+      // this.shadowRoot?.querySelector(".publish-button")?.click();
+    }
   }
 
   render() {
@@ -256,6 +247,7 @@ class TeacherReviewForm extends HTMLElement {
 }
 
                 </style>
+                <form id="review-form">
                  <div class="review-form">
                 <h3 class="form-title">Leave your review:</h3>
                 <div class="star-rating">
@@ -280,6 +272,7 @@ class TeacherReviewForm extends HTMLElement {
                     </button>
                 </div>
             </div>
+            </form>
         `;
   }
 }

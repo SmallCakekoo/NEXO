@@ -1,46 +1,53 @@
+import { NavigationActions } from "../flux/NavigationActions";
+import { store, State } from "../flux/Store";
+
 class FeedPage extends HTMLElement {
   private scrollPosition: number = 0;
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.handleStoreChange = this.handleStoreChange.bind(this);
   }
 
   connectedCallback() {
-    // Check if user is logged in
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    if (!loggedInUser) {
-     
-      const event = new CustomEvent('navigate', {
-        detail: '/login',
-        composed: true
-      });
-      document.dispatchEvent(event);
-      return;
-    }
+    this.subscribeToStore();
+
     this.render();
     this.setupEventListeners();
 
-    // Restore scroll position if returning from comments
-    if (sessionStorage.getItem("returnToFeed") === "true") {
-      const savedPosition = sessionStorage.getItem("feedScrollPosition");
+    if (store.getReturnToFeed()) {
+      const savedPosition = store.getScrollPosition();
       if (savedPosition) {
         setTimeout(() => {
-          window.scrollTo(0, parseInt(savedPosition));
-          sessionStorage.removeItem("returnToFeed");
+          window.scrollTo(0, savedPosition);
+          store.clearReturnToFeed();
         }, 100);
       }
     }
   }
 
   disconnectedCallback() {
-    // Save the current scroll position when leaving the feed
-    sessionStorage.setItem("feedScrollPosition", window.scrollY.toString());
+    store.saveScrollPosition(window.scrollY);
     window.removeEventListener("scroll", this.handleScroll.bind(this));
+
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+  }
+
+  private handleStoreChange(state: State) {
+    if (!state.auth.isAuthenticated) {
+      NavigationActions.navigate("/login");
+    }
   }
 
   setupEventListeners() {
-    // Track scroll position
     window.addEventListener("scroll", this.handleScroll.bind(this));
   }
 

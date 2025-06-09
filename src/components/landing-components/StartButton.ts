@@ -1,3 +1,5 @@
+import { NavigationActions } from "../../flux/NavigationActions";
+
 class StartButton extends HTMLElement {
   constructor() {
     super();
@@ -47,11 +49,7 @@ class StartButton extends HTMLElement {
     `;
 
     this.shadowRoot!.querySelector("#start")?.addEventListener("click", () => {
-      const event = new CustomEvent("navigate", {
-        detail: "/login",
-        composed: true,
-      });
-      document.dispatchEvent(event);
+      NavigationActions.navigate("/login");
     });
   }
 }

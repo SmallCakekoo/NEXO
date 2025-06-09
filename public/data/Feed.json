@@ -1,6 +1,7 @@
 {
   "posts": [
     {
+      "id": "post-1",
       "photo": "https://picsum.photos/800/450?random=1",
       "name": "Pepito Fetch",
       "date": "8/12/2024",
@@ -27,6 +28,7 @@
       ]
     },
     {
+      "id": "post-2",
       "photo": "https://picsum.photos/800/450?random=4",
       "name": "Carlos Méndez",
       "date": "3/02/2025",
@@ -37,7 +39,7 @@
       "likes": 2,
       "comments": [
         {
-          "photo": "https://picsum.photos/800/450?random=2",
+          "photo": "https://picsum.photos/80um.photos/800/450?random=2",
           "name": "Carlin",
           "date": "4/02/2025",
           "career": "DMI",
@@ -46,6 +48,7 @@
       ]
     },
     {
+      "id": "post-3",
       "photo": "https://picsum.photos/800/450?random=6",
       "name": "Andrea Gómez",
       "date": "12/02/2025",
@@ -72,6 +75,7 @@
       ]
     },
     {
+      "id": "post-4",
       "photo": "https://picsum.photos/800/450?random=5",
       "name": "Javier Ríos",
       "date": "3/03/2025",
@@ -98,6 +102,7 @@
       ]
     },
     {
+      "id": "post-5",
       "photo": "https://picsum.photos/800/450?random=7",
       "name": "Lucia Martinez",
       "date": "5/03/2025",
@@ -117,6 +122,7 @@
       ]
     },
     {
+      "id": "post-6",
       "photo": "https://picsum.photos/800/450?random=9",
       "name": "Sofia Vergara",
       "date": "7/03/2025",
@@ -136,6 +142,7 @@
       ]
     },
     {
+      "id": "post-7",
       "photo": "https://picsum.photos/800/450?random=11",
       "name": "Diego Montoya",
       "date": "10/03/2025",
@@ -162,6 +169,7 @@
       ]
     },
     {
+      "id": "post-8",
       "photo": "https://picsum.photos/800/450?random=14",
       "name": "Valentina Sanchez",
       "date": "12/03/2025",
@@ -173,6 +181,7 @@
       "comments": []
     },
     {
+      "id": "post-9",
       "photo": "https://picsum.photos/800/450?random=15",
       "name": "Ricardo Montaner",
       "date": "15/03/2025",
@@ -199,6 +208,7 @@
       ]
     },
     {
+      "id": "post-10",
       "photo": "https://picsum.photos/800/450?random=18",
       "name": "Ana Maria Lopez",
       "date": "18/03/2025",

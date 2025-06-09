@@ -1,5 +1,8 @@
 import { AppDispatcher } from "./Dispatcher";
 import { SignUpActionsType } from "./Actions";
+import { NavigationActions } from "./NavigationActions";
+import { store } from "./Store";
+import { registerUser } from "../services/Firebase/FirebaseConfig";
 
 export class SignUpVerification {
   static validateForm(
@@ -10,35 +13,35 @@ export class SignUpVerification {
     degree: string,
     semester: string
   ): { isValid: boolean; error?: string } {
-    // Check if all fields are filled
-    if (!username || !email || !phone || !password || !degree || !semester) {
-      return { isValid: false, error: "Please fill in all fields" };
-    }
-
-    // Check for duplicate username or email
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const duplicate = users.find((u: any) => u.username === username || u.email === email);
-    if (duplicate) {
-      return { isValid: false, error: "Username or email already exists" };
-    }
-
-    return { isValid: true };
+    return store.validateSignUpForm(username, email, phone, password, degree, semester);
   }
 
-  static saveUser(userData: {
+  static async saveUser(userData: {
     username: string;
     email: string;
     phone: string;
     password: string;
     degree: string;
     semester: string;
-  }): void {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    users.push({
-      ...userData,
-      createdAt: new Date().toISOString(),
-    });
-    localStorage.setItem("users", JSON.stringify(users));
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      const result = await registerUser(
+        userData.username,
+        userData.email,
+        userData.phone,
+        userData.degree,
+        userData.semester,
+        userData.password
+      );
+
+      if (!result.isRegistered) {
+        return { success: false, error: result.error as string };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: "Failed to register user" };
+    }
   }
 }
 
@@ -50,14 +53,52 @@ export class SignUpActions {
     });
   }
 
-  static initiateSignUp(userData: {
+  static validateSignUpForm(
+    formData: FormData,
+    degree: string,
+    semester: string,
+    checkbox: HTMLInputElement | null
+  ): { isValid: boolean; error?: string } {
+    const username = formData.get("username") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const password = formData.get("password") as string;
+
+    // Validate that all fields are complete
+    if (!username || !email || !phone || !password || !degree || !semester) {
+      return { isValid: false, error: "Please complete all fields" };
+    }
+
+    // Validate terms checkbox
+    if (!checkbox?.checked) {
+      return { isValid: false, error: "You must accept the terms of use" };
+    }
+
+    // Use Store's validation for email format, password requirements, phone number, and duplicates
+    const validation = SignUpVerification.validateForm(
+      username,
+      email,
+      phone,
+      password,
+      degree,
+      semester
+    );
+
+    if (!validation.isValid) {
+      return validation;
+    }
+
+    return { isValid: true };
+  }
+
+  static async initiateSignUp(userData: {
     username: string;
     email: string;
     phone: string;
     password: string;
     degree: string;
     semester: string;
-  }): void {
+  }): Promise<void> {
     // Validate the form data
     const validation = SignUpVerification.validateForm(
       userData.username,
@@ -83,23 +124,24 @@ export class SignUpActions {
     });
 
     try {
-      // Save user data
-      SignUpVerification.saveUser(userData);
+      // Save user data using Firebase
+      const result = await SignUpVerification.saveUser(userData);
 
-      // Set logged in user
-      localStorage.setItem("loggedInUser", JSON.stringify(userData));
+      if (!result.success) {
+        AppDispatcher.dispatch({
+          type: SignUpActionsType.SIGN_UP_ERROR,
+          payload: { error: result.error || "An error occurred during sign up" },
+        });
+        return;
+      }
 
       // Dispatch success action
       AppDispatcher.dispatch({
         type: SignUpActionsType.SIGN_UP_SUCCESS,
       });
 
-      // Navigate to feed page instead of login
-      const navigationEvent = new CustomEvent("navigate", {
-        detail: "/feed",
-        composed: true,
-      });
-      document.dispatchEvent(navigationEvent);
+      // Navigate to feed page using NavigationActions
+      NavigationActions.navigate("/feed");
     } catch (error) {
       // Dispatch error action
       AppDispatcher.dispatch({

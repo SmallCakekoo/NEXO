@@ -1,3 +1,6 @@
+import { CommentActions } from "../../flux/CommentActions";
+import { store } from "../../flux/Store";
+
 class CommentForm extends HTMLElement {
   constructor() {
     super();
@@ -12,6 +15,7 @@ class CommentForm extends HTMLElement {
   setupEventListeners() {
     const publishButton = this.shadowRoot?.querySelector(".publish-button");
     const commentInput = this.shadowRoot?.querySelector(".comment-input") as HTMLTextAreaElement;
+    const commentForm = this.shadowRoot?.querySelector("#comment-form") as HTMLFormElement;
 
     publishButton?.addEventListener("click", () => {
       const commentText = commentInput?.value || "";
@@ -21,36 +25,32 @@ class CommentForm extends HTMLElement {
         return;
       }
 
-      // Crear un objeto de comentario con datos completos
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-      } catch (e) {
-        console.error("Error parsing loggedInUser from localStorage:", e);
-      }
-
-      const userPhoto = user?.profilePic || "https://picsum.photos/seed/default/200/300"; // Default photo
-      const userName = user?.username || "Anonymous"; // Default name
-      const userCareer = user?.career || ""; // Default career, if available
-
       const newComment = {
-        photo: userPhoto,
-        name: userName,
-        career: userCareer,
-        date: new Date().toLocaleDateString(), // Fecha actual
-        message: commentText // El texto del comentario
+        message: commentText
       };
       
-      // Disparar un evento con los datos del comentario
-      const commentEvent = new CustomEvent("comment-submitted", {
-        detail: newComment,
-        composed: true
-      });
-      
-      document.dispatchEvent(commentEvent);
+      store.addComment(newComment);
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });
+
+    // Prevent form submission on Enter key press in the comment input
+    commentInput?.addEventListener("keydown", this.handleKeydown.bind(this));
+
+    // Prevent form submission on form submit
+    commentForm?.addEventListener("submit", this.handleSubmit.bind(this));
+  }
+
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+    console.log("CommentForm: Form submitted, preventDefault called.");
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      console.log("CommentForm: Enter key pressed in comment input, preventDefault called.");
+    }
   }
 
   render() {
@@ -104,8 +104,6 @@ class CommentForm extends HTMLElement {
           justify-content: flex-end;
         }
         
-        
-
         .publish-button {
           background-color: #5354ed;
           color: white;
@@ -145,6 +143,7 @@ class CommentForm extends HTMLElement {
         }
       </style>
       
+      <form id="comment-form">
       <h3 class="form-title">Write a comment</h3>
       <textarea class="comment-input" placeholder="What do you think about this?"></textarea>
       <div class="button-container">
@@ -155,16 +154,15 @@ class CommentForm extends HTMLElement {
           </svg>
         </button>
       </div>
+      </form>
     `;
   }
 
   showNotification(message: string) {
-    // Create notification element
     const notification = document.createElement("div");
     notification.className = "comment-notification";
     notification.textContent = message;
-    
-    // Style the notification
+
     notification.style.position = "fixed";
     notification.style.bottom = "20px";
     notification.style.left = "50%";
@@ -175,15 +173,13 @@ class CommentForm extends HTMLElement {
     notification.style.borderRadius = "5px";
     notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
     notification.style.zIndex = "1000";
-    
-    // Add to document
+
     document.body.appendChild(notification);
-    
-    // Remove after 3 seconds
+
     setTimeout(() => {
       notification.style.opacity = "0";
       notification.style.transition = "opacity 0.5s ease";
-      
+
       setTimeout(() => {
         document.body.removeChild(notification);
       }, 500);

@@ -85,10 +85,6 @@ class SignUpComponent extends HTMLElement {
         if (state.signUp.error) {
           errorMessage.textContent = state.signUp.error;
           errorMessage.style.display = "block";
-          // Restore form values when there's an error
-          if (signUpFormFields) {
-            signUpFormFields.restoreFormValues();
-          }
         } else {
           errorMessage.style.display = "none";
         }
@@ -100,7 +96,7 @@ class SignUpComponent extends HTMLElement {
     const signUpButton = this.querySelector("primary-button");
     const signUpFormFields = this.querySelector("signup-form-fields") as any;
 
-    signUpButton?.addEventListener("click", (event) => {
+    signUpButton?.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -110,39 +106,26 @@ class SignUpComponent extends HTMLElement {
       if (!form || !signUpFormFields) return;
 
       const formData = new FormData(form);
-      const username = formData.get("username") as string;
-      const email = formData.get("email") as string;
-      const phone = formData.get("phone") as string;
-      const password = formData.get("password") as string;
       const degree = signUpFormFields.getDegree();
       const semester = signUpFormFields.getSemester();
 
-      // Validar que todos los campos estén completos
-      if (!username || !email || !phone || !password || !degree || !semester) {
+      // Validate form using SignUpActions
+      const validation = SignUpActions.validateSignUpForm(formData, degree, semester, checkbox);
+      if (!validation.isValid) {
         const errorMessage = this.querySelector("#error-message") as HTMLElement;
         if (errorMessage) {
-          errorMessage.textContent = "Por favor, complete todos los campos";
+          errorMessage.textContent = validation.error || "An error occurred";
           errorMessage.style.display = "block";
         }
         return;
       }
 
-      // Validar el checkbox de términos
-      if (!checkbox?.checked) {
-        const errorMessage = this.querySelector("#error-message") as HTMLElement;
-        if (errorMessage) {
-          errorMessage.textContent = "Debe aceptar los términos de uso";
-          errorMessage.style.display = "block";
-        }
-        return;
-      }
-
-      // Si todas las validaciones pasan, iniciar el proceso de registro
-      SignUpActions.initiateSignUp({
-        username,
-        email,
-        phone,
-        password,
+      // If validation passes, initiate sign up
+      await SignUpActions.initiateSignUp({
+        username: formData.get("username") as string,
+        email: formData.get("email") as string,
+        phone: formData.get("phone") as string,
+        password: formData.get("password") as string,
         degree,
         semester,
       });

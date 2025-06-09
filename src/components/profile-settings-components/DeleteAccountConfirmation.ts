@@ -1,3 +1,6 @@
+import { ProfileActions } from "../../flux/ProfileActions";
+import { NavigationActions } from "../../flux/NavigationActions";
+
 class DeleteAccountConfirmation extends HTMLElement {
   constructor() {
     super();
@@ -178,7 +181,6 @@ class DeleteAccountConfirmation extends HTMLElement {
                     
                 </div>
                 <div class="dialog-content">
-                    <p class="message">This action is permanent</p>  Your data and activity will be permanently erased.</p>
                     <div class="action-buttons">
                         <button class="btn cancel-btn">Cancel</button>
                         <button class="btn confirm-btn">Delete account</button>
@@ -193,60 +195,22 @@ class DeleteAccountConfirmation extends HTMLElement {
     const confirmBtn = this.shadowRoot!.querySelector(".confirm-btn");
     const cancelBtn = this.shadowRoot!.querySelector(".cancel-btn");
 
-    // On confirm, animate out and dispatch a custom event (but this is static for now)
     if (confirmBtn) {
       confirmBtn.addEventListener("click", () => {
-        // Get current user data
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-        if (!loggedInUser) {
-          console.error('No logged in user found');
-          return;
-        }
+        // Disable the button to prevent multiple clicks
+        (confirmBtn as HTMLButtonElement).disabled = true;
+        
+        // Call the ProfileActions.deleteAccount method
+        ProfileActions.deleteAccount();
 
-        // Remove user from users array
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = users.filter((u: any) => u.username !== loggedInUser.username);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-        // Remove user's posts
-        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-        const updatedPosts = posts.filter((p: any) => p.name !== loggedInUser.username);
-        localStorage.setItem('posts', JSON.stringify(updatedPosts));
-
-        // Remove user's likes
-        const userLikes = JSON.parse(localStorage.getItem('userLikes') || '{}');
-        delete userLikes[loggedInUser.username];
-        localStorage.setItem('userLikes', JSON.stringify(userLikes));
-
-        // Remove user's teacher ratings
-        const teacherRatings = JSON.parse(localStorage.getItem('teacherRatings') || '{}');
-        Object.keys(teacherRatings).forEach(teacher => {
-          teacherRatings[teacher] = teacherRatings[teacher].filter((r: any) => r.userId !== loggedInUser.username);
-        });
-        localStorage.setItem('teacherRatings', JSON.stringify(teacherRatings));
-
-        // Remove user's subject ratings
-        const subjectRatings = JSON.parse(localStorage.getItem('subjectRatings') || '{}');
-        Object.keys(subjectRatings).forEach(subject => {
-          subjectRatings[subject] = subjectRatings[subject].filter((r: any) => r.userId !== loggedInUser.username);
-        });
-        localStorage.setItem('subjectRatings', JSON.stringify(subjectRatings));
-
-        // Remove logged in user
-        localStorage.removeItem('loggedInUser');
-
-        this.animateOut().then(() => {
-          const event = new CustomEvent("navigate", {
-            detail: "/",
-            composed: true,
-          });
-          document.dispatchEvent(event);
-          this.remove();
-        });
+        // Remove the component immediately
+        this.remove();
+        
+        // Navigate after removal
+        NavigationActions.navigate("/");
       });
     }
 
-    // On cancel, animate out and remove
     cancelBtn?.addEventListener("click", () => {
       this.animateOut().then(() => {
         this.remove();

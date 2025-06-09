@@ -8,7 +8,6 @@ class SubjectCard extends HTMLElement {
 
   constructor() {
     super();
-    console.log("SubjectCard: Constructor called");
     this.attachShadow({ mode: "open" });
   }
 
@@ -17,7 +16,6 @@ class SubjectCard extends HTMLElement {
   }
 
   connectedCallback() {
-    console.log("SubjectCard: connectedCallback");
     this.render();
     this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
@@ -33,7 +31,6 @@ class SubjectCard extends HTMLElement {
   }
 
   private handleClick = (event: Event) => {
-    console.log("SubjectCard: Card clicked");
     const name = this.getAttribute("name") || "";
     const career = this.getAttribute("career") || "";
     const credits = this.getAttribute("credits") || "";
@@ -48,10 +45,8 @@ class SubjectCard extends HTMLElement {
       id,
     };
 
-    console.log("SubjectCard: Dispatching subject data:", subjectData);
     SelectionActions.selectSubject(subjectData);
 
-    console.log("SubjectCard: Navigating to /subject-detail");
     NavigationActions.navigate("/subject-detail");
   };
 
@@ -69,7 +64,6 @@ class SubjectCard extends HTMLElement {
   }
 
   render() {
-    console.log("SubjectCard: render called");
     const name = this.getAttribute("name") || "Name not specified";
     const career = this.getAttribute("career") || "Career not specified";
     const credits = this.getAttribute("credits") || "0";
@@ -195,7 +189,6 @@ class SubjectCard extends HTMLElement {
     // Agregar el event listener después de renderizar
     const card = this.shadowRoot?.querySelector("#subjectCard");
     if (card) {
-      console.log("SubjectCard: Adding click listener to card");
       card.addEventListener("click", this.handleClick);
     } else {
       console.error("SubjectCard: Could not find #subjectCard element");
@@ -204,7 +197,6 @@ class SubjectCard extends HTMLElement {
 
   attributeChangedCallback(name: keyof SubjectCardAttributes, oldValue: string, newValue: string) {
     if (oldValue !== newValue) {
-      console.log("SubjectCard: Attribute changed", name, oldValue, "->", newValue);
       this.render();
     }
   }
