@@ -1445,50 +1445,6 @@ class Store {
     return { isValid: true };
   }
 
-  private _saveNewUser(userData: {
-    username: string;
-    email: string;
-    phone: string;
-    password: string;
-    degree: string;
-    semester: string;
-  }): void {
-    try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      users.push({
-        ...userData,
-        createdAt: new Date().toISOString(),
-      });
-      localStorage.setItem("users", JSON.stringify(users));
-    } catch (error) {
-      console.error("Error saving new user:", error);
-      throw error;
-    }
-  }
-
-  // Public methods
-  validateSignUpForm(
-    username: string,
-    email: string,
-    phone: string,
-    password: string,
-    degree: string,
-    semester: string
-  ): { isValid: boolean; error?: string } {
-    return this._validateSignUpForm(username, email, phone, password, degree, semester);
-  }
-
-  saveNewUser(userData: {
-    username: string;
-    email: string;
-    phone: string;
-    password: string;
-    degree: string;
-    semester: string;
-  }): void {
-    this._saveNewUser(userData);
-  }
-
   private _getSubjectReviews(subjectName: string): Review[] {
     try {
       const localKey = `subjectReviews_${subjectName}`;
@@ -1663,6 +1619,17 @@ class Store {
       Store.instance = new Store();
     }
     return Store.instance;
+  }
+
+  public validateSignUpForm(
+    username: string,
+    email: string,
+    phone: string,
+    password: string,
+    degree: string,
+    semester: string
+  ): { isValid: boolean; error?: string } {
+    return this._validateSignUpForm(username, email, phone, password, degree, semester);
   }
 }
 

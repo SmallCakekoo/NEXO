@@ -48,7 +48,7 @@ const registerUser = async (
     // Create user with email/password in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
-    // Store additional user data in Firestore
+    // Store additional user data in Firestore, including UID, semester, and career
     const userData = {
       uid: userCredential.user.uid,
       username: username,

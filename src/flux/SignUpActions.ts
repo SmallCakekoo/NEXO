@@ -2,6 +2,7 @@ import { AppDispatcher } from "./Dispatcher";
 import { SignUpActionsType } from "./Actions";
 import { NavigationActions } from "./NavigationActions";
 import { store } from "./Store";
+import { registerUser } from "../services/Firebase/FirebaseConfig";
 
 export class SignUpVerification {
   static validateForm(
@@ -15,15 +16,32 @@ export class SignUpVerification {
     return store.validateSignUpForm(username, email, phone, password, degree, semester);
   }
 
-  static saveUser(userData: {
+  static async saveUser(userData: {
     username: string;
     email: string;
     phone: string;
     password: string;
     degree: string;
     semester: string;
-  }): void {
-    store.saveNewUser(userData);
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      const result = await registerUser(
+        userData.username,
+        userData.email,
+        userData.phone,
+        userData.degree,
+        userData.semester,
+        userData.password
+      );
+
+      if (!result.isRegistered) {
+        return { success: false, error: result.error as string };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: "Failed to register user" };
+    }
   }
 }
 
@@ -73,14 +91,14 @@ export class SignUpActions {
     return { isValid: true };
   }
 
-  static initiateSignUp(userData: {
+  static async initiateSignUp(userData: {
     username: string;
     email: string;
     phone: string;
     password: string;
     degree: string;
     semester: string;
-  }): void {
+  }): Promise<void> {
     // Validate the form data
     const validation = SignUpVerification.validateForm(
       userData.username,
@@ -106,8 +124,16 @@ export class SignUpActions {
     });
 
     try {
-      // Save user data using Store
-      SignUpVerification.saveUser(userData);
+      // Save user data using Firebase
+      const result = await SignUpVerification.saveUser(userData);
+
+      if (!result.success) {
+        AppDispatcher.dispatch({
+          type: SignUpActionsType.SIGN_UP_ERROR,
+          payload: { error: result.error || "An error occurred during sign up" },
+        });
+        return;
+      }
 
       // Dispatch success action
       AppDispatcher.dispatch({
