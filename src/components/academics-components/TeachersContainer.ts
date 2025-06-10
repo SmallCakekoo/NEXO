@@ -1,10 +1,12 @@
 import { teachers } from "../../types/academics/TeachersContainer.types";
 import { fetchTeachers } from "../../services/TeacherService";
+import { store, State } from "../../flux/Store";
 
 class TeachersContainer extends HTMLElement {
   private currentPage: number = 1;
   private itemsPerPage: number = 8;
   private teachers: teachers[] = [];
+  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -14,6 +16,15 @@ class TeachersContainer extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadTeachers();
+    this.unsubscribeStore = store.subscribe(() => {
+    this.renderPage(); 
+    });
+  }
+
+  disconnectedCallback() {
+  if (this.unsubscribeStore) {
+    this.unsubscribeStore();
+    }
   }
 
   async loadTeachers() {
@@ -26,32 +37,37 @@ class TeachersContainer extends HTMLElement {
       console.error("Error loading teachers:", error);
     }
   }
+renderPage() {
+  const row = this.shadowRoot?.querySelector(".row");
+  if (!row) return;
 
-  renderPage() {
-    const row = this.shadowRoot?.querySelector(".row");
-    if (row) {
-      row.innerHTML = "";
+  row.innerHTML = "";
 
-      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-      const endIndex = Math.min(startIndex + this.itemsPerPage, this.teachers.length);
+  const state = store.getState();
+  const query = state.searchQuery;
+  const teacherList = state.queryResult ? state.queryResult : this.teachers;
 
-      for (let i = startIndex; i < endIndex; i++) {
-        const teacher = this.teachers[i];
-        const col = document.createElement("div");
-        col.className = "col";
+  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  const endIndex = Math.min(startIndex + this.itemsPerPage, teacherList.length);
 
-        const card = document.createElement("teacher-card");
-        card.setAttribute("name", teacher.name);
-        card.setAttribute("subject", teacher.subject);
-        card.setAttribute("nucleus", teacher.nucleus);
-        card.setAttribute("rating", teacher.rating);
-        card.setAttribute("image", teacher.image);
+  for (let i = startIndex; i < endIndex; i++) {
+  const teacher = teacherList[i] as teachers; 
 
-        col.appendChild(card);
-        row.appendChild(col);
-      }
-    }
+  const col = document.createElement("div");
+  col.className = "col";
+
+  const card = document.createElement("teacher-card");
+  card.setAttribute("name", teacher.name);
+  card.setAttribute("subject", teacher.subject);
+  card.setAttribute("nucleus", teacher.nucleus);
+  card.setAttribute("rating", teacher.rating);
+  card.setAttribute("image", teacher.image);
+
+  col.appendChild(card);
+  row.appendChild(col);
   }
+}
+
 
   renderPagination() {
     const paginationContainer = this.shadowRoot?.querySelector(".pagination");
@@ -101,6 +117,7 @@ class TeachersContainer extends HTMLElement {
       paginationContainer.appendChild(nextButton);
     }
   }
+
 
   render() {
     this.shadowRoot!.innerHTML = `

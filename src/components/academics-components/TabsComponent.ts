@@ -29,6 +29,7 @@ class TabsComponent extends HTMLElement {
     const navTabs = this.shadowRoot?.querySelector(".nav-tabs");
     const buttons = this.shadowRoot?.querySelectorAll(".nav-link");
     const tabPanes = this.shadowRoot?.querySelectorAll(".tab-pane");
+    const SearchBar = this.shadowRoot?.querySelector("search-bar")
 
     if (!buttons || !tabPanes) return;
 
@@ -51,6 +52,8 @@ class TabsComponent extends HTMLElement {
           // Update nav-tabs data attribute
           if (navTabs) {
             navTabs.setAttribute("data-active-tab", target);
+            SearchBar?.setAttribute("searchtype", target)
+
           }
         }
       });
@@ -65,6 +68,7 @@ class TabsComponent extends HTMLElement {
     const navTabs = this.shadowRoot?.querySelector(".nav-tabs");
     const activeButton = this.shadowRoot?.querySelector(`[data-target="${activeTab}"]`);
     const activePane = this.shadowRoot?.querySelector(`#${activeTab}`);
+
     
     if (activeButton && activePane && navTabs) {
       // Update active button

@@ -1,5 +1,6 @@
 import { subjects } from "../../types/academics/SubjectsContainer.types";
 import { fetchSubjects } from "../../services/SubjectService";
+import store from "../../flux/Store";
 
 class SubjectsContainer extends HTMLElement {
   private subjects: subjects[] = [];
@@ -118,13 +119,18 @@ class SubjectsContainer extends HTMLElement {
   renderPage() {
     const row = this.shadowRoot?.querySelector(".row");
     if (row) {
+      
       row.innerHTML = "";
 
+        const state = store.getState();
+        const subjectList = state.queryResult ?  state.queryResult as subjects[]: this.subjects;
+      
+      
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = Math.min(startIndex + this.itemsPerPage, this.subjects.length);
 
       for (let i = startIndex; i < endIndex; i++) {
-        const subject = this.subjects[i];
+        const subject = subjectList[i];
         const col = document.createElement("div");
         col.className = "col";
 
