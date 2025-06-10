@@ -1,11 +1,14 @@
 import { subjects } from "../../types/academics/SubjectsContainer.types";
 import { fetchSubjects } from "../../services/SubjectService";
 import store from "../../flux/Store";
+import { SearchActions } from "../../flux/SearchActions";
 
 class SubjectsContainer extends HTMLElement {
   private subjects: subjects[] = [];
   private currentPage: number = 1;
   private itemsPerPage: number = 8;
+  private unsubscribeStore: (() => void) | null = null;
+
 
   constructor() {
     super();
@@ -15,6 +18,16 @@ class SubjectsContainer extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadSubjects();
+    this.unsubscribeStore = store.subscribe(() => {
+      this.renderPage();
+      this.renderPagination();
+    });
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
   }
 
   render() {
@@ -122,8 +135,8 @@ class SubjectsContainer extends HTMLElement {
       
       row.innerHTML = "";
 
-        const state = store.getState();
-        const subjectList = state.queryResult ?  state.queryResult as subjects[]: this.subjects;
+      const state = store.getState();
+      const subjectList = state.filteredSubjects ?  state.filteredSubjects as subjects[]: this.subjects;
       
       
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
@@ -152,7 +165,10 @@ class SubjectsContainer extends HTMLElement {
     if (paginationContainer) {
       paginationContainer.innerHTML = "";
 
-      const totalPages = Math.ceil(this.subjects.length / this.itemsPerPage);
+      const state = store.getState();
+      const subjectList = state.filteredSubjects ? state.filteredSubjects : this.subjects;
+      
+      const totalPages = Math.ceil(subjectList.length / this.itemsPerPage);
 
       const prevButton = document.createElement("button");
       prevButton.textContent = "«";

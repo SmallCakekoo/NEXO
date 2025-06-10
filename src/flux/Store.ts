@@ -111,10 +111,10 @@ export interface State {
     activeAcademicTab: string;
   };
 
-  filteredTeachers: Post[];
-  filteredSubjects: Post[];
+  filteredTeachers: teachers[] | null;
+  filteredSubjects: subjects[] | null;
 
-  queryResult: teachers[]|subjects[] | null;
+  // queryResult: teachers[]|subjects[] | null;
 }
 
 type Listener = (state: State) => void;
@@ -151,9 +151,9 @@ class Store {
       activeAcademicTab: "teacher",
     },
 
-    filteredTeachers: [],
-    filteredSubjects: [],
-    queryResult: null,
+    filteredTeachers: null,
+    filteredSubjects: null,
+    // queryResult: null,
   };
 
   // Los componentes
@@ -455,20 +455,36 @@ class Store {
         }
         break;
       case SearchActionTypes.SEARCH_SUBJECTS:
+        if (action.payload && typeof action.payload === "object") {
+            const payload = action.payload as subjects[];
+            this._myState = {
+              ...this._myState, 
+              filteredSubjects: payload,
+            }
+
+            console.log("Store: Filtered subjects:", this._myState.filteredSubjects);
+            this._emitChange();
+          }
+
+          break;
       case SearchActionTypes.SEARCH_TEACHERS:
-        if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
-          this._myState = {
-            ...this._myState,
-            searchQuery: String(action.payload.query),
-          };
-          this._emitChange();
-        }
-        break;
+        if (action.payload && typeof action.payload === "object") {
+            const payload = action.payload as teachers[];
+            this._myState = {
+              ...this._myState, 
+              filteredTeachers: payload,
+            }
+
+            this._emitChange();
+          }
+
+          break;
 
       case SearchActionTypes.CLEAR_SEARCH:
         this._myState = {
           ...this._myState,
-          searchQuery: "",
+          filteredSubjects: null,
+          filteredTeachers: null,
         };
         this._emitChange();
         break;
@@ -678,47 +694,49 @@ class Store {
         }
         break;
 
-      case SearchActionTypes.SEARCH_ALL: 
-        if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
-          const query = String(action.payload.query).toLowerCase();
+      // case SearchActionTypes.SEARCH_ALL: 
+      //   if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
+      //     const query = String(action.payload.query).toLowerCase();
 
-          const filteredTeachers = this._myState.posts
-            .filter((p) => p.tag === "teacher")
-            .filter(
-              (p) =>
-                p.name.toLowerCase().includes(query) ||
-                p.career?.toLowerCase().includes(query) ||
-                p.semestre?.toLowerCase().includes(query)
-            );
+      //     const filteredTeachers = this._myState.posts
+      //       .filter((p) => p.tag === "teacher")
+      //       .filter(
+      //         (p) =>
+      //           p.name.toLowerCase().includes(query) ||
+      //           p.career?.toLowerCase().includes(query) ||
+      //           p.semestre?.toLowerCase().includes(query)
+      //       );
 
-          const filteredSubjects = this._myState.posts
-            .filter((p) => p.tag === "subject")
-            .filter(
-              (p) =>
-                p.name.toLowerCase().includes(query) || p.message?.toLowerCase().includes(query)
-            );
+      //     const filteredSubjects = this._myState.posts
+      //       .filter((p) => p.tag === "subject")
+      //       .filter(
+      //         (p) =>
+      //           p.name.toLowerCase().includes(query) || p.message?.toLowerCase().includes(query)
+      //       );
 
-          this._myState = {
-            ...this._myState,
-            searchQuery: query,
-            filteredTeachers,
-            filteredSubjects,
-          };
+      //     this._myState = {
+      //       ...this._myState,
+      //       searchQuery: query,
+      //       filteredTeachers,
+      //       filteredSubjects,
+      //     };
 
-          this._emitChange();
-        }
-        break;
+      //     this._emitChange();
+      //   }
+      //   break;
 
-        case SearchActionTypes.SEARCH_QUERY:
-          if (action.payload && typeof action.payload === "object") {
-            const payload = action.payload as teachers[] | subjects[];
-            this._myState = {
-              ...this._myState, 
-              queryResult: payload,
-            }
-          }
+        // case SearchActionTypes.SEARCH_QUERY:
+        //   if (action.payload && typeof action.payload === "object") {
+        //     const payload = action.payload as teachers[] | subjects[];
+        //     this._myState = {
+        //       ...this._myState, 
+        //       queryResult: payload,
+        //     }
 
-          break
+        //     this._emitChange();
+        //   }
+
+        //   break
 
       
     }

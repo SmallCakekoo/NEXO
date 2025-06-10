@@ -1,15 +1,13 @@
-import { SearchActions, SearchActionTypes } from '../../flux/SearchActions';
+import { SearchActions, SearchActionTypes } from "../../flux/SearchActions";
 import { fetchTeachers } from "../../services/TeacherService";
-import { SearchBarAttributes} from "../../types/academics/Searchbar.type";
-import { fetchSubjects} from "../../services/SubjectService";
-import { teachers } from '../../types/academics/TeachersContainer.types';
+import { SearchBarAttributes } from "../../types/academics/Searchbar.type";
+import { fetchSubjects } from "../../services/SubjectService";
+import { teachers } from "../../types/academics/TeachersContainer.types";
 import { store, State } from "../../flux/Store";
-
 
 class SearchBar extends HTMLElement {
   private searchInput: HTMLInputElement | null = null;
   searchtype: string;
-  private unsubscribeStore: (() => void) | null = null;
 
   constructor() {
     super();
@@ -18,79 +16,72 @@ class SearchBar extends HTMLElement {
   }
 
   static get observedAttributes(): (keyof SearchBarAttributes)[] {
-      return ["searchtype"];
-    }
-
+    return ["searchtype"];
+  }
 
   connectedCallback() {
-
     this.render();
     this.setupEventListeners();
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue:string){
-  this.searchtype = newValue;
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    this.searchtype = newValue;
   }
 
   private setupEventListeners() {
-
-    this.searchInput = this.shadowRoot?.querySelector('#search-input') as HTMLInputElement;
+    this.searchInput = this.shadowRoot?.querySelector("#search-input") as HTMLInputElement;
 
     if (this.searchInput) {
-      this.searchInput.addEventListener('change', async (e)=>{
+      this.searchInput.addEventListener("input", async (e) => {
+
         e.preventDefault();
         console.log(this.searchtype);
-        
 
         let result;
-        
+
         switch (this.searchtype) {
           case "teacher":
-            const teachers  = await fetchTeachers();
-            result = teachers.teachers.filter((teacher)=>{ 
-
+            const teachers = await fetchTeachers();
+            result = teachers.teachers.filter((teacher) => {
               const lowerName = teacher.name.toLocaleLowerCase();
-              return lowerName.includes(this.searchInput!.value.toLowerCase())
-            })
+              return lowerName.includes(this.searchInput!.value.toLowerCase());
+            });
 
             if (this.searchInput?.value.length === 0) {
-              result = teachers.teachers
+              result = teachers.teachers;
             }
+
+            SearchActions.searchTeachers(result!);
             break;
-              case "subjects":
+          case "subjects":
             const subjects = await fetchSubjects();
-            result = subjects.subjects.filter((subject)=>{ 
-
+            result = subjects.subjects.filter((subject) => {
               const lowerName = subject.name.toLocaleLowerCase();
-              return lowerName.includes(this.searchInput!.value.toLowerCase())
-            })
-            
-            
-            if (this.searchInput?.value.length === 0) {
-              result = subjects.subjects
-            }
-            break;
-            default:
-            break;
+              return lowerName.includes(this.searchInput!.value.toLowerCase());
+            });
 
+            if (this.searchInput?.value.length === 0) {
+              result = subjects.subjects;
+            }
+
+            SearchActions.searchSubjects(result!);
+            break;
+          default:
+            break;
         }
 
-        SearchActions.searchQuery(result!);
+        // SearchActions.searchQuery(result!);
         console.log(store.getState());
-        
-        
-      })
+      });
       // this.searchInput.addEventListener('input', this.handleSearch.bind(this));
       // this.searchInput.addEventListener('keydown', this.handleKeydown.bind(this));
     }
   }
 
-
-
   // private handleKeydown(event: KeyboardEvent) {
   //   if (event.key === 'Enter') {
   //     event.preventDefault();
-  
+
   //   }
   // }
 

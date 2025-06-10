@@ -1,3 +1,4 @@
+import { SearchActions } from "../../flux/SearchActions";
 import { store, State } from "../../flux/Store";
 
 class TabsComponent extends HTMLElement {
@@ -9,6 +10,7 @@ class TabsComponent extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log("TABS COMPONENT! ========================================")
     this.render();
     this.setupEventListeners();
     this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
@@ -21,8 +23,15 @@ class TabsComponent extends HTMLElement {
   }
 
   handleStoreChange(state: State) {
-    const activeTab = state.navigation.activeAcademicTab;
-    this.updateActiveTab(activeTab);
+    
+    const activeTab = state.navigation.activeAcademicTab
+    const currentTab = this.shadowRoot?.querySelector(".nav-tabs")?.getAttribute("data-active-tab");
+    if (currentTab === activeTab){
+     console.log("============ MISMA TAB =============="); // No change needed
+      return;
+    } else {
+      this.updateActiveTab(activeTab);
+    }
   }
 
   setupEventListeners() {
@@ -52,8 +61,8 @@ class TabsComponent extends HTMLElement {
           // Update nav-tabs data attribute
           if (navTabs) {
             navTabs.setAttribute("data-active-tab", target);
-            SearchBar?.setAttribute("searchtype", target)
-
+            SearchBar?.setAttribute("searchtype", target);
+            state.navigation.activeAcademicTab = target;
           }
         }
       });
@@ -160,7 +169,7 @@ class TabsComponent extends HTMLElement {
             </div>
           </nav>
   
-          <search-bar></search-bar>
+          <search-bar searchtype="teacher"></search-bar>
   
           <div class="tab-content">
             <div class="tab-pane" id="teacher">
