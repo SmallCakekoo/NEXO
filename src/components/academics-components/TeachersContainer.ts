@@ -33,6 +33,7 @@ class TeachersContainer extends HTMLElement {
     try {
       const response = await fetchTeachers();
       this.teachers = response.teachers;
+      store.getState().teachers = response.teachers;
       this.renderPage();
       this.renderPagination();
     } catch (error) {
@@ -48,12 +49,17 @@ class TeachersContainer extends HTMLElement {
     const state = store.getState();
     const teacherList = state.filteredTeachers ? state.filteredTeachers : this.teachers;
 
+    if (teacherList.length === 0) {
+      row.innerHTML = "<div style='width:100%;text-align:center;padding:2rem;'>No teachers found.</div>";
+      return;
+    }
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = Math.min(startIndex + this.itemsPerPage, teacherList.length);
 
     for (let i = startIndex; i < endIndex; i++) {
-      const teacher = teacherList[i] as teachers;
-
+      const teacher = teacherList[i];
+      if (!teacher) continue;
       const col = document.createElement("div");
       col.className = "col";
 

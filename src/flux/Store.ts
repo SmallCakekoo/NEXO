@@ -113,8 +113,9 @@ export interface State {
 
   filteredTeachers: teachers[] | null;
   filteredSubjects: subjects[] | null;
-
-  // queryResult: teachers[]|subjects[] | null;
+  searchDebounceTimeout: number | null;
+  teachers: teachers[];
+  subjects: subjects[];
 }
 
 type Listener = (state: State) => void;
@@ -153,7 +154,9 @@ class Store {
 
     filteredTeachers: null,
     filteredSubjects: null,
-    // queryResult: null,
+    searchDebounceTimeout: null,
+    teachers: [],
+    subjects: [],
   };
 
   // Los componentes
@@ -457,38 +460,40 @@ class Store {
       case SearchActionTypes.SEARCH_SUBJECTS:
         if (action.payload && typeof action.payload === "object") {
             const payload = action.payload as subjects[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredSubjects) !== JSON.stringify(payload)) {
             this._myState = {
               ...this._myState, 
               filteredSubjects: payload,
-            }
-
-            console.log("Store: Filtered subjects:", this._myState.filteredSubjects);
+            };
             this._emitChange();
           }
-
+        }
           break;
       case SearchActionTypes.SEARCH_TEACHERS:
         if (action.payload && typeof action.payload === "object") {
             const payload = action.payload as teachers[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredTeachers) !== JSON.stringify(payload)) {
             this._myState = {
               ...this._myState, 
               filteredTeachers: payload,
-            }
-
+            };
             this._emitChange();
           }
-
+        }
           break;
-
       case SearchActionTypes.CLEAR_SEARCH:
+        // Only update if there are actually results to clear
+        if (this._myState.filteredSubjects !== null || this._myState.filteredTeachers !== null) {
         this._myState = {
           ...this._myState,
           filteredSubjects: null,
           filteredTeachers: null,
         };
         this._emitChange();
+        }
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_SUCCESS:
         if (action.payload) {
           const payload = action.payload as DeleteAccountSuccessPayload;
@@ -504,7 +509,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_ERROR:
         if (action.payload) {
           const payload = action.payload as DeleteAccountErrorPayload;
@@ -512,7 +516,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case CommentActionsType.ADD_COMMENT:
         if (action.payload) {
           const currentPost = this._getCurrentPost();
@@ -532,7 +535,6 @@ class Store {
           }
         }
         break;
-
       case FeedActionsType.OPEN_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -543,7 +545,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.CLOSE_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -554,7 +555,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.SHARE_POST:
         if (action.payload && typeof action.payload === "object" && "postId" in action.payload) {
           const payload = action.payload as PostModalPayload;
@@ -564,7 +564,6 @@ class Store {
           }
         }
         break;
-
       case FeedActionsType.LOAD_POSTS_FROM_STORAGE:
         if (action.payload && typeof action.payload === "object" && "posts" in action.payload) {
           const payload = action.payload as { posts: Post[] };
@@ -575,7 +574,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case TagActionTypes.SELECT_TAG:
         if (action.payload) {
           const tag = action.payload as string;
@@ -587,7 +585,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_PHOTO:
         if (action.payload && typeof action.payload === "object" && "photo" in action.payload) {
           const payload = action.payload as PhotoPayload;
@@ -629,7 +626,6 @@ class Store {
           }
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_SUCCESS:
         if (action.payload && typeof action.payload === "object" && "user" in action.payload) {
           this._myState = {
@@ -642,7 +638,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case NavigateActionsType.SET_RETURN_TO_FEED:
         this._myState = {
           ...this._myState,
@@ -654,7 +649,6 @@ class Store {
         sessionStorage.setItem("returnToFeed", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_RETURN_TO_PROFILE:
         this._myState = {
           ...this._myState,
@@ -666,7 +660,6 @@ class Store {
         sessionStorage.setItem("returnToProfile", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.CLEAR_RETURN_FLAGS:
         this._myState = {
           ...this._myState,
@@ -680,7 +673,6 @@ class Store {
         sessionStorage.removeItem("returnToProfile");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_ACTIVE_ACADEMIC_TAB:
         if (action.payload && typeof action.payload === "object" && "tab" in action.payload) {
           this._myState = {
@@ -693,52 +685,6 @@ class Store {
           this._emitChange();
         }
         break;
-
-      // case SearchActionTypes.SEARCH_ALL: 
-      //   if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
-      //     const query = String(action.payload.query).toLowerCase();
-
-      //     const filteredTeachers = this._myState.posts
-      //       .filter((p) => p.tag === "teacher")
-      //       .filter(
-      //         (p) =>
-      //           p.name.toLowerCase().includes(query) ||
-      //           p.career?.toLowerCase().includes(query) ||
-      //           p.semestre?.toLowerCase().includes(query)
-      //       );
-
-      //     const filteredSubjects = this._myState.posts
-      //       .filter((p) => p.tag === "subject")
-      //       .filter(
-      //         (p) =>
-      //           p.name.toLowerCase().includes(query) || p.message?.toLowerCase().includes(query)
-      //       );
-
-      //     this._myState = {
-      //       ...this._myState,
-      //       searchQuery: query,
-      //       filteredTeachers,
-      //       filteredSubjects,
-      //     };
-
-      //     this._emitChange();
-      //   }
-      //   break;
-
-        // case SearchActionTypes.SEARCH_QUERY:
-        //   if (action.payload && typeof action.payload === "object") {
-        //     const payload = action.payload as teachers[] | subjects[];
-        //     this._myState = {
-        //       ...this._myState, 
-        //       queryResult: payload,
-        //     }
-
-        //     this._emitChange();
-        //   }
-
-        //   break
-
-      
     }
   }
 
@@ -1718,3 +1664,4 @@ class Store {
 
 export const store = Store.getInstance();
 export default store;
+

@@ -122,6 +122,7 @@ class SubjectsContainer extends HTMLElement {
     try {
       const response = await fetchSubjects();
       this.subjects = response.subjects;
+      store.getState().subjects = response.subjects;
       this.renderPage();
       this.renderPagination();
     } catch (error) {
@@ -138,12 +139,16 @@ class SubjectsContainer extends HTMLElement {
       const state = store.getState();
       const subjectList = state.filteredSubjects ?  state.filteredSubjects as subjects[]: this.subjects;
       
-      
+      if (subjectList.length === 0) {
+        row.innerHTML = "<div style='width:100%;text-align:center;padding:2rem;'>No subjects found.</div>";
+        return;
+      }
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-      const endIndex = Math.min(startIndex + this.itemsPerPage, this.subjects.length);
+      const endIndex = Math.min(startIndex + this.itemsPerPage, subjectList.length);
 
       for (let i = startIndex; i < endIndex; i++) {
         const subject = subjectList[i];
+        if (!subject) continue;
         const col = document.createElement("div");
         col.className = "col";
 

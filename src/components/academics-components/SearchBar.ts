@@ -51,7 +51,7 @@ class SearchBar extends HTMLElement {
               result = teachers.teachers;
             }
 
-            SearchActions.searchTeachers(result!);
+            SearchActions.searchTeachers(this.searchInput!.value);
             break;
           case "subjects":
             const subjects = await fetchSubjects();
@@ -64,7 +64,7 @@ class SearchBar extends HTMLElement {
               result = subjects.subjects;
             }
 
-            SearchActions.searchSubjects(result!);
+            SearchActions.searchSubjects(this.searchInput!.value);
             break;
           default:
             break;
