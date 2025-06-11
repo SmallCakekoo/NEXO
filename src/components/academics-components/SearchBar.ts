@@ -70,33 +70,11 @@ class SearchBar extends HTMLElement {
             break;
         }
 
-        // SearchActions.searchQuery(result!);
         console.log(store.getState());
       });
-      // this.searchInput.addEventListener('input', this.handleSearch.bind(this));
-      // this.searchInput.addEventListener('keydown', this.handleKeydown.bind(this));
+     
     }
   }
-
-  // private handleKeydown(event: KeyboardEvent) {
-  //   if (event.key === 'Enter') {
-  //     event.preventDefault();
-
-  //   }
-  // }
-
-  // private handleSearch() {
-  //   if (!this.searchInput) return;
-
-  //   const query = this.searchInput.value.trim();
-
-  //   if (query === '') {
-  //     SearchActions.clearSearch();
-  //     return;
-  //   }
-
-  //   SearchActions.searchAll(query);
-  // }
 
   render() {
     this.shadowRoot!.innerHTML = `
