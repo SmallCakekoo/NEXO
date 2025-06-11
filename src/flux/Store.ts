@@ -13,6 +13,8 @@ import { Review } from "../types/subject-detail/SubjectReviewList.types";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
+import { teachers } from "../types/academics/TeachersContainer.types";
+import { subjects } from "../types/academics/SubjectsContainer.types";
 
 export interface Rating {
   rating: number;
@@ -108,6 +110,12 @@ export interface State {
     returnToProfile: boolean;
     activeAcademicTab: string;
   };
+
+  filteredTeachers: teachers[] | null;
+  filteredSubjects: subjects[] | null;
+  searchDebounceTimeout: number | null;
+  teachers: teachers[];
+  subjects: subjects[];
 }
 
 type Listener = (state: State) => void;
@@ -141,8 +149,14 @@ class Store {
     navigation: {
       returnToFeed: false,
       returnToProfile: false,
-      activeAcademicTab: "teacher"
+      activeAcademicTab: "teacher",
     },
+
+    filteredTeachers: null,
+    filteredSubjects: null,
+    searchDebounceTimeout: null,
+    teachers: [],
+    subjects: [],
   };
 
   // Los componentes
@@ -444,24 +458,42 @@ class Store {
         }
         break;
       case SearchActionTypes.SEARCH_SUBJECTS:
-      case SearchActionTypes.SEARCH_TEACHERS:
-        if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
-          this._myState = {
-            ...this._myState,
-            searchQuery: String(action.payload.query),
-          };
-          this._emitChange();
+        if (action.payload && typeof action.payload === "object") {
+            const payload = action.payload as subjects[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredSubjects) !== JSON.stringify(payload)) {
+            this._myState = {
+              ...this._myState, 
+              filteredSubjects: payload,
+            };
+            this._emitChange();
+          }
         }
-        break;
-
+          break;
+      case SearchActionTypes.SEARCH_TEACHERS:
+        if (action.payload && typeof action.payload === "object") {
+            const payload = action.payload as teachers[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredTeachers) !== JSON.stringify(payload)) {
+            this._myState = {
+              ...this._myState, 
+              filteredTeachers: payload,
+            };
+            this._emitChange();
+          }
+        }
+          break;
       case SearchActionTypes.CLEAR_SEARCH:
+        // Only update if there are actually results to clear
+        if (this._myState.filteredSubjects !== null || this._myState.filteredTeachers !== null) {
         this._myState = {
           ...this._myState,
-          searchQuery: "",
+          filteredSubjects: null,
+          filteredTeachers: null,
         };
         this._emitChange();
+        }
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_SUCCESS:
         if (action.payload) {
           const payload = action.payload as DeleteAccountSuccessPayload;
@@ -477,7 +509,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_ERROR:
         if (action.payload) {
           const payload = action.payload as DeleteAccountErrorPayload;
@@ -485,7 +516,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case CommentActionsType.ADD_COMMENT:
         if (action.payload) {
           const currentPost = this._getCurrentPost();
@@ -505,7 +535,6 @@ class Store {
           }
         }
         break;
-
       case FeedActionsType.OPEN_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -516,7 +545,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.CLOSE_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -527,7 +555,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.SHARE_POST:
         if (action.payload && typeof action.payload === "object" && "postId" in action.payload) {
           const payload = action.payload as PostModalPayload;
@@ -537,18 +564,16 @@ class Store {
           }
         }
         break;
-
       case FeedActionsType.LOAD_POSTS_FROM_STORAGE:
-        if (action.payload && typeof action.payload === 'object' && 'posts' in action.payload) {
+        if (action.payload && typeof action.payload === "object" && "posts" in action.payload) {
           const payload = action.payload as { posts: Post[] };
           this._myState = {
             ...this._myState,
-            posts: payload.posts
+            posts: payload.posts,
           };
           this._emitChange();
         }
         break;
-
       case TagActionTypes.SELECT_TAG:
         if (action.payload) {
           const tag = action.payload as string;
@@ -560,7 +585,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_PHOTO:
         if (action.payload && typeof action.payload === "object" && "photo" in action.payload) {
           const payload = action.payload as PhotoPayload;
@@ -602,20 +626,18 @@ class Store {
           }
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_SUCCESS:
-        if (action.payload && typeof action.payload === 'object' && 'user' in action.payload) {
+        if (action.payload && typeof action.payload === "object" && "user" in action.payload) {
           this._myState = {
             ...this._myState,
             auth: {
               ...this._myState.auth,
-              user: action.payload.user
-            }
+              user: action.payload.user,
+            },
           };
           this._emitChange();
         }
         break;
-
       case NavigateActionsType.SET_RETURN_TO_FEED:
         this._myState = {
           ...this._myState,
@@ -627,7 +649,6 @@ class Store {
         sessionStorage.setItem("returnToFeed", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_RETURN_TO_PROFILE:
         this._myState = {
           ...this._myState,
@@ -639,7 +660,6 @@ class Store {
         sessionStorage.setItem("returnToProfile", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.CLEAR_RETURN_FLAGS:
         this._myState = {
           ...this._myState,
@@ -653,15 +673,14 @@ class Store {
         sessionStorage.removeItem("returnToProfile");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_ACTIVE_ACADEMIC_TAB:
         if (action.payload && typeof action.payload === "object" && "tab" in action.payload) {
           this._myState = {
             ...this._myState,
             navigation: {
               ...this._myState.navigation,
-              activeAcademicTab: String(action.payload.tab)
-            }
+              activeAcademicTab: String(action.payload.tab),
+            },
           };
           this._emitChange();
         }
@@ -671,7 +690,6 @@ class Store {
 
   private _handleSignUp(userData: any): void {
     try {
-      // Hacer login automático después del registro
       AppDispatcher.dispatch({
         type: AuthActionsType.LOGIN_SUCCESS,
         payload: userData,
@@ -847,7 +865,7 @@ class Store {
         }
       } else if (auth.currentUser) {
         // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then(userDoc => {
+        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
           if (userDoc.exists()) {
             const userProfile = userDoc.data();
             this._myState = {
@@ -902,7 +920,8 @@ class Store {
 
       // Load navigation state
       this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile = sessionStorage.getItem("returnToProfile") === "true";
+      this._myState.navigation.returnToProfile =
+        sessionStorage.getItem("returnToProfile") === "true";
 
       // Sincronizar el estado con localStorage
       this.syncWithLocalStorage();
@@ -990,7 +1009,7 @@ class Store {
 
   private _loadPostsFromStorage(): Post[] {
     try {
-      return JSON.parse(localStorage.getItem('posts') || '[]');
+      return JSON.parse(localStorage.getItem("posts") || "[]");
     } catch (error) {
       console.error("Failed to load posts from storage:", error);
       return [];
@@ -999,7 +1018,7 @@ class Store {
 
   private _savePostsToStorage(posts: Post[]): void {
     try {
-      localStorage.setItem('posts', JSON.stringify(posts));
+      localStorage.setItem("posts", JSON.stringify(posts));
     } catch (error) {
       console.error("Failed to save posts to storage:", error);
     }
@@ -1072,7 +1091,7 @@ class Store {
   private _updatePostLikes(postId: string, increment: boolean): void {
     const posts = this._loadPostsFromStorage();
     const post = posts.find((p: Post) => p.id === postId);
-    
+
     if (post) {
       post.likes = increment ? (post.likes || 0) + 1 : Math.max(0, (post.likes || 0) - 1);
       this._savePostsToStorage(posts);
@@ -1091,11 +1110,11 @@ class Store {
 
     const currentPosts = this._loadPostsFromStorage();
     const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
-    
+
     if (!postExists) {
       currentPosts.unshift(newPost);
       this._savePostsToStorage(currentPosts);
-      
+
       AppDispatcher.dispatch({
         type: PostActionTypes.ADD_POST,
         payload: newPost,
@@ -1106,10 +1125,10 @@ class Store {
   updatePostLikes(postId: string, userId: string, liked: boolean): void {
     this._updatePostLikes(postId, liked);
     this.saveUserLikes(userId, postId, liked);
-    
+
     const posts = this._loadPostsFromStorage();
     const post = posts.find((p: Post) => p.id === postId);
-    
+
     if (post) {
       AppDispatcher.dispatch({
         type: liked ? PostActionTypes.LIKE_POST : PostActionTypes.UNLIKE_POST,
@@ -1125,14 +1144,14 @@ class Store {
     const posts = this._loadPostsFromStorage();
     this._myState = {
       ...this._myState,
-      posts
+      posts,
     };
     this._emitChange();
   }
 
   private _getProfilePosts(username: string): Post[] {
     try {
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
       return posts.filter((p: Post) => p.name === username);
     } catch (error) {
       console.error("Error getting profile posts:", error);
@@ -1154,7 +1173,7 @@ class Store {
     const profilePosts = this._getProfilePosts(user.username);
     this._myState = {
       ...this._myState,
-      posts: profilePosts
+      posts: profilePosts,
     };
     this._emitChange();
   }
@@ -1165,14 +1184,14 @@ class Store {
       return {
         photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
         name: user?.username || "Anonymous",
-        career: user?.career || ""
+        career: user?.career || "",
       };
     } catch (error) {
       console.error("Error getting user data:", error);
       return {
         photo: "https://picsum.photos/seed/default/200/300",
         name: "Anonymous",
-        career: ""
+        career: "",
       };
     }
   }
@@ -1189,19 +1208,19 @@ class Store {
     const postId = currentPost.id;
     const currentComments = this._myState.comments[postId] || [];
     const userData = this._getUserData();
-    
+
     const newComment = {
       ...userData,
       date: new Date().toLocaleDateString(),
-      message: comment.message
+      message: comment.message,
     };
 
     this._myState = {
       ...this._myState,
       comments: {
         ...this._myState.comments,
-        [postId]: [...currentComments, newComment]
-      }
+        [postId]: [...currentComments, newComment],
+      },
     };
 
     // Persist comments to localStorage
@@ -1214,7 +1233,7 @@ class Store {
     text: string;
     author: string;
     image: string;
-    type: 'teacher' | 'subject';
+    type: "teacher" | "subject";
     name: string;
   }): any {
     return {
@@ -1223,23 +1242,30 @@ class Store {
       date: new Date().toLocaleDateString(),
       author: reviewData.author,
       image: reviewData.image,
-      [reviewData.type === 'teacher' ? 'teacherName' : 'subjectName']: reviewData.name,
-      type: reviewData.type
+      [reviewData.type === "teacher" ? "teacherName" : "subjectName"]: reviewData.name,
+      type: reviewData.type,
     };
   }
 
-  private _updateRating(type: 'teacher' | 'subject', name: string, rating: number): void {
-    const ratings = type === 'teacher' ? this._myState.teacherRatings : this._myState.subjectRatings;
+  private _updateRating(type: "teacher" | "subject", name: string, rating: number): void {
+    const ratings =
+      type === "teacher" ? this._myState.teacherRatings : this._myState.subjectRatings;
     const currentRatings = ratings[name] || [];
-    const averageRating = currentRatings.length > 0
-      ? currentRatings.reduce((acc, curr) => acc + curr.rating, 0) / currentRatings.length
-      : rating;
+    const averageRating =
+      currentRatings.length > 0
+        ? currentRatings.reduce((acc, curr) => acc + curr.rating, 0) / currentRatings.length
+        : rating;
 
     // Update the rating in localStorage for the card
-    const cardData = JSON.parse(localStorage.getItem(`selected${type === 'teacher' ? 'Teacher' : 'Subject'}`) || "{}");
+    const cardData = JSON.parse(
+      localStorage.getItem(`selected${type === "teacher" ? "Teacher" : "Subject"}`) || "{}"
+    );
     if (cardData.name === name) {
       cardData.rating = averageRating.toFixed(1);
-      localStorage.setItem(`selected${type === 'teacher' ? 'Teacher' : 'Subject'}`, JSON.stringify(cardData));
+      localStorage.setItem(
+        `selected${type === "teacher" ? "Teacher" : "Subject"}`,
+        JSON.stringify(cardData)
+      );
     }
   }
 
@@ -1247,25 +1273,34 @@ class Store {
   submitReview(reviewData: {
     rating: number;
     text: string;
-    type: 'teacher' | 'subject';
+    type: "teacher" | "subject";
     name: string;
   }): void {
     const userData = this._getUserData();
     const review = this._createReview({
       ...reviewData,
       author: userData.name,
-      image: userData.photo
+      image: userData.photo,
     });
 
     // Update ratings in state
-    if (reviewData.type === 'teacher') {
+    if (reviewData.type === "teacher") {
       const currentRatings = this._myState.teacherRatings[reviewData.name] || [];
       this._myState = {
         ...this._myState,
         teacherRatings: {
           ...this._myState.teacherRatings,
-          [reviewData.name]: [...currentRatings, { rating: reviewData.rating, comment: reviewData.text, timestamp: new Date().toISOString(), author: userData.name, image: userData.photo }]
-        }
+          [reviewData.name]: [
+            ...currentRatings,
+            {
+              rating: reviewData.rating,
+              comment: reviewData.text,
+              timestamp: new Date().toISOString(),
+              author: userData.name,
+              image: userData.photo,
+            },
+          ],
+        },
       };
       localStorage.setItem("teacherRatings", JSON.stringify(this._myState.teacherRatings));
     } else {
@@ -1274,8 +1309,17 @@ class Store {
         ...this._myState,
         subjectRatings: {
           ...this._myState.subjectRatings,
-          [reviewData.name]: [...currentRatings, { rating: reviewData.rating, comment: reviewData.text, timestamp: new Date().toISOString(), author: userData.name, image: userData.photo }]
-        }
+          [reviewData.name]: [
+            ...currentRatings,
+            {
+              rating: reviewData.rating,
+              comment: reviewData.text,
+              timestamp: new Date().toISOString(),
+              author: userData.name,
+              image: userData.photo,
+            },
+          ],
+        },
       };
       localStorage.setItem("subjectRatings", JSON.stringify(this._myState.subjectRatings));
     }
@@ -1285,8 +1329,8 @@ class Store {
 
     // Dispatch review action
     AppDispatcher.dispatch({
-      type: reviewData.type === 'teacher' ? 'ADD_TEACHER_RATING' : 'ADD_SUBJECT_RATING',
-      payload: review
+      type: reviewData.type === "teacher" ? "ADD_TEACHER_RATING" : "ADD_SUBJECT_RATING",
+      payload: review,
     });
 
     this._emitChange();
@@ -1294,7 +1338,7 @@ class Store {
 
   private _getPostById(postId: string): Post | null {
     try {
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
       return posts.find((post: Post) => post.id === postId) || null;
     } catch (error) {
       console.error("Error getting post by ID:", error);
@@ -1356,7 +1400,10 @@ class Store {
     }
 
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return { isValid: false, error: "Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>) " };
+      return {
+        isValid: false,
+        error: 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>) ',
+      };
     }
 
     return { isValid: true };
@@ -1367,7 +1414,7 @@ class Store {
     if (!/^\d+$/.test(phone)) {
       return { isValid: false, error: "Phone number can only contain numbers (0-9)" };
     }
-    
+
     // Then check the length
     if (phone.length !== 10) {
       return { isValid: false, error: "Phone number must be exactly 10 digits long" };
@@ -1424,7 +1471,7 @@ class Store {
   private _getSubjectReviews(subjectName: string): Review[] {
     try {
       const localKey = `subjectReviews_${subjectName}`;
-      return JSON.parse(localStorage.getItem(localKey) || '[]');
+      return JSON.parse(localStorage.getItem(localKey) || "[]");
     } catch (error) {
       console.error("Error getting subject reviews:", error);
       return [];
@@ -1435,7 +1482,11 @@ class Store {
     try {
       const localKey = `subjectReviews_${subjectName}`;
       const localReviews = this._getSubjectReviews(subjectName);
-      if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      if (
+        !localReviews.some(
+          (r) => r.author === review.author && r.text === review.text && r.date === review.date
+        )
+      ) {
         localReviews.unshift(review);
         localStorage.setItem(localKey, JSON.stringify(localReviews));
       }
@@ -1456,7 +1507,7 @@ class Store {
   private _getTeacherReviews(teacherName: string): Review[] {
     try {
       const localKey = `teacherReviews_${teacherName}`;
-      return JSON.parse(localStorage.getItem(localKey) || '[]');
+      return JSON.parse(localStorage.getItem(localKey) || "[]");
     } catch (error) {
       console.error("Error getting teacher reviews:", error);
       return [];
@@ -1467,7 +1518,11 @@ class Store {
     try {
       const localKey = `teacherReviews_${teacherName}`;
       const localReviews = this._getTeacherReviews(teacherName);
-      if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
+      if (
+        !localReviews.some(
+          (r) => r.author === review.author && r.text === review.text && r.date === review.date
+        )
+      ) {
         localReviews.unshift(review);
         localStorage.setItem(localKey, JSON.stringify(localReviews));
       }
@@ -1491,8 +1546,8 @@ class Store {
       ...this._myState,
       navigation: {
         ...this._myState.navigation,
-        activeAcademicTab: tab
-      }
+        activeAcademicTab: tab,
+      },
     };
     this._emitChange();
   }
@@ -1517,18 +1572,14 @@ class Store {
       // Remove user's teacher ratings
       const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
       Object.keys(teacherRatings).forEach((teacher) => {
-        teacherRatings[teacher] = teacherRatings[teacher].filter(
-          (r: any) => r.userId !== username
-        );
+        teacherRatings[teacher] = teacherRatings[teacher].filter((r: any) => r.userId !== username);
       });
       localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
 
       // Remove user's subject ratings
       const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
       Object.keys(subjectRatings).forEach((subject) => {
-        subjectRatings[subject] = subjectRatings[subject].filter(
-          (r: any) => r.userId !== username
-        );
+        subjectRatings[subject] = subjectRatings[subject].filter((r: any) => r.userId !== username);
       });
       localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
 
@@ -1613,3 +1664,4 @@ class Store {
 
 export const store = Store.getInstance();
 export default store;
+

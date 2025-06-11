@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 class AppContainer extends HTMLElement {
+  private lastPath: string = "";
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -38,8 +39,12 @@ class AppContainer extends HTMLElement {
     NavigationActions.updateRoute(window.location.pathname);
 
     // Suscribirse a cambios en el store
+    this.lastPath = store.getState().currentPath;
     store.subscribe((state: State) => {
-      this.handleRouteChange(state);
+      if (state.currentPath !== this.lastPath) {
+        this.handleRouteChange(state);
+        this.lastPath = state.currentPath;
+      }
     });
 
     // Agregar manejador para el evento popstate (navegación del navegador)
