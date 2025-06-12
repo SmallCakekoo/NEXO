@@ -605,24 +605,73 @@ class Store {
             // Update user's profile picture in localStorage
             localStorage.setItem("loggedInUser", JSON.stringify(this._myState.auth.user));
 
-            // Update all posts for this user
-            const posts = this._myState.posts.map((post) => {
-              if (post.name === user.username) {
-                return {
-                  ...post,
-                  photo: payload.photo,
-                };
-              }
-              return post;
-            });
+// Update all posts for this user
+const posts = this._myState.posts.map((post) => {
+  if (post.name === user.username) {
+    return {
+      ...post,
+      photo: payload.photo,
+    };
+  }
+  return post;
+});
 
-            this._myState = {
-              ...this._myState,
-              posts,
-            };
+this._myState = {
+  ...this._myState,
+  posts,
+};
 
-            localStorage.setItem("posts", JSON.stringify(posts));
-            this._emitChange();
+localStorage.setItem("posts", JSON.stringify(posts));
+
+// Actualizar foto en los comentarios
+const comments = JSON.parse(localStorage.getItem("comments") || "{}");
+Object.keys(comments).forEach((postId) => {
+  comments[postId] = comments[postId].map((comment: any) => {
+    if (comment.name === user.username) {
+      return { ...comment, photo: payload.photo };
+    }
+    return comment;
+  });
+});
+localStorage.setItem("comments", JSON.stringify(comments));
+this._myState = {
+  ...this._myState,
+  comments,
+};
+
+// Actualizar foto en reviews de profesores
+const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
+Object.keys(teacherRatings).forEach((teacher) => {
+  teacherRatings[teacher] = teacherRatings[teacher].map((rating: any) => {
+    if (rating.author === user.username) {
+      return { ...rating, image: payload.photo };
+    }
+    return rating;
+  });
+});
+localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
+this._myState = {
+  ...this._myState,
+  teacherRatings,
+};
+
+//Actualizar foto en reviews de materias
+const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
+Object.keys(subjectRatings).forEach((subject) => {
+  subjectRatings[subject] = subjectRatings[subject].map((rating: any) => {
+    if (rating.author === user.username) {
+      return { ...rating, image: payload.photo };
+    }
+    return rating;
+  });
+});
+localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
+this._myState = {
+  ...this._myState,
+  subjectRatings,
+};
+
+this._emitChange();
           }
         }
         break;
