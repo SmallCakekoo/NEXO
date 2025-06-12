@@ -244,13 +244,14 @@ class Store {
         });
         break;
       case NavigateActionsType.NAVIGATE:
-        if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
-          const newPath = String(action.payload.path);
-          // Actualizar el historial del navegador
-          window.history.pushState({}, "", newPath);
-          this._handleRouteChange(newPath);
-        }
-        break;
+      if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
+        const newPath = String(action.payload.path);
+        if (this._myState.currentPath === newPath) break; // ✅ Evitar bucle si ya estamos ahí
+        window.history.pushState({}, "", newPath);
+        this._handleRouteChange(newPath);
+      }
+      break;
+
       case NavigateActionsType.UPDATE_ROUTE:
         if (action.payload && typeof action.payload === "object" && "path" in action.payload) {
           const newPath = String(action.payload.path);
