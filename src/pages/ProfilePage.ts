@@ -1,11 +1,27 @@
+import { store } from "../flux/Store";
+
 class ProfilePage extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
+    store.load(); // Only loads posts when this page is attached
+    this.subscribeToStore();
     this.render();
+  }
+
+  private subscribeToStore() {
+    this.unsubscribeStore = store.subscribe(() => this.render());
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
   }
 
   render() {

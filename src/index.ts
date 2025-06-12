@@ -12,6 +12,7 @@ import BtnSignup from "./components/navbar-buttons/BtnSignup";
 import { AppDispatcher } from "./flux/Dispatcher";
 import { PostActionTypes } from "./types/feed/PostActionTypes";
 import { PostActions } from "./flux/PostActions";
+import { store } from "./flux/Store";
 
 customElements.define("nav-bar", NavBarLog);
 customElements.define("nav-bar-login-signup", NavBarLoginSignup);
@@ -156,6 +157,8 @@ document.addEventListener("post-published", (event) => {
   PostActions.createPost(postData);
 });
 // ...existing code...
+
+// store.load(); // Removed global post loading
 
 // Initial navigation or application setup
 // (Keep your existing application initialization code here)

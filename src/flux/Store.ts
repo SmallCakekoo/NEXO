@@ -11,10 +11,14 @@ import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
 import { Review } from "../types/subject-detail/SubjectReviewList.types";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
+import { createPost, fetchPostsFB } from "../services/Firebase/PostServiceFB";
+import { addCommentFB, fetchCommentsFB } from "../services/Firebase/CommentServiceFB";
+import { addTeacherReviewFB, fetchTeacherReviewsFB } from "../services/Firebase/TeacherReviewServiceFB";
+import { addSubjectReviewFB, fetchSubjectReviewsFB } from "../services/Firebase/SubjectReviewServiceFB";
 
 export interface Rating {
   rating: number;
@@ -897,7 +901,7 @@ this._emitChange();
   // Update load method to include userLikes
   load(): void {
     try {
-      // Cargar datos del usuario
+      // Load user data
       const user = localStorage.getItem("loggedInUser");
       if (user) {
         const parsedUser = JSON.parse(user);
@@ -908,78 +912,84 @@ this._emitChange();
             user: parsedUser,
           },
         };
-        // Si el usuario está en una ruta pública, redirigir al feed
-        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-          window.history.replaceState({}, "", "/feed");
-          this._handleRouteChange("/feed");
-        }
-      } else if (auth.currentUser) {
-        // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
-          if (userDoc.exists()) {
-            const userProfile = userDoc.data();
-            this._myState = {
-              ...this._myState,
-              auth: {
-                isAuthenticated: true,
-                user: userProfile,
-              },
-            };
-            // Save to localStorage for provisional persistence
-            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
-            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-              window.history.replaceState({}, "", "/feed");
-              this._handleRouteChange("/feed");
-            } else {
-              this._handleRouteChange(window.location.pathname);
+        // Commented out to avoid navigation loop
+        // if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+        //   window.history.replaceState({}, "", "/feed");
+        //   this._handleRouteChange("/feed");
+        // }
+      }
+
+      // Load posts from Firebase
+      fetchPostsFB().then(posts => {
+        this._myState.posts = posts;
+        console.log("Loaded posts from Firebase:", posts); // Debug log
+        this._emitChange();
+      });
+
+      // Load comments from Firebase
+      if (this._myState.auth.user) {
+        const commentsRef = collection(db, "comments");
+        getDocs(commentsRef).then(snapshot => {
+          const comments: { [key: string]: any[] } = {};
+          snapshot.docs.forEach(doc => {
+            const comment = doc.data();
+            const postId = comment.postId;
+            if (!comments[postId]) {
+              comments[postId] = [];
             }
-            this._emitChange();
-          }
+            comments[postId].push(comment);
+          });
+          this._myState.comments = comments;
+          this._emitChange();
         });
       }
 
-      // Cargar posts
-      const storedPosts = localStorage.getItem("posts");
-      if (storedPosts) {
-        this._myState.posts = JSON.parse(storedPosts);
-      }
+      // Load teacher reviews from Firebase
+      const teacherReviewsRef = collection(db, "teacherReviews");
+      getDocs(teacherReviewsRef).then(snapshot => {
+        const teacherRatings: Ratings = {};
+        snapshot.docs.forEach(doc => {
+          const review = doc.data();
+          const teacherName = review.teacherName;
+          if (!teacherRatings[teacherName]) {
+            teacherRatings[teacherName] = [];
+          }
+          teacherRatings[teacherName].push({
+            rating: review.rating,
+            comment: review.text,
+            timestamp: review.timestamp,
+            author: review.author,
+            image: review.image,
+          });
+        });
+        this._myState.teacherRatings = teacherRatings;
+        this._emitChange();
+      });
 
-      // Cargar ratings de profesores
-      const storedTeacherRatings = localStorage.getItem("teacherRatings");
-      if (storedTeacherRatings) {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      }
+      // Load subject reviews from Firebase
+      const subjectReviewsRef = collection(db, "subjectReviews");
+      getDocs(subjectReviewsRef).then(snapshot => {
+        const subjectRatings: Ratings = {};
+        snapshot.docs.forEach(doc => {
+          const review = doc.data();
+          const subjectName = review.subjectName;
+          if (!subjectRatings[subjectName]) {
+            subjectRatings[subjectName] = [];
+          }
+          subjectRatings[subjectName].push({
+            rating: review.rating,
+            comment: review.text,
+            timestamp: review.timestamp,
+            author: review.author,
+            image: review.image,
+          });
+        });
+        this._myState.subjectRatings = subjectRatings;
+        this._emitChange();
+      });
 
-      // Cargar ratings de materias
-      const storedSubjectRatings = localStorage.getItem("subjectRatings");
-      if (storedSubjectRatings) {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      }
-
-      // Cargar likes de usuarios
-      const storedUserLikes = localStorage.getItem("userLikes");
-      if (storedUserLikes) {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      }
-
-      // Cargar comentarios
-      const storedComments = localStorage.getItem("comments");
-      if (storedComments) {
-        this._myState.comments = JSON.parse(storedComments);
-      }
-
-      // Load navigation state
-      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile =
-        sessionStorage.getItem("returnToProfile") === "true";
-
-      // Sincronizar el estado con localStorage
-      this.syncWithLocalStorage();
-
-      this._emitChange();
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      // Reiniciar el estado en caso de error
+      console.error("Error loading data:", error);
       this._myState = {
         ...this._myState,
         auth: {
@@ -1057,23 +1067,6 @@ this._emitChange();
     return this._myState.navigation.returnToProfile;
   }
 
-  private _loadPostsFromStorage(): Post[] {
-    try {
-      return JSON.parse(localStorage.getItem("posts") || "[]");
-    } catch (error) {
-      console.error("Failed to load posts from storage:", error);
-      return [];
-    }
-  }
-
-  private _savePostsToStorage(posts: Post[]): void {
-    try {
-      localStorage.setItem("posts", JSON.stringify(posts));
-    } catch (error) {
-      console.error("Failed to save posts to storage:", error);
-    }
-  }
-
   private _getLoggedInUser(): any {
     try {
       return JSON.parse(localStorage.getItem("loggedInUser") || "null");
@@ -1102,78 +1095,64 @@ this._emitChange();
   }
   
   private _updatePostLikes(postId: string, increment: boolean): void {
-    const posts = this._loadPostsFromStorage();
+    const posts = this._myState.posts;
     const post = posts.find((p: Post) => p.id === postId);
 
     if (post) {
       post.likes = increment ? (post.likes || 0) + 1 : Math.max(0, (post.likes || 0) - 1);
-      this._savePostsToStorage(posts);
     }
   }
 
   // Public methods
-// ...existing code...
-createPost(postData: {
-  content: string;
-  category: string;
-  image: string | null; // ahora acepta base64 string o null
-  createdAt: string;
-}): void {
-  const newPost = this._createNewPost(postData);
-  if (!newPost) return;
+  createPost(postData: {
+    content: string;
+    category: string;
+    image: string | null;
+    createdAt: string;
+  }): void {
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return;
+    }
 
-  const currentPosts = this._loadPostsFromStorage();
-  const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
+    const newPost = {
+      photo: user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`,
+      name: user?.username || "Unknown User",
+      date: new Date().toLocaleDateString(),
+      career: user?.degree || "Unknown Career",
+      semestre: user?.semester || "",
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image || null,
+      createdAt: postData.createdAt,
+      userId: user.uid
+    };
 
-  if (!postExists) {
-    currentPosts.unshift(newPost);
-    this._savePostsToStorage(currentPosts);
-
-    AppDispatcher.dispatch({
-      type: PostActionTypes.ADD_POST,
-      payload: newPost,
+    createPost(newPost).then((postId) => {
+      const postWithId = { ...newPost, id: postId };
+      AppDispatcher.dispatch({
+        type: PostActionTypes.ADD_POST,
+        payload: postWithId,
+      });
+      // Optionally, reload posts from Firebase
+      fetchPostsFB().then(posts => {
+        this._myState.posts = posts;
+        this._emitChange();
+      });
+    }).catch(error => {
+      console.error("Error creating post:", error);
     });
   }
-}
-
-private _createNewPost(postData: {
-  content: string;
-  category: string;
-  image: string | null; // base64 string o null
-  createdAt: string;
-}): Post | null {
-  const user = this._getLoggedInUser();
-  if (!user) {
-    console.error("No logged in user found");
-    return null;
-  }
-
-  const name = user?.username || "Unknown User";
-  const career = user?.degree || "Unknown Career";
-  const semestre = user?.semester || "";
-  const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-    photo: photo, // SIEMPRE la foto de perfil
-    name: name,
-    date: new Date().toLocaleDateString(),
-    career: career,
-    semestre: semestre,
-    message: postData.content,
-    tag: postData.category,
-    likes: 0,
-    share: "0",
-    comments: [],
-    image: postData.image || null, // imagen subida en el post
-  };
-}
 
   updatePostLikes(postId: string, userId: string, liked: boolean): void {
     this._updatePostLikes(postId, liked);
     this.saveUserLikes(userId, postId, liked);
 
-    const posts = this._loadPostsFromStorage();
+    const posts = this._myState.posts;
     const post = posts.find((p: Post) => p.id === postId);
 
     if (post) {
@@ -1187,41 +1166,15 @@ private _createNewPost(postData: {
     }
   }
 
-  loadPostsFromStorage(): void {
-    const posts = this._loadPostsFromStorage();
-    this._myState = {
-      ...this._myState,
-      posts,
-    };
-    this._emitChange();
-  }
-
-  private _getProfilePosts(username: string): Post[] {
-    try {
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      return posts.filter((p: Post) => p.name === username);
-    } catch (error) {
-      console.error("Error getting profile posts:", error);
-      return [];
-    }
-  }
-
   // Public methods
   getProfilePosts(): Post[] {
     const user = this._getLoggedInUser();
     if (!user) return [];
-    return this._getProfilePosts(user.username);
+    return this._myState.posts.filter((p: Post) => p.name === user.username);
   }
 
   loadProfilePosts(): void {
-    const user = this._getLoggedInUser();
-    if (!user) return;
-
-    const profilePosts = this._getProfilePosts(user.username);
-    this._myState = {
-      ...this._myState,
-      posts: profilePosts,
-    };
+    // Just emit change, let the UI filter posts for the profile
     this._emitChange();
   }
 
@@ -1252,71 +1205,30 @@ private _createNewPost(postData: {
     const currentPost = this._getCurrentPost();
     if (!currentPost) return;
 
-    const postId = currentPost.id;
-    const currentComments = this._myState.comments[postId] || [];
     const userData = this._getUserData();
-
     const newComment = {
       ...userData,
       date: new Date().toLocaleDateString(),
       message: comment.message,
+      postId: currentPost.id,
+      userId: this._myState.auth.user?.uid
     };
 
-    this._myState = {
-      ...this._myState,
-      comments: {
-        ...this._myState.comments,
-        [postId]: [...currentComments, newComment],
-      },
-    };
-
-    // Persist comments to localStorage
-    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-    this._emitChange();
+    addCommentFB(newComment).then(() => {
+      const currentComments = this._myState.comments[currentPost.id] || [];
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [currentPost.id]: [...currentComments, newComment],
+        },
+      };
+      this._emitChange();
+    }).catch(error => {
+      console.error("Error adding comment:", error);
+    });
   }
 
-  private _createReview(reviewData: {
-    rating: number;
-    text: string;
-    author: string;
-    image: string;
-    type: "teacher" | "subject";
-    name: string;
-  }): any {
-    return {
-      rating: reviewData.rating,
-      text: reviewData.text,
-      date: new Date().toLocaleDateString(),
-      author: reviewData.author,
-      image: reviewData.image,
-      [reviewData.type === "teacher" ? "teacherName" : "subjectName"]: reviewData.name,
-      type: reviewData.type,
-    };
-  }
-
-  private _updateRating(type: "teacher" | "subject", name: string, rating: number): void {
-    const ratings =
-      type === "teacher" ? this._myState.teacherRatings : this._myState.subjectRatings;
-    const currentRatings = ratings[name] || [];
-    const averageRating =
-      currentRatings.length > 0
-        ? currentRatings.reduce((acc, curr) => acc + curr.rating, 0) / currentRatings.length
-        : rating;
-
-    // Update the rating in localStorage for the card
-    const cardData = JSON.parse(
-      localStorage.getItem(`selected${type === "teacher" ? "Teacher" : "Subject"}`) || "{}"
-    );
-    if (cardData.name === name) {
-      cardData.rating = averageRating.toFixed(1);
-      localStorage.setItem(
-        `selected${type === "teacher" ? "Teacher" : "Subject"}`,
-        JSON.stringify(cardData)
-      );
-    }
-  }
-
-  // Public methods
   submitReview(reviewData: {
     rating: number;
     text: string;
@@ -1324,63 +1236,56 @@ private _createNewPost(postData: {
     name: string;
   }): void {
     const userData = this._getUserData();
-    const review = this._createReview({
-      ...reviewData,
+    const review = {
+      rating: reviewData.rating,
+      text: reviewData.text,
+      date: new Date().toLocaleDateString(),
       author: userData.name,
       image: userData.photo,
-    });
+      [reviewData.type === "teacher" ? "teacherName" : "subjectName"]: reviewData.name,
+      type: reviewData.type,
+      userId: this._myState.auth.user?.uid,
+      timestamp: new Date().toISOString()
+    };
 
-    // Update ratings in state
-    if (reviewData.type === "teacher") {
-      const currentRatings = this._myState.teacherRatings[reviewData.name] || [];
-      this._myState = {
-        ...this._myState,
-        teacherRatings: {
-          ...this._myState.teacherRatings,
-          [reviewData.name]: [
-            ...currentRatings,
-            {
+    const addReview = reviewData.type === "teacher" ? addTeacherReviewFB : addSubjectReviewFB;
+    
+    addReview(review).then(() => {
+      if (reviewData.type === "teacher") {
+        const currentRatings = this._myState.teacherRatings[reviewData.name] || [];
+        this._myState = {
+          ...this._myState,
+          teacherRatings: {
+            ...this._myState.teacherRatings,
+            [reviewData.name]: [...currentRatings, {
               rating: reviewData.rating,
               comment: reviewData.text,
               timestamp: new Date().toISOString(),
               author: userData.name,
               image: userData.photo,
-            },
-          ],
-        },
-      };
-      localStorage.setItem("teacherRatings", JSON.stringify(this._myState.teacherRatings));
-    } else {
-      const currentRatings = this._myState.subjectRatings[reviewData.name] || [];
-      this._myState = {
-        ...this._myState,
-        subjectRatings: {
-          ...this._myState.subjectRatings,
-          [reviewData.name]: [
-            ...currentRatings,
-            {
+            }],
+          },
+        };
+      } else {
+        const currentRatings = this._myState.subjectRatings[reviewData.name] || [];
+        this._myState = {
+          ...this._myState,
+          subjectRatings: {
+            ...this._myState.subjectRatings,
+            [reviewData.name]: [...currentRatings, {
               rating: reviewData.rating,
               comment: reviewData.text,
               timestamp: new Date().toISOString(),
               author: userData.name,
               image: userData.photo,
-            },
-          ],
-        },
-      };
-      localStorage.setItem("subjectRatings", JSON.stringify(this._myState.subjectRatings));
-    }
-
-    // Update average rating
-    this._updateRating(reviewData.type, reviewData.name, reviewData.rating);
-
-    // Dispatch review action
-    AppDispatcher.dispatch({
-      type: reviewData.type === "teacher" ? "ADD_TEACHER_RATING" : "ADD_SUBJECT_RATING",
-      payload: review,
+            }],
+          },
+        };
+      }
+      this._emitChange();
+    }).catch(error => {
+      console.error("Error submitting review:", error);
     });
-
-    this._emitChange();
   }
 
   private _getPostById(postId: string): Post | null {

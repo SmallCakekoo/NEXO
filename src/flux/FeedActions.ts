@@ -30,6 +30,6 @@ export const FeedActions = {
   },
 
   refreshFeedFromStorage: () => {
-    store.loadPostsFromStorage();
+    store.load();
   }
 };

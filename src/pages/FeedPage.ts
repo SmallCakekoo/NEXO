@@ -12,8 +12,8 @@ class FeedPage extends HTMLElement {
   }
 
   connectedCallback() {
+    store.load();
     this.subscribeToStore();
-
     this.render();
     this.setupEventListeners();
 
@@ -42,9 +42,12 @@ class FeedPage extends HTMLElement {
   }
 
   private handleStoreChange(state: State) {
+    // Always call render on store change for debugging
+    console.log("FeedPage handleStoreChange");
     if (!state.auth.isAuthenticated) {
       NavigationActions.navigate("/login");
     }
+    this.render();
   }
 
   setupEventListeners() {
@@ -56,6 +59,7 @@ class FeedPage extends HTMLElement {
   }
 
   render() {
+    console.log("FeedPage render");
     this.shadowRoot!.innerHTML = `
         <style>
           :host {
