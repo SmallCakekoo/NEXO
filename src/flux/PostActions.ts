@@ -7,7 +7,7 @@ export const PostActions = {
   createPost(postData: {
     content: string;
     category: string;
-    image: File | null;
+    image: string | null; // Cambio de File (base64)
     createdAt: string;
   }) {
     store.createPost(postData);
@@ -22,4 +22,4 @@ export const PostActions = {
   },
 
   // ... rest of the existing code ...
-}; 
+};

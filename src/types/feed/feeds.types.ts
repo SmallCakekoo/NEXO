@@ -7,17 +7,18 @@ export interface Comment {
 }
 
 export interface Post {
-  id?: string;
+  id: string;
   photo: string;
   name: string;
+  date: string;
   career: string;
   semestre: string;
   message: string;
   tag: string;
   likes: number;
-  date: string;
   share: string;
-  comments: Comment[];
+  comments: any[];
+  image?: string | null; 
 }
 
 export interface PostsResponse {

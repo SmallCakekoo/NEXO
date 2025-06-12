@@ -13,6 +13,7 @@ class FeedPost extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.post = {
+      id: "",
       photo: "",
       name: "",
       career: "",
@@ -39,30 +40,33 @@ class FeedPost extends HTMLElement {
       "share",
       "comments",
       "id",
+      "image",
     ];
   }
 
-  attributeChangedCallback(
-    propName: keyof Post,
-    _oldValue: string | number,
-    newValue: string | number
-  ) {
-    if (propName === "likes") {
-      this.post.likes = newValue ? Number(newValue) : 0;
-    } else if (propName === "comments") {
-      try {
-        this.post.comments = JSON.parse(newValue as string);
-      } catch {
-        this.post.comments = [];
-      }
-    } else if (propName === "id") {
-      this.post.id = newValue as string;
-    } else if (typeof newValue === "string") {
-      this.post[propName] = newValue;
+ attributeChangedCallback(
+  propName: keyof Post,
+  _oldValue: string | number,
+  newValue: string | number
+) {
+  if (propName === "likes") {
+    this.post.likes = newValue ? Number(newValue) : 0;
+  } else if (propName === "comments") {
+    try {
+      this.post.comments = JSON.parse(newValue as string);
+    } catch {
+      this.post.comments = [];
     }
-
-    this.render();
+  } else if (propName === "id") {
+    this.post.id = newValue as string;
+  } else if (propName === "image") {
+    this.post.image = newValue as string;
+  } else if (typeof newValue === "string") {
+    this.post[propName] = newValue;
   }
+
+  this.render();
+}
 
   connectedCallback() {
     this.render();
@@ -478,9 +482,22 @@ class FeedPost extends HTMLElement {
             }
 
             .tag {
-              font-size: 0.65rem;
-              padding: 3px 10px;
-              margin: 0.5rem 0;
+              display: inline-block;
+              max-width: 120px; /* Ajusta el valor según tu diseño */
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              padding: 4px 12px;
+              border: 2px solid rgba(31, 31, 241, 0.57);
+              border-radius: 0.85rem;
+              color: rgba(31, 31, 241, 0.57);
+              background-color: rgb(255, 255, 255);
+              font-weight: 500;
+              font-size: 0.7rem;
+              text-align: center;
+              margin: 1rem 0;
+              position: relative;
+              z-index: 1;
             }
 
             .profile-picture {
@@ -498,6 +515,15 @@ class FeedPost extends HTMLElement {
             }
           }
 
+          .post-image {
+          display: block;
+          max-width: 100%;
+          width: 220px;      /* Puedes ajustar el ancho */
+          height: 160px;     /* Altura fija */
+          object-fit: cover; /* Recorta la imagen si es necesario */
+          margin-top: 10px;
+          border-radius: 10px;
+        }
         </style>
         <div class="post">
           <div class="attributes-container">
@@ -516,12 +542,11 @@ class FeedPost extends HTMLElement {
               </div>
             </div>
 
-            <div class="message-container">
-              <p class="message">${this.post.message}</p>
-            </div>
-          </div>
-
-          <p class="tag">${this.post.tag}</p>
+      <div class="message-container">
+        <p class="message">${this.post.message}</p>
+        ${this.post.image ? `<img class="post-image" src="${this.post.image}" alt="Imagen del post">` : ""}
+        <p class="tag">${this.post.tag}</p>
+      </div>
           
           <hr>
           <div class="footer">  

@@ -31,7 +31,6 @@ class SettingsProfileHeader extends HTMLElement {
     this.render();
   }
 
-  // Adds event listeners to the close button and the image upload
   addEventListeners() {
     const xButton = this.shadowRoot!.querySelector(".x-button");
     xButton?.addEventListener("click", () => {
@@ -40,13 +39,11 @@ class SettingsProfileHeader extends HTMLElement {
 
     const profilePicture = this.shadowRoot!.querySelector(".profile-picture-container");
     const fileInput = this.shadowRoot!.querySelector("#profile-upload") as HTMLInputElement;
-    const img = this.shadowRoot!.querySelector(".profile-picture") as HTMLImageElement;
 
     profilePicture?.addEventListener("click", () => {
-      (fileInput as HTMLElement).click();
+      fileInput.click();
     });
 
-    // Handles the image upload and persistence
     fileInput?.addEventListener("change", async () => {
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
@@ -56,15 +53,16 @@ class SettingsProfileHeader extends HTMLElement {
           const base64 = e.target?.result as string;
           if (!base64) return;
 
-          // Get current user from store state
           const user = store.getState().auth.user;
-
           if (!user) {
             console.error("No logged in user found in store state");
             return;
           }
 
-          // Update profile photo using Flux action
+          // Guardar en localStorage
+          localStorage.setItem(`profilePic_${user.username}`, base64);
+
+          // Notificar al store
           ProfileActions.updateProfilePhoto(base64);
         };
 
@@ -79,13 +77,16 @@ class SettingsProfileHeader extends HTMLElement {
   }
 
   render() {
-    // Get logged-in user info from the store state
     const user = store.getState().auth.user;
 
-    const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
+    let profilePic = user?.profilePic;
+    const storedPic = localStorage.getItem(`profilePic_${user?.username}`);
+    if (storedPic) profilePic = storedPic;
+    if (!profilePic) profilePic = "https://picsum.photos/seed/picsum/200/300";
+
     this.shadowRoot!.innerHTML = `
-            <style>
-:host {
+      <style>
+        :host {
   display: block;
   width: 100%;
   overflow-x: hidden;
@@ -237,29 +238,32 @@ h1 {
   margin: 15px 0;
   font-size: 0.9rem;
 }
+      </style>
 
-            </style>
-            <div class="banner">
-                <div class="banner-illustrations">
-                    <img class="banner-image" src="/assets/images/bannerimg.png" alt="Banner image">
-                </div>
-            </div>
-            <div class="profile-section">
-                <div class="profile-picture-container">
-                    <img class="profile-picture" src="${profilePic}" alt="Profile picture">
-                    <div class="profile-overlay">
-                        <span>Change Image</span>
-                    </div>
-                    <input id="profile-upload" type="file" accept="image/*" style="display:none" />
-                </div>
-                <button class="x-button">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
-                </button>
-            </div>
-        `;
+      <div class="banner">
+        <div class="banner-illustrations">
+          <img class="banner-image" src="/assets/images/bannerimg.png" alt="Banner image">
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-picture-container">
+          <img class="profile-picture" src="${profilePic}" alt="Profile picture">
+          <div class="profile-overlay">
+            <span>Change Image</span>
+          </div>
+          <input id="profile-upload" type="file" accept="image/*" style="display:none" />
+        </div>
+        <button class="x-button">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+    `;
   }
 }
 
 export default SettingsProfileHeader;
+
+
+

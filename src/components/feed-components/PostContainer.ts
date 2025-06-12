@@ -129,6 +129,7 @@ export class PostContainer extends HTMLElement {
                 likes="${post.likes || 0}"
                 share="${escapedShare}"
                 comments='${JSON.stringify(post.comments || [])}'
+                image="${post.image ? post.image.replace(/"/g, "&quot;") : ""}"
               ></feed-post>
             `;
             })

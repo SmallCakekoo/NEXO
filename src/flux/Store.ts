@@ -1050,44 +1050,7 @@ class Store {
   removeLoggedInUser(): void {
     this._removeLoggedInUser();
   }
-
-  private _createNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): Post | null {
-    const user = this._getLoggedInUser();
-    if (!user) {
-      console.error("No logged in user found");
-      return null;
-    }
-
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    let photo = user?.profilePic;
-    if (!photo && postData.image) {
-      photo = URL.createObjectURL(postData.image);
-    } else if (!photo) {
-      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    }
-
-    return {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-    };
-  }
-
+  
   private _updatePostLikes(postId: string, increment: boolean): void {
     const posts = this._loadPostsFromStorage();
     const post = posts.find((p: Post) => p.id === postId);
@@ -1099,28 +1062,62 @@ class Store {
   }
 
   // Public methods
-  createPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): void {
-    const newPost = this._createNewPost(postData);
-    if (!newPost) return;
+// ...existing code...
+createPost(postData: {
+  content: string;
+  category: string;
+  image: string | null; // ahora acepta base64 string o null
+  createdAt: string;
+}): void {
+  const newPost = this._createNewPost(postData);
+  if (!newPost) return;
 
-    const currentPosts = this._loadPostsFromStorage();
-    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
+  const currentPosts = this._loadPostsFromStorage();
+  const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
 
-    if (!postExists) {
-      currentPosts.unshift(newPost);
-      this._savePostsToStorage(currentPosts);
+  if (!postExists) {
+    currentPosts.unshift(newPost);
+    this._savePostsToStorage(currentPosts);
 
-      AppDispatcher.dispatch({
-        type: PostActionTypes.ADD_POST,
-        payload: newPost,
-      });
-    }
+    AppDispatcher.dispatch({
+      type: PostActionTypes.ADD_POST,
+      payload: newPost,
+    });
   }
+}
+
+private _createNewPost(postData: {
+  content: string;
+  category: string;
+  image: string | null; // base64 string o null
+  createdAt: string;
+}): Post | null {
+  const user = this._getLoggedInUser();
+  if (!user) {
+    console.error("No logged in user found");
+    return null;
+  }
+
+  const name = user?.username || "Unknown User";
+  const career = user?.degree || "Unknown Career";
+  const semestre = user?.semester || "";
+  const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+    photo: photo, // SIEMPRE la foto de perfil
+    name: name,
+    date: new Date().toLocaleDateString(),
+    career: career,
+    semestre: semestre,
+    message: postData.content,
+    tag: postData.category,
+    likes: 0,
+    share: "0",
+    comments: [],
+    image: postData.image || null, // imagen subida en el post
+  };
+}
 
   updatePostLikes(postId: string, userId: string, liked: boolean): void {
     this._updatePostLikes(postId, liked);
