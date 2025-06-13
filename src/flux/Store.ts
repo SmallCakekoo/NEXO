@@ -189,14 +189,20 @@ class Store {
         ...this._myState,
         currentPath: "/",
         history: [...this._myState.history, "/"],
+        auth: {
+          isAuthenticated: false,
+          user: null
+        }
       };
-    } else {
-      this._myState = {
-        ...this._myState,
-        currentPath: newPath,
-        history: [...this._myState.history, newPath],
-      };
+      this._emitChange();
+      return;
     }
+
+    this._myState = {
+      ...this._myState,
+      currentPath: newPath,
+      history: [...this._myState.history, newPath],
+    };
     this._emitChange();
   }
 
@@ -853,8 +859,25 @@ class Store {
   // Update load method to include userLikes
   load(): void {
     try {
-      // Cargar datos del usuario
+      // Check if there's no logged user and redirect to landing
       const user = localStorage.getItem("loggedInUser");
+      if (!user && !auth.currentUser) {
+        this._myState = {
+          ...this._myState,
+          auth: {
+            isAuthenticated: false,
+            user: null,
+          },
+          currentPath: "/",
+          history: ["/"]
+        };
+        window.history.replaceState({}, "", "/");
+        this._handleRouteChange("/");
+        this._emitChange();
+        return;
+      }
+
+      // Cargar datos del usuario
       if (user) {
         const parsedUser = JSON.parse(user);
         const storedProfilePic = localStorage.getItem(`profilePic_${parsedUser.username}`);
@@ -882,6 +905,9 @@ class Store {
           window.history.replaceState({}, "", "/feed");
           this._handleRouteChange("/feed");
         }
+        // Load posts from Firebase after setting auth state
+        this.loadPostsFromFirestore();
+        this.loadProfilePosts();
       } else if (auth.currentUser) {
         // If no local user but Firebase Auth user exists, fetch profile from Firestore
         getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
@@ -906,36 +932,45 @@ class Store {
             } else {
               this._handleRouteChange(window.location.pathname);
             }
+            // Load posts from Firebase after setting auth state
+            this.loadPostsFromFirestore();
+            this.loadProfilePosts();
+            this._emitChange();
+          } else {
+            // If user doc doesn't exist, clear auth and redirect to landing
+            this._myState = {
+              ...this._myState,
+              auth: {
+                isAuthenticated: false,
+                user: null,
+              },
+              currentPath: "/",
+              history: ["/"]
+            };
+            localStorage.removeItem("loggedInUser");
+            window.history.replaceState({}, "", "/");
+            this._handleRouteChange("/");
             this._emitChange();
           }
         });
       }
 
-      // Cargar posts
-      const storedPosts = localStorage.getItem("posts");
-      if (storedPosts) {
-        this._myState.posts = JSON.parse(storedPosts);
-      }
-
-      // Cargar ratings de profesores
+      // Load other data from localStorage
       const storedTeacherRatings = localStorage.getItem("teacherRatings");
       if (storedTeacherRatings) {
         this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
       }
 
-      // Cargar ratings de materias
       const storedSubjectRatings = localStorage.getItem("subjectRatings");
       if (storedSubjectRatings) {
         this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
       }
 
-      // Cargar likes de usuarios
       const storedUserLikes = localStorage.getItem("userLikes");
       if (storedUserLikes) {
         this._myState.userLikes = JSON.parse(storedUserLikes);
       }
 
-      // Cargar comentarios
       const storedComments = localStorage.getItem("comments");
       if (storedComments) {
         this._myState.comments = JSON.parse(storedComments);
