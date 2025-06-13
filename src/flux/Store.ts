@@ -94,6 +94,7 @@ export interface State {
     success: boolean;
   };
   posts: Post[];
+  profilePosts: Post[];
   teacherRatings: Ratings;
   subjectRatings: Ratings;
   selectedTeacher: any | null;
@@ -123,7 +124,7 @@ type Listener = (state: State) => void;
 
 class Store {
   private _myState: State = {
-    currentPath: "",
+    currentPath: window.location.pathname,
     history: [],
     auth: {
       isAuthenticated: false,
@@ -135,6 +136,7 @@ class Store {
       success: false,
     },
     posts: [],
+    profilePosts: [],
     teacherRatings: {},
     subjectRatings: {},
     selectedTeacher: null,
@@ -150,7 +152,7 @@ class Store {
     navigation: {
       returnToFeed: false,
       returnToProfile: false,
-      activeAcademicTab: "teacher",
+      activeAcademicTab: "teachers",
     },
 
     filteredTeachers: null,
@@ -1084,7 +1086,7 @@ class Store {
   async createPost(postData: {
     content: string;
     category: string;
-    image: string | null; // ahora acepta base64 string o null
+    image: string | null;
     createdAt: string;
   }): Promise<void> {
     const newPost = this._createNewPost(postData);
@@ -1095,6 +1097,12 @@ class Store {
 
     // Reload posts from Firestore
     await this.loadPostsFromFirestore();
+
+    // If the post belongs to the current user, also update profile posts
+    const currentUser = this._getLoggedInUser();
+    if (currentUser && newPost.name === currentUser.username) {
+      await this.loadProfilePosts();
+    }
 
     AppDispatcher.dispatch({
       type: PostActionTypes.ADD_POST,
@@ -1145,9 +1153,14 @@ class Store {
     }));
     this._myState = {
       ...this._myState,
-      posts: profilePosts,
+      profilePosts,
     };
     this._emitChange();
+  }
+
+  // Add a new method to get profile posts
+  getProfilePosts(): Post[] {
+    return this._myState.profilePosts;
   }
 
   private _getUserData(): { photo: string; name: string; career: string } {

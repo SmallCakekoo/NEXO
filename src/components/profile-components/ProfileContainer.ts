@@ -41,20 +41,15 @@ class ProfileContainer extends HTMLElement {
 
   private subscribeToStore() {
     this.unsubscribeStore = store.subscribe(this.handleStoreChange);
-    this.handleStoreChange(store.getState());
   }
 
   private handleStoreChange(state: State) {
-    this.posts = store.getState().posts;
+    this.posts = store.getProfilePosts();
     this.render();
   }
 
-  // Sets up event listeners for the floating action button
-  setupEventListeners() {
-    const fab = this.shadowRoot!.querySelector("floating-btn");
-    fab?.addEventListener("click", () => {
-      window.dispatchEvent(new CustomEvent("open-modal"));
-    });
+  private setupEventListeners() {
+    // Add any additional event listeners if needed
   }
 
   render() {
@@ -73,6 +68,7 @@ class ProfileContainer extends HTMLElement {
         likes="${post.likes}"
         share="${post.share}"
         comments="${JSON.stringify(post.comments)}"
+        image="${post.image || ''}"
       ></profile-post>
     `
       )
