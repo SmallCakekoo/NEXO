@@ -242,6 +242,7 @@ class Store {
           if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
             window.history.replaceState({}, "", "/feed");
             this._handleRouteChange("/feed");
+            window.location.reload(); // Full page reload after redirection
           }
         }
         this._emitChange();
