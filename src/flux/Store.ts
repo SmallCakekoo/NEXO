@@ -15,7 +15,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
-import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore } from '../services/Firebase/PostServiceFB';
+import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore, addCommentToPost, getCommentsForPost } from '../services/Firebase/PostServiceFB';
 
 export interface Rating {
   rating: number;
@@ -179,30 +179,40 @@ class Store {
   }
 
   private _handleRouteChange(newPath: string) {
+    // Prevent unnecessary updates if the path hasn't changed
+    if (this._myState.currentPath === newPath) {
+      return;
+    }
+
     // Lista de rutas públicas
     const publicRoutes = ["/", "/login", "/signup"];
 
-    // Si la ruta no es pública y el usuario no está autenticado, redirigir a la landing
-    if (!publicRoutes.includes(newPath) && !this._myState.auth.isAuthenticated) {
-      window.history.replaceState({}, "", "/");
+    // Si es una ruta pública, permitir acceso sin verificar autenticación
+    if (publicRoutes.includes(newPath)) {
       this._myState = {
         ...this._myState,
-        currentPath: "/",
-        history: [...this._myState.history, "/"],
-        auth: {
-          isAuthenticated: false,
-          user: null
-        }
+        currentPath: newPath,
+        history: [...this._myState.history, newPath],
       };
       this._emitChange();
       return;
     }
 
-    this._myState = {
-      ...this._myState,
-      currentPath: newPath,
-      history: [...this._myState.history, newPath],
-    };
+    // Para rutas protegidas, verificar autenticación
+    if (!this._myState.auth.isAuthenticated) {
+      window.history.replaceState({}, "", "/");
+      this._myState = {
+        ...this._myState,
+        currentPath: "/",
+        history: [...this._myState.history, "/"],
+      };
+    } else {
+      this._myState = {
+        ...this._myState,
+        currentPath: newPath,
+        history: [...this._myState.history, newPath],
+      };
+    }
     this._emitChange();
   }
 
@@ -527,21 +537,8 @@ class Store {
         break;
       case CommentActionsType.ADD_COMMENT:
         if (action.payload) {
-          const currentPost = this._getCurrentPost();
-          if (currentPost) {
-            const postId = currentPost.id;
-            const currentComments = this._myState.comments[postId] || [];
-            this._myState = {
-              ...this._myState,
-              comments: {
-                ...this._myState.comments,
-                [postId]: [...currentComments, action.payload],
-              },
-            };
-            // Persist comments to localStorage
-            localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-            this._emitChange();
-          }
+          // Call the public addComment method to handle Firebase interaction and state update
+          this.addComment(action.payload);
         }
         break;
       case FeedActionsType.OPEN_POST_MODAL:
@@ -858,86 +855,117 @@ class Store {
 
   // Update load method to include userLikes
   load(): void {
+    console.log("Loading initial data...");
+    console.log("Load function - Initial posts state:", this._myState.posts);
     try {
-      // Check if there's no logged user and redirect to landing
+      // Check if we're on a public route
+      const currentPath = window.location.pathname;
+      const publicRoutes = ["/", "/login", "/signup"];
+      const isPublicRoute = publicRoutes.includes(currentPath);
+
+      // Check for any logged in user
       const user = localStorage.getItem("loggedInUser");
-      if (!user && !auth.currentUser) {
-        this._myState = {
-          ...this._myState,
-          auth: {
-            isAuthenticated: false,
-            user: null,
-          },
-          currentPath: "/",
-          history: ["/"]
-        };
-        window.history.replaceState({}, "", "/");
-        this._handleRouteChange("/");
+      const hasFirebaseUser = auth.currentUser;
+
+      // If no user is logged in at all
+      if (!user && !hasFirebaseUser) {
+        console.log("No user found, handling public/protected routes.");
+        if (!isPublicRoute) {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: "/",
+          };
+          window.history.replaceState({}, "", "/");
+          this._handleRouteChange("/");
+        } else {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: currentPath,
+          };
+        }
         this._emitChange();
         return;
       }
 
-      // Cargar datos del usuario
-      if (user) {
-        const parsedUser = JSON.parse(user);
-        const storedProfilePic = localStorage.getItem(`profilePic_${parsedUser.username}`);
+      // Handle authenticated user (either from localStorage or Firebase Auth)
+      const processAuthenticatedUser = async (userProfile: any) => {
+        const storedProfilePic = localStorage.getItem(`profilePic_${userProfile.username}`);
         if (storedProfilePic) {
-          parsedUser.profilePic = storedProfilePic;
+          userProfile.profilePic = storedProfilePic;
         }
         // Ensure degree and career are both present and in sync
-        if (parsedUser.degree) {
-          parsedUser.career = parsedUser.degree;
-        } else if (parsedUser.career) {
-          parsedUser.degree = parsedUser.career;
+        if (userProfile.degree) {
+          userProfile.career = userProfile.degree;
+        } else if (userProfile.career) {
+          userProfile.degree = userProfile.career;
         }
         // Update localStorage to persist the sync
-        localStorage.setItem("loggedInUser", JSON.stringify(parsedUser));
-        
+        localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+
         this._myState = {
           ...this._myState,
           auth: {
             isAuthenticated: true,
-            user: parsedUser,
+            user: userProfile,
           },
         };
-        // Si el usuario está en una ruta pública, redirigir al feed
-        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+
+        // Redirect if on public route
+        if (isPublicRoute) {
           window.history.replaceState({}, "", "/feed");
           this._handleRouteChange("/feed");
+        } else {
+          this._handleRouteChange(window.location.pathname);
         }
-        // Load posts from Firebase after setting auth state
-        this.loadPostsFromFirestore();
-        this.loadProfilePosts();
-      } else if (auth.currentUser) {
-        // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
+
+        // Load posts and profile posts from Firebase after auth state is set
+        await this.loadPostsFromFirestore();
+        console.log("Load function - Posts after loadPostsFromFirestore:", this._myState.posts);
+        await this.loadProfilePosts();
+        console.log("Load function - Profile Posts after loadProfilePosts:", this._myState.profilePosts);
+
+        // Load other data from localStorage (since they are not Firebase-backed yet)
+        const storedTeacherRatings = localStorage.getItem("teacherRatings");
+        if (storedTeacherRatings) {
+          this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+        }
+
+        const storedSubjectRatings = localStorage.getItem("subjectRatings");
+        if (storedSubjectRatings) {
+          this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+        }
+
+        const storedUserLikes = localStorage.getItem("userLikes");
+        if (storedUserLikes) {
+          this._myState.userLikes = JSON.parse(storedUserLikes);
+        }
+
+        // Load navigation state from sessionStorage
+        this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
+        this._myState.navigation.returnToProfile = sessionStorage.getItem("returnToProfile") === "true";
+        
+        this.syncWithLocalStorage();
+        console.log("Load function - Posts after syncWithLocalStorage:", this._myState.posts);
+        this._emitChange();
+      };
+
+      if (user) {
+        processAuthenticatedUser(JSON.parse(user));
+      } else if (hasFirebaseUser) {
+        getDoc(doc(db, "users", hasFirebaseUser.uid)).then(async (userDoc) => {
           if (userDoc.exists()) {
-            const userProfile = userDoc.data();
-            const storedProfilePic = localStorage.getItem(`profilePic_${userProfile.username}`);
-            if (storedProfilePic) {
-              userProfile.profilePic = storedProfilePic;
-            }
-            this._myState = {
-              ...this._myState,
-              auth: {
-                isAuthenticated: true,
-                user: userProfile,
-              },
-            };
-            // Save to localStorage for provisional persistence
-            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
-            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-              window.history.replaceState({}, "", "/feed");
-              this._handleRouteChange("/feed");
-            } else {
-              this._handleRouteChange(window.location.pathname);
-            }
-            // Load posts from Firebase after setting auth state
-            this.loadPostsFromFirestore();
-            this.loadProfilePosts();
-            this._emitChange();
+            await processAuthenticatedUser(userDoc.data());
           } else {
-            // If user doc doesn't exist, clear auth and redirect to landing
+            // If user doc doesn't exist in Firestore, clear auth and redirect to landing
+            console.warn("Firebase user exists but no Firestore profile. Clearing auth.");
             this._myState = {
               ...this._myState,
               auth: {
@@ -945,49 +973,31 @@ class Store {
                 user: null,
               },
               currentPath: "/",
-              history: ["/"]
             };
             localStorage.removeItem("loggedInUser");
             window.history.replaceState({}, "", "/");
             this._handleRouteChange("/");
             this._emitChange();
           }
+        }).catch(error => {
+          console.error("Error fetching Firebase user doc:", error);
+          // Handle error as if no user was found
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: "/",
+          };
+          localStorage.removeItem("loggedInUser");
+          window.history.replaceState({}, "", "/");
+          this._handleRouteChange("/");
+          this._emitChange();
         });
       }
-
-      // Load other data from localStorage
-      const storedTeacherRatings = localStorage.getItem("teacherRatings");
-      if (storedTeacherRatings) {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      }
-
-      const storedSubjectRatings = localStorage.getItem("subjectRatings");
-      if (storedSubjectRatings) {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      }
-
-      const storedUserLikes = localStorage.getItem("userLikes");
-      if (storedUserLikes) {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      }
-
-      const storedComments = localStorage.getItem("comments");
-      if (storedComments) {
-        this._myState.comments = JSON.parse(storedComments);
-      }
-
-      // Load navigation state
-      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile =
-        sessionStorage.getItem("returnToProfile") === "true";
-
-      // Sincronizar el estado con localStorage
-      this.syncWithLocalStorage();
-
-      this._emitChange();
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      // Reiniciar el estado en caso de error
+      console.error("Fatal error during store load:", error);
       this._myState = {
         ...this._myState,
         auth: {
@@ -1000,39 +1010,87 @@ class Store {
         userLikes: {},
         comments: {},
       };
+      this.syncWithLocalStorage(); // Still attempt cleanup
+      console.log("Load function - Posts after error and syncWithLocalStorage:", this._myState.posts);
       this._emitChange();
     }
   }
 
+  private _loadAllData(): void {
+    // Cargar posts
+    const storedPosts = localStorage.getItem("posts");
+    if (storedPosts) {
+      this._myState.posts = JSON.parse(storedPosts);
+    }
+
+    // Cargar ratings de profesores
+    const storedTeacherRatings = localStorage.getItem("teacherRatings");
+    if (storedTeacherRatings) {
+      this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+    }
+
+    // Cargar ratings de materias
+    const storedSubjectRatings = localStorage.getItem("subjectRatings");
+    if (storedSubjectRatings) {
+      this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+    }
+
+    // Cargar likes de usuarios
+    const storedUserLikes = localStorage.getItem("userLikes");
+    if (storedUserLikes) {
+      this._myState.userLikes = JSON.parse(storedUserLikes);
+    }
+
+    // Cargar comentarios
+    const storedComments = localStorage.getItem("comments");
+    if (storedComments) {
+      this._myState.comments = JSON.parse(storedComments);
+    }
+
+    // Load navigation state
+    this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
+    this._myState.navigation.returnToProfile =
+      sessionStorage.getItem("returnToProfile") === "true";
+  }
+
   private syncWithLocalStorage(): void {
-    // Sincronizar usuarios
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    if (this._myState.auth.user) {
-      const currentUser = users.find((u: any) => u.username === this._myState.auth.user.username);
-      if (!currentUser) {
-        // Si el usuario no existe en la lista de usuarios, cerrar sesión
-        this._myState.auth = {
-          isAuthenticated: false,
-          user: null,
-        };
-        localStorage.removeItem("loggedInUser");
+    console.log('syncWithLocalStorage: Current auth user status:', this._myState.auth.user);
+    console.log('syncWithLocalStorage: Posts state at start:', this._myState.posts);
+    
+    // Only proceed if user is actually authenticated in the state
+    if (this._myState.auth.isAuthenticated && this._myState.auth.user) {
+      const currentUsername = this._myState.auth.user.username;
+      
+      // Synchronize posts with the current user (if user-specific filtering is needed)
+      // NOTE: Posts are primarily loaded from Firebase, this is for local filtering consistency
+      // Removed: Filtering posts based on localStorage users, as Firebase is the source of truth for posts.
+      // const usersFromLocalStorage = JSON.parse(localStorage.getItem("users") || "[]");
+      // this._myState.posts = this._myState.posts.filter((post) =>
+      //   usersFromLocalStorage.some((u: any) => u.username === post.name)
+      // );
+      // localStorage.setItem("posts", JSON.stringify(this._myState.posts)); // This line might not be needed if posts are Firebase only
+
+      // Synchronize likes
+      if (!this._myState.userLikes[currentUsername]) {
+        this._myState.userLikes[currentUsername] = [];
       }
+      localStorage.setItem("userLikes", JSON.stringify(this._myState.userLikes));
+    } else {
+      // Case: No user is logged in or user was just logged out
+      console.log("syncWithLocalStorage: No authenticated user, clearing user-specific data from localStorage.");
+      localStorage.removeItem("loggedInUser");
+      
+      // Clear user-specific state that is persisted locally
+      this._myState = {
+        ...this._myState,
+        userLikes: {},
+        // posts: [], // Keep posts from being cleared here, as they are now Firebase-driven
+      };
+      localStorage.setItem("userLikes", JSON.stringify({}));
+      // localStorage.setItem("posts", JSON.stringify([])); // Removed, as posts are Firebase-driven
     }
 
-    // Sincronizar posts con el usuario actual
-    if (this._myState.auth.user) {
-      this._myState.posts = this._myState.posts.filter((post) =>
-        users.some((u: any) => u.username === post.name)
-      );
-    }
-
-    // Sincronizar likes
-    if (this._myState.auth.user) {
-      const username = this._myState.auth.user.username;
-      if (!this._myState.userLikes[username]) {
-        this._myState.userLikes[username] = [];
-      }
-    }
+    console.log('Final State after sync:', this._myState);
   }
 
   // Método mejorado para obtener posts filtrados
@@ -1279,31 +1337,55 @@ class Store {
     return this._getUserData();
   }
 
-  addComment(comment: any): void {
+  async addComment(comment: any): Promise<void> {
     const currentPost = this._getCurrentPost();
     if (!currentPost) return;
 
     const postId = currentPost.id;
-    const currentComments = this._myState.comments[postId] || [];
     const userData = this._getUserData();
 
     const newComment = {
       ...userData,
       date: new Date().toLocaleDateString(),
       message: comment.message,
+      timestamp: new Date().toISOString()
     };
 
-    this._myState = {
-      ...this._myState,
-      comments: {
-        ...this._myState.comments,
-        [postId]: [...currentComments, newComment],
-      },
-    };
+    try {
+      console.log("Adding comment to post ID:", postId);
+      console.log("New comment data:", newComment);
+      // Add comment to Firebase
+      await addCommentToPost(postId, newComment);
+      
+      // Update local state
+      const currentComments = this._myState.comments[postId] || [];
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: [...currentComments, newComment],
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  }
 
-    // Persist comments to localStorage
-    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-    this._emitChange();
+  async loadCommentsForPost(postId: string): Promise<void> {
+    try {
+      const comments = await getCommentsForPost(postId);
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: comments,
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    }
   }
 
   private _createReview(reviewData: {

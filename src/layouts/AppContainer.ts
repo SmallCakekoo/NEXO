@@ -16,6 +16,8 @@ class AppContainer extends HTMLElement {
   connectedCallback() {
     store.load();
 
+    this.updateView(window.location.pathname);
+
     // Firebase Auth persistence: restore user on reload
     onAuthStateChanged(auth, async (user) => {
       if (user) {
