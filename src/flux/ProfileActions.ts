@@ -1,7 +1,7 @@
 import { AppDispatcher } from "./Dispatcher";
 import { store } from "./Store";
 import { db } from "../services/Firebase/FirebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { uploadProfileImage } from "./StorageSupabase";
 
 // Action Types
@@ -88,8 +88,9 @@ export const ProfileActions = {
 
       // Update Firestore (do not update profilePic)
       if (loggedInUser.uid) {
+        const userRef = doc(db, "users", loggedInUser.uid);
         await setDoc(
-          doc(db, "users", loggedInUser.uid),
+          userRef,
           {
             username: updatedUser.username,
             phone: updatedUser.phone,
@@ -100,19 +101,28 @@ export const ProfileActions = {
           },
           { merge: true }
         );
+
+        // Get the latest user data from Firestore
+        const updatedUserDoc = await getDoc(userRef);
+        if (!updatedUserDoc.exists()) {
+          throw new Error("User document not found after update");
+        }
+        const latestUserData = updatedUserDoc.data();
+
+        // Update store with the latest data
+        await store.updateProfile(oldUsername, latestUserData);
+
+        // Dispatch success action with the latest data
+        AppDispatcher.dispatch({
+          type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
+          payload: { user: latestUserData },
+        });
+
+        // Dispatch profile-updated event
+        document.dispatchEvent(new CustomEvent("profile-updated"));
       }
-
-      store.updateProfile(oldUsername, updatedUser);
-
-      // Dispatch success action
-      AppDispatcher.dispatch({
-        type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
-        payload: { user: updatedUser },
-      });
-
-      // Dispatch profile-updated event
-      document.dispatchEvent(new CustomEvent("profile-updated"));
     } catch (error) {
+      console.error("Error updating profile:", error);
       AppDispatcher.dispatch({
         type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
         payload: { error: "Failed to update profile" },

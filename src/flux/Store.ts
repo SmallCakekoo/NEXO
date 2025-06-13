@@ -1135,7 +1135,6 @@ class Store {
     const semestre = user?.semester || "";
     const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
     return {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       photo: photo,
       name: name,
       date: new Date().toLocaleDateString(),
@@ -1643,29 +1642,63 @@ class Store {
       } else if (updatedUser.career) {
         updatedUser.degree = updatedUser.career;
       }
-      // Update loggedInUser in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+
+      // Get current user from auth
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("No authenticated user found");
+      }
+
+      // Update user document in Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, {
+        username: updatedUser.username,
+        degree: updatedUser.degree,
+        career: updatedUser.career,
+        semester: updatedUser.semester,
+        phone: updatedUser.phone,
+        bio: updatedUser.bio
+      });
+
+      // Get the latest user data from Firestore
+      const updatedUserDoc = await getDoc(userRef);
+      if (!updatedUserDoc.exists()) {
+        throw new Error("User document not found after update");
+      }
+      const latestUserData = updatedUserDoc.data();
+
+      // Update loggedInUser in localStorage with the latest data
+      localStorage.setItem("loggedInUser", JSON.stringify(latestUserData));
 
       // Update all posts for this user in Firestore
       const posts = await getAllPostsFromFirestore();
       const userPosts = posts.filter((post: any) => post.name === oldUsername);
       
+      // Update each post in Firestore
       for (const post of userPosts) {
-        const postRef = doc(db, "posts", post.id);
-        await updateDoc(postRef, {
-          name: updatedUser.username,
-          career: updatedUser.career || updatedUser.degree,
-          semestre: updatedUser.semester,
-          photo: updatedUser.profilePic || (post as any).photo,
-        });
+        if (post.id) {  // Only update if we have a valid Firestore document ID
+          try {
+            const postRef = doc(db, "posts", post.id);
+            await updateDoc(postRef, {
+              name: latestUserData.username,
+              career: latestUserData.career || latestUserData.degree,
+              semestre: latestUserData.semester,
+              photo: latestUserData.profilePic || (post as any).photo,
+            });
+          } catch (error) {
+            console.error(`Error updating post ${post.id}:`, error);
+            // Continue with other posts even if one fails
+            continue;
+          }
+        }
       }
 
-      // Update local state
+      // Update local state with the latest data
       this._myState = {
         ...this._myState,
         auth: {
           ...this._myState.auth,
-          user: updatedUser,
+          user: latestUserData,
         },
       };
       this._emitChange();

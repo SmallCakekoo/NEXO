@@ -390,10 +390,10 @@ input:focus, select:focus, textarea:focus {
     const bioTextarea = this.shadowRoot!.querySelector(".bio-text") as HTMLTextAreaElement;
     const deleteAccountBtn = this.shadowRoot!.querySelector(".delete-account");
     const unlogBtn = this.shadowRoot!.querySelector(".unlog-btn");
-    const saveBtn = this.shadowRoot!.querySelector(".save-btn");
+    const saveBtn = this.shadowRoot!.querySelector(".save-btn") as HTMLButtonElement;
 
     if (saveBtn) {
-      saveBtn.addEventListener("click", (e) => {
+      saveBtn.addEventListener("click", async (e) => {
         e.preventDefault();
         const username = (this.shadowRoot!.querySelector("#username") as HTMLInputElement).value;
         const phone = (this.shadowRoot!.querySelector("#phone") as HTMLInputElement).value;
@@ -409,8 +409,24 @@ input:focus, select:focus, textarea:focus {
           bio: bio || "",
         };
 
-        ProfileActions.updateProfile(userData);
-        NavigationActions.navigate("/profile");
+        try {
+          // Disable the save button while updating
+          saveBtn.disabled = true;
+          saveBtn.textContent = "Saving...";
+
+          // Wait for the profile update to complete
+          await ProfileActions.updateProfile(userData);
+
+          // Navigate to profile page after successful update
+          NavigationActions.navigate("/profile");
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          alert("Failed to update profile. Please try again.");
+        } finally {
+          // Re-enable the save button
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save";
+        }
       });
     }
 
