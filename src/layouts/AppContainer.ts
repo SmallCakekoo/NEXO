@@ -14,6 +14,7 @@ class AppContainer extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log("AppContainer: connectedCallback");
     store.load();
 
     // Firebase Auth persistence: restore user on reload
@@ -41,6 +42,7 @@ class AppContainer extends HTMLElement {
     // Suscribirse a cambios en el store
     this.lastPath = store.getState().currentPath;
     store.subscribe((state: State) => {
+      console.log("AppContainer: store.subscribe", state.currentPath);
       if (state.currentPath !== this.lastPath) {
         this.handleRouteChange(state);
         this.lastPath = state.currentPath;
@@ -58,6 +60,9 @@ class AppContainer extends HTMLElement {
       const path = event.detail;
       NavigationActions.navigate(path);
     }) as EventListener);
+
+    // Al final de connectedCallback, fuerza el render de la vista inicial:
+    this.updateView(store.getState().currentPath);
   }
 
   render() {
@@ -130,3 +135,5 @@ class AppContainer extends HTMLElement {
 }
 
 export default AppContainer;
+
+console.log("La app se está inicializando");

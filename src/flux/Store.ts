@@ -851,119 +851,82 @@ class Store {
   }
 
   // Update load method to include userLikes
-  load(): void {
+  async load(): Promise<void> {
     try {
-      // Cargar datos del usuario
-      const user = localStorage.getItem("loggedInUser");
-      if (user) {
-        const parsedUser = JSON.parse(user);
-        const storedProfilePic = localStorage.getItem(`profilePic_${parsedUser.username}`);
-        if (storedProfilePic) {
-          parsedUser.profilePic = storedProfilePic;
-        }
-        // Ensure degree and career are both present and in sync
-        if (parsedUser.degree) {
-          parsedUser.career = parsedUser.degree;
-        } else if (parsedUser.career) {
-          parsedUser.degree = parsedUser.career;
-        }
-        // Update localStorage to persist the sync
-        localStorage.setItem("loggedInUser", JSON.stringify(parsedUser));
-        
+      // Cargar datos de usuario desde localStorage (solo auth)
+      const userData = localStorage.getItem("loggedInUser");
+      if (userData) {
+        const user = JSON.parse(userData);
         this._myState = {
           ...this._myState,
           auth: {
             isAuthenticated: true,
-            user: parsedUser,
-          },
+            user: user
+          }
         };
-        // Si el usuario está en una ruta pública, redirigir al feed
-        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-          window.history.replaceState({}, "", "/feed");
-          this._handleRouteChange("/feed");
-        }
-      } else if (auth.currentUser) {
-        // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
-          if (userDoc.exists()) {
-            const userProfile = userDoc.data();
-            const storedProfilePic = localStorage.getItem(`profilePic_${userProfile.username}`);
-            if (storedProfilePic) {
-              userProfile.profilePic = storedProfilePic;
-            }
+      }
+
+      // Cargar posts desde Firestore
+      await this.loadPostsFromFirestore();
+
+      // Cargar comentarios desde Firestore para cada post
+      for (const post of this._myState.posts) {
+        if (post.id) {
+          try {
+            const comments = await getCommentsForPost(post.id);
             this._myState = {
               ...this._myState,
-              auth: {
-                isAuthenticated: true,
-                user: userProfile,
-              },
+              comments: {
+                ...this._myState.comments,
+                [post.id]: comments
+              }
             };
-            // Save to localStorage for provisional persistence
-            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
-            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-              window.history.replaceState({}, "", "/feed");
-              this._handleRouteChange("/feed");
-            } else {
-              this._handleRouteChange(window.location.pathname);
-            }
-            this._emitChange();
+          } catch (error) {
+            console.error(`Error loading comments for post ${post.id}:`, error);
           }
-        });
+        }
       }
-
-      // Cargar posts
-      const storedPosts = localStorage.getItem("posts");
-      if (storedPosts) {
-        this._myState.posts = JSON.parse(storedPosts);
-      }
-
-      // Cargar ratings de profesores
-      const storedTeacherRatings = localStorage.getItem("teacherRatings");
-      if (storedTeacherRatings) {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      }
-
-      // Cargar ratings de materias
-      const storedSubjectRatings = localStorage.getItem("subjectRatings");
-      if (storedSubjectRatings) {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      }
-
-      // Cargar likes de usuarios
-      const storedUserLikes = localStorage.getItem("userLikes");
-      if (storedUserLikes) {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      }
-
-      // Cargar comentarios
-      const storedComments = localStorage.getItem("comments");
-      if (storedComments) {
-        this._myState.comments = JSON.parse(storedComments);
-      }
-
-      // Load navigation state
-      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile =
-        sessionStorage.getItem("returnToProfile") === "true";
-
-      // Sincronizar el estado con localStorage
-      this.syncWithLocalStorage();
 
       this._emitChange();
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      // Reiniciar el estado en caso de error
+      console.error("Error loading data:", error);
+      // Inicializa con estado seguro si hay error
       this._myState = {
-        ...this._myState,
+        currentPath: window.location.pathname,
+        history: [],
         auth: {
           isAuthenticated: false,
           user: null,
         },
+        signUp: {
+          loading: false,
+          error: null,
+          success: false,
+        },
         posts: [],
+        profilePosts: [],
         teacherRatings: {},
         subjectRatings: {},
+        selectedTeacher: null,
+        selectedSubject: null,
+        searchQuery: "",
         userLikes: {},
         comments: {},
+        postModal: {
+          isOpen: false,
+          postId: null,
+        },
+        selectedTag: "All",
+        navigation: {
+          returnToFeed: false,
+          returnToProfile: false,
+          activeAcademicTab: "teachers",
+        },
+        filteredTeachers: null,
+        filteredSubjects: null,
+        searchDebounceTimeout: null,
+        teachers: [],
+        subjects: [],
       };
       this._emitChange();
     }
@@ -1132,6 +1095,10 @@ class Store {
     try {
       // Add post to Firestore and get the document ID
       const postId = await addPostToFirestore(post);
+      if (!postId) {
+        console.error("Failed to create post in Firestore");
+        return;
+      }
       
       // Create the post object with the Firestore document ID
       const newPost: Post = {
@@ -1147,12 +1114,9 @@ class Store {
         posts: [newPost, ...this._myState.posts],
       };
 
-      // Persist to localStorage
-      localStorage.setItem("posts", JSON.stringify(this._myState.posts));
       this._emitChange();
     } catch (error) {
       console.error("Error creating new post:", error);
-      // Don't throw the error, just log it
     }
   }
 
@@ -1189,7 +1153,6 @@ class Store {
       this._emitChange();
     } catch (error) {
       console.error("Error loading posts from Firestore:", error);
-      // Initialize with empty posts array if there's an error
       this._myState = {
         ...this._myState,
         posts: [],
@@ -1283,15 +1246,18 @@ class Store {
       };
 
       // Add comment to Firestore
-      await addCommentToPost(postId, newComment);
+      const updatedComments = await addCommentToPost(postId, newComment);
+      if (!updatedComments) {
+        console.error("Failed to add comment to Firestore");
+        return;
+      }
 
       // Update local state
-      const currentComments = this._myState.comments[postId] || [];
       this._myState = {
         ...this._myState,
         comments: {
           ...this._myState.comments,
-          [postId]: [...currentComments, newComment],
+          [postId]: updatedComments,
         },
       };
 
@@ -1300,7 +1266,7 @@ class Store {
         if (post.id === postId) {
           return {
             ...post,
-            comments: [...(post.comments || []), newComment]
+            comments: updatedComments
           };
         }
         return post;
@@ -1310,15 +1276,10 @@ class Store {
         ...this._myState,
         posts: updatedPosts
       };
-
-      // Persist to localStorage
-      localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-      localStorage.setItem("posts", JSON.stringify(this._myState.posts));
       
       this._emitChange();
     } catch (error) {
       console.error("Error adding comment:", error);
-      // Don't throw the error, just log it
     }
   }
 
