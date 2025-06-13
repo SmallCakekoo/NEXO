@@ -33,7 +33,7 @@ export default {
     },
     historyApiFallback: true,
     hot: true,
-    port: 8080,
+    port: 8086,
     open: true,
   },
 };
