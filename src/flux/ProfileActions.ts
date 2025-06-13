@@ -83,6 +83,7 @@ export const ProfileActions = {
       const updatedUser = {
         ...loggedInUser,
         ...profileData,
+        career: profileData.degree,
       };
 
       // Update Firestore (do not update profilePic)
@@ -93,6 +94,7 @@ export const ProfileActions = {
             username: updatedUser.username,
             phone: updatedUser.phone,
             degree: updatedUser.degree,
+            career: updatedUser.degree,
             semester: updatedUser.semester,
             bio: updatedUser.bio,
           },

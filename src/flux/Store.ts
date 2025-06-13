@@ -867,6 +867,9 @@ class Store {
         } else if (parsedUser.career) {
           parsedUser.degree = parsedUser.career;
         }
+        // Update localStorage to persist the sync
+        localStorage.setItem("loggedInUser", JSON.stringify(parsedUser));
+        
         this._myState = {
           ...this._myState,
           auth: {
@@ -1189,8 +1192,8 @@ class Store {
       photo: p.photo || '',
       name: p.name || '',
       date: p.date || '',
-      career: p.career || '',
-      semestre: p.semestre || '',
+      career: user.career || user.degree || p.career || '', // Use current user's career
+      semestre: user.semester || p.semestre || '', // Use current user's semester
       message: p.message || '',
       tag: p.tag || '',
       likes: p.likes || 0,
@@ -1632,7 +1635,7 @@ class Store {
     }
   }
 
-  private _updateUserProfile(oldUsername: string, updatedUser: any): void {
+  private async _updateUserProfile(oldUsername: string, updatedUser: any): Promise<void> {
     try {
       // Sync degree and career for compatibility
       if (updatedUser.degree) {
@@ -1643,21 +1646,33 @@ class Store {
       // Update loggedInUser in localStorage
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
 
-      // Update all posts for this user
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.map((post: any) => {
-        if (post.name === oldUsername) {
-          return {
-            ...post,
-            name: updatedUser.username,
-            career: updatedUser.career || updatedUser.degree,
-            semestre: updatedUser.semester,
-            photo: updatedUser.profilePic || post.photo,
-          };
-        }
-        return post;
-      });
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+      // Update all posts for this user in Firestore
+      const posts = await getAllPostsFromFirestore();
+      const userPosts = posts.filter((post: any) => post.name === oldUsername);
+      
+      for (const post of userPosts) {
+        const postRef = doc(db, "posts", post.id);
+        await updateDoc(postRef, {
+          name: updatedUser.username,
+          career: updatedUser.career || updatedUser.degree,
+          semestre: updatedUser.semester,
+          photo: updatedUser.profilePic || (post as any).photo,
+        });
+      }
+
+      // Update local state
+      this._myState = {
+        ...this._myState,
+        auth: {
+          ...this._myState.auth,
+          user: updatedUser,
+        },
+      };
+      this._emitChange();
+
+      // Reload posts to reflect changes
+      await this.loadPostsFromFirestore();
+      await this.loadProfilePosts();
     } catch (error) {
       console.error("Error updating user profile:", error);
       throw error;
@@ -1669,8 +1684,8 @@ class Store {
     this._deleteUserAccount(username);
   }
 
-  updateProfile(oldUsername: string, updatedUser: any): void {
-    this._updateUserProfile(oldUsername, updatedUser);
+  async updateProfile(oldUsername: string, updatedUser: any): Promise<void> {
+    await this._updateUserProfile(oldUsername, updatedUser);
   }
 
   static getInstance(): Store {

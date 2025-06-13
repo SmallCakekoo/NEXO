@@ -24,6 +24,8 @@ class ProfileContainer extends HTMLElement {
     document.addEventListener('profile-updated', () => {
       console.log("ProfileContainer: 'profile-updated' event received. Loading posts.");
       store.loadProfilePosts();
+      // Force re-render to update user data
+      this.render();
     });
 
     // Listen for navigation events to reload posts when returning to profile
@@ -32,6 +34,8 @@ class ProfileContainer extends HTMLElement {
       if (customEvent.detail === '/profile') {
         console.log("ProfileContainer: 'navigate' to profile event received. Loading posts.");
         store.loadProfilePosts();
+        // Force re-render to update user data
+        this.render();
       }
     });
   }
@@ -47,6 +51,7 @@ class ProfileContainer extends HTMLElement {
   }
 
   private handleStoreChange(state: State) {
+    // Update posts and force re-render
     this.posts = store.getProfilePosts();
     this.render();
   }

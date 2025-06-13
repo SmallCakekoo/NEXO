@@ -15,6 +15,8 @@ class ProfileHeader extends HTMLElement {
   connectedCallback() {
     this.setupStoreListeners(); // Setup store listeners on connection
     this.addEventListeners();
+    // Initial render
+    this.render();
   }
 
   disconnectedCallback() {
@@ -24,20 +26,13 @@ class ProfileHeader extends HTMLElement {
   }
 
   private setupStoreListeners() {
+    // Subscribe to store changes
     this.unsubscribe = store.subscribe(this.handleStoreChange);
-    // Trigger an initial render with the current state after subscribing
-    this.handleStoreChange(store.getState());
   }
 
-  private _lastUser: any | null = null;
-
   private handleStoreChange(state: State) {
-    // Actualizar la UI cuando el store cambie based on relevant parts of the state
-    // In this case, we re-render if the auth.user state changes
-    if (state.auth.user !== this._lastUser) { // Check if user data actually changed
-        this._lastUser = state.auth.user;
-        this.render();
-    }
+    // Force re-render when store changes
+    this.render();
   }
 
   // Adds event listener to the "edit" button to trigger navigation
