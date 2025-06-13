@@ -13,9 +13,9 @@ class LoginComponent extends HTMLElement {
         max-width: 35.625rem; 
         margin: 3rem auto;
         padding: 1.5rem;
-        background: #ddddfb;
+        background: #FBFBFD;
         border-radius: 0.5rem;
-        border: 0.063rem solid #5354ed; 
+        border: 0.063rem solid #000000; 
         box-shadow: 0 0 0.375rem rgba(0, 0, 0, 0.1); 
         display: flex;
         justify-content: center;
@@ -44,7 +44,6 @@ class LoginComponent extends HTMLElement {
         form-fields,
         forgot-password,
         primary-button,
-        custom-divider,
         social-buttons {
           width: 100%;
           padding: 0 1.5rem;
@@ -59,8 +58,6 @@ class LoginComponent extends HTMLElement {
       <form-fields mode="login"></form-fields>
       <forgot-password></forgot-password>
       <primary-button text="Login"></primary-button>
-      <custom-divider></custom-divider>
-      <social-buttons></social-buttons>
     </section>
     `;
     this.setupLoginHandler();

@@ -130,8 +130,6 @@ customElements.define("comments-detail-profile", CommentsDetailProfilePage);
 import "./components/login-signup-components/header-title";
 import "./components/login-signup-components/form-fields";
 import "./components/login-signup-components/primary-button";
-import "./components/login-signup-components/divider";
-import "./components/login-signup-components/social-buttons";
 import "./components/login-signup-components/forgot-password";
 import "./components/login-signup-components/form-field-signup";
 import "./components/login-signup-components/checkbox";
