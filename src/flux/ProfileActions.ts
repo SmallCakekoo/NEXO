@@ -1,5 +1,8 @@
 import { AppDispatcher } from "./Dispatcher";
 import { store } from "./Store";
+import { db } from "../services/Firebase/FirebaseConfig";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { uploadProfileImage } from "./StorageSupabase";
 
 // Action Types
 export const ProfileActionTypes = {
@@ -44,7 +47,7 @@ export const ProfileActions = {
     }
   },
 
-  updateProfile: (profileData: {
+  updateProfile: async (profileData: {
     username: string;
     phone: string;
     degree: string;
@@ -67,7 +70,6 @@ export const ProfileActions = {
       if (!phoneValidation.isValid) {
         // Show alert for invalid phone number
         alert("Change number action canceled, the new number should be 10 digits long and no letters");
-        
         AppDispatcher.dispatch({
           type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
           payload: { error: phoneValidation.error },
@@ -81,19 +83,46 @@ export const ProfileActions = {
       const updatedUser = {
         ...loggedInUser,
         ...profileData,
+        career: profileData.degree,
       };
 
-      store.updateProfile(oldUsername, updatedUser);
+      // Update Firestore (do not update profilePic)
+      if (loggedInUser.uid) {
+        const userRef = doc(db, "users", loggedInUser.uid);
+        await setDoc(
+          userRef,
+          {
+            username: updatedUser.username,
+            phone: updatedUser.phone,
+            degree: updatedUser.degree,
+            career: updatedUser.degree,
+            semester: updatedUser.semester,
+            bio: updatedUser.bio,
+          },
+          { merge: true }
+        );
 
-      // Dispatch success action
-      AppDispatcher.dispatch({
-        type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
-        payload: { user: updatedUser },
-      });
+        // Get the latest user data from Firestore
+        const updatedUserDoc = await getDoc(userRef);
+        if (!updatedUserDoc.exists()) {
+          throw new Error("User document not found after update");
+        }
+        const latestUserData = updatedUserDoc.data();
 
-      // Dispatch profile-updated event
-      document.dispatchEvent(new CustomEvent("profile-updated"));
+        // Update store with the latest data
+        await store.updateProfile(oldUsername, latestUserData);
+
+        // Dispatch success action with the latest data
+        AppDispatcher.dispatch({
+          type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
+          payload: { user: latestUserData },
+        });
+
+        // Dispatch profile-updated event
+        document.dispatchEvent(new CustomEvent("profile-updated"));
+      }
     } catch (error) {
+      console.error("Error updating profile:", error);
       AppDispatcher.dispatch({
         type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
         payload: { error: "Failed to update profile" },
@@ -116,10 +145,34 @@ export const ProfileActions = {
     }
   },
 
-  updateProfilePhoto(photoBase64: string) {
-    AppDispatcher.dispatch({
-      type: ProfileActionTypes.UPDATE_PROFILE_PHOTO,
-      payload: { photo: photoBase64 },
-    });
+  updateProfilePhoto: async function (file: File) {
+    try {
+      const loggedInUser = store.getState().auth.user;
+      if (!loggedInUser || !loggedInUser.uid) {
+        AppDispatcher.dispatch({
+          type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
+          payload: { error: "No logged in user found" },
+        });
+        return;
+      }
+      // Upload to Supabase
+      const publicUrl = await uploadProfileImage(file, loggedInUser.uid);
+      // Update Firestore user profile
+      await setDoc(
+        doc(db, "users", loggedInUser.uid),
+        { profilePic: publicUrl },
+        { merge: true }
+      );
+      // Update local store
+      AppDispatcher.dispatch({
+        type: ProfileActionTypes.UPDATE_PROFILE_PHOTO,
+        payload: { photo: publicUrl },
+      });
+    } catch (error) {
+      AppDispatcher.dispatch({
+        type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
+        payload: { error: "Failed to update profile photo" },
+      });
+    }
   },
 };

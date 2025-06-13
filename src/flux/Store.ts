@@ -11,10 +11,11 @@ import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
 import { Review } from "../types/subject-detail/SubjectReviewList.types";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
+import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore, addCommentToPost, getCommentsForPost } from '../services/Firebase/PostServiceFB';
 
 export interface Rating {
   rating: number;
@@ -93,6 +94,7 @@ export interface State {
     success: boolean;
   };
   posts: Post[];
+  profilePosts: Post[];
   teacherRatings: Ratings;
   subjectRatings: Ratings;
   selectedTeacher: any | null;
@@ -122,7 +124,7 @@ type Listener = (state: State) => void;
 
 class Store {
   private _myState: State = {
-    currentPath: "",
+    currentPath: window.location.pathname,
     history: [],
     auth: {
       isAuthenticated: false,
@@ -134,6 +136,7 @@ class Store {
       success: false,
     },
     posts: [],
+    profilePosts: [],
     teacherRatings: {},
     subjectRatings: {},
     selectedTeacher: null,
@@ -149,7 +152,7 @@ class Store {
     navigation: {
       returnToFeed: false,
       returnToProfile: false,
-      activeAcademicTab: "teacher",
+      activeAcademicTab: "teachers",
     },
 
     filteredTeachers: null,
@@ -176,11 +179,27 @@ class Store {
   }
 
   private _handleRouteChange(newPath: string) {
+    // Prevent unnecessary updates if the path hasn't changed
+    if (this._myState.currentPath === newPath) {
+      return;
+    }
+
     // Lista de rutas públicas
     const publicRoutes = ["/", "/login", "/signup"];
 
-    // Si la ruta no es pública y el usuario no está autenticado, redirigir a la landing
-    if (!publicRoutes.includes(newPath) && !this._myState.auth.isAuthenticated) {
+    // Si es una ruta pública, permitir acceso sin verificar autenticación
+    if (publicRoutes.includes(newPath)) {
+      this._myState = {
+        ...this._myState,
+        currentPath: newPath,
+        history: [...this._myState.history, newPath],
+      };
+      this._emitChange();
+      return;
+    }
+
+    // Para rutas protegidas, verificar autenticación
+    if (!this._myState.auth.isAuthenticated) {
       window.history.replaceState({}, "", "/");
       this._myState = {
         ...this._myState,
@@ -223,6 +242,7 @@ class Store {
           if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
             window.history.replaceState({}, "", "/feed");
             this._handleRouteChange("/feed");
+            window.location.reload(); // Full page reload after redirection
           }
         }
         this._emitChange();
@@ -518,21 +538,8 @@ class Store {
         break;
       case CommentActionsType.ADD_COMMENT:
         if (action.payload) {
-          const currentPost = this._getCurrentPost();
-          if (currentPost) {
-            const postId = currentPost.id;
-            const currentComments = this._myState.comments[postId] || [];
-            this._myState = {
-              ...this._myState,
-              comments: {
-                ...this._myState.comments,
-                [postId]: [...currentComments, action.payload],
-              },
-            };
-            // Persist comments to localStorage
-            localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-            this._emitChange();
-          }
+          // Call the public addComment method to handle Firebase interaction and state update
+          this.addComment(action.payload);
         }
         break;
       case FeedActionsType.OPEN_POST_MODAL:
@@ -590,6 +597,9 @@ class Store {
           const payload = action.payload as PhotoPayload;
           const user = this._myState.auth.user;
           if (user) {
+            // Save profile picture in localStorage with username-specific key
+            localStorage.setItem(`profilePic_${user.username}`, payload.photo);
+            
             // Update user's profile picture in state
             this._myState = {
               ...this._myState,
@@ -846,90 +856,149 @@ class Store {
 
   // Update load method to include userLikes
   load(): void {
+    console.log("Loading initial data...");
+    console.log("Load function - Initial posts state:", this._myState.posts);
     try {
-      // Cargar datos del usuario
+      // Check if we're on a public route
+      const currentPath = window.location.pathname;
+      const publicRoutes = ["/", "/login", "/signup"];
+      const isPublicRoute = publicRoutes.includes(currentPath);
+
+      // Check for any logged in user
       const user = localStorage.getItem("loggedInUser");
-      if (user) {
-        const parsedUser = JSON.parse(user);
+      const hasFirebaseUser = auth.currentUser;
+
+      // If no user is logged in at all
+      if (!user && !hasFirebaseUser) {
+        console.log("No user found, handling public/protected routes.");
+        if (!isPublicRoute) {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: "/",
+          };
+          window.history.replaceState({}, "", "/");
+          this._handleRouteChange("/");
+        } else {
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: currentPath,
+          };
+        }
+        this._emitChange();
+        return;
+      }
+
+      // Handle authenticated user (either from localStorage or Firebase Auth)
+      const processAuthenticatedUser = async (userProfile: any) => {
+        const storedProfilePic = localStorage.getItem(`profilePic_${userProfile.username}`);
+        if (storedProfilePic) {
+          userProfile.profilePic = storedProfilePic;
+        }
+        // Ensure degree and career are both present and in sync
+        if (userProfile.degree) {
+          userProfile.career = userProfile.degree;
+        } else if (userProfile.career) {
+          userProfile.degree = userProfile.career;
+        }
+        // Update localStorage to persist the sync
+        localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+
         this._myState = {
           ...this._myState,
           auth: {
             isAuthenticated: true,
-            user: parsedUser,
+            user: userProfile,
           },
         };
-        // Si el usuario está en una ruta pública, redirigir al feed
-        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
+
+        // Redirect if on public route
+        if (isPublicRoute) {
           window.history.replaceState({}, "", "/feed");
           this._handleRouteChange("/feed");
+        } else {
+          this._handleRouteChange(window.location.pathname);
         }
-      } else if (auth.currentUser) {
-        // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
+
+        // Load posts and profile posts from Firebase after auth state is set
+        await this.loadPostsFromFirestore();
+        console.log("Load function - Posts after loadPostsFromFirestore:", this._myState.posts);
+        await this.loadProfilePosts();
+        console.log("Load function - Profile Posts after loadProfilePosts:", this._myState.profilePosts);
+
+        // Load other data from localStorage (since they are not Firebase-backed yet)
+        const storedTeacherRatings = localStorage.getItem("teacherRatings");
+        if (storedTeacherRatings) {
+          this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+        }
+
+        const storedSubjectRatings = localStorage.getItem("subjectRatings");
+        if (storedSubjectRatings) {
+          this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+        }
+
+        const storedUserLikes = localStorage.getItem("userLikes");
+        if (storedUserLikes) {
+          this._myState.userLikes = JSON.parse(storedUserLikes);
+        }
+
+        // Load navigation state from sessionStorage
+        this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
+        this._myState.navigation.returnToProfile = sessionStorage.getItem("returnToProfile") === "true";
+        
+        this.syncWithLocalStorage();
+        console.log("Load function - Posts after syncWithLocalStorage:", this._myState.posts);
+        this._emitChange();
+      };
+
+      if (user) {
+        processAuthenticatedUser(JSON.parse(user));
+      } else if (hasFirebaseUser) {
+        getDoc(doc(db, "users", hasFirebaseUser.uid)).then(async (userDoc) => {
           if (userDoc.exists()) {
-            const userProfile = userDoc.data();
+            await processAuthenticatedUser(userDoc.data());
+          } else {
+            // If user doc doesn't exist in Firestore, clear auth and redirect to landing
+            console.warn("Firebase user exists but no Firestore profile. Clearing auth.");
             this._myState = {
               ...this._myState,
               auth: {
-                isAuthenticated: true,
-                user: userProfile,
+                isAuthenticated: false,
+                user: null,
               },
+              currentPath: "/",
             };
-            // Save to localStorage for provisional persistence
-            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
-            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-              window.history.replaceState({}, "", "/feed");
-              this._handleRouteChange("/feed");
-            } else {
-              this._handleRouteChange(window.location.pathname);
-            }
+            localStorage.removeItem("loggedInUser");
+            window.history.replaceState({}, "", "/");
+            this._handleRouteChange("/");
             this._emitChange();
           }
+        }).catch(error => {
+          console.error("Error fetching Firebase user doc:", error);
+          // Handle error as if no user was found
+          this._myState = {
+            ...this._myState,
+            auth: {
+              isAuthenticated: false,
+              user: null,
+            },
+            currentPath: "/",
+          };
+          localStorage.removeItem("loggedInUser");
+          window.history.replaceState({}, "", "/");
+          this._handleRouteChange("/");
+          this._emitChange();
         });
       }
-
-      // Cargar posts
-      const storedPosts = localStorage.getItem("posts");
-      if (storedPosts) {
-        this._myState.posts = JSON.parse(storedPosts);
-      }
-
-      // Cargar ratings de profesores
-      const storedTeacherRatings = localStorage.getItem("teacherRatings");
-      if (storedTeacherRatings) {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      }
-
-      // Cargar ratings de materias
-      const storedSubjectRatings = localStorage.getItem("subjectRatings");
-      if (storedSubjectRatings) {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      }
-
-      // Cargar likes de usuarios
-      const storedUserLikes = localStorage.getItem("userLikes");
-      if (storedUserLikes) {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      }
-
-      // Cargar comentarios
-      const storedComments = localStorage.getItem("comments");
-      if (storedComments) {
-        this._myState.comments = JSON.parse(storedComments);
-      }
-
-      // Load navigation state
-      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile =
-        sessionStorage.getItem("returnToProfile") === "true";
-
-      // Sincronizar el estado con localStorage
-      this.syncWithLocalStorage();
-
-      this._emitChange();
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-      // Reiniciar el estado en caso de error
+      console.error("Fatal error during store load:", error);
       this._myState = {
         ...this._myState,
         auth: {
@@ -942,39 +1011,87 @@ class Store {
         userLikes: {},
         comments: {},
       };
+      this.syncWithLocalStorage(); // Still attempt cleanup
+      console.log("Load function - Posts after error and syncWithLocalStorage:", this._myState.posts);
       this._emitChange();
     }
   }
 
+  private _loadAllData(): void {
+    // Cargar posts
+    const storedPosts = localStorage.getItem("posts");
+    if (storedPosts) {
+      this._myState.posts = JSON.parse(storedPosts);
+    }
+
+    // Cargar ratings de profesores
+    const storedTeacherRatings = localStorage.getItem("teacherRatings");
+    if (storedTeacherRatings) {
+      this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
+    }
+
+    // Cargar ratings de materias
+    const storedSubjectRatings = localStorage.getItem("subjectRatings");
+    if (storedSubjectRatings) {
+      this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
+    }
+
+    // Cargar likes de usuarios
+    const storedUserLikes = localStorage.getItem("userLikes");
+    if (storedUserLikes) {
+      this._myState.userLikes = JSON.parse(storedUserLikes);
+    }
+
+    // Cargar comentarios
+    const storedComments = localStorage.getItem("comments");
+    if (storedComments) {
+      this._myState.comments = JSON.parse(storedComments);
+    }
+
+    // Load navigation state
+    this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
+    this._myState.navigation.returnToProfile =
+      sessionStorage.getItem("returnToProfile") === "true";
+  }
+
   private syncWithLocalStorage(): void {
-    // Sincronizar usuarios
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    if (this._myState.auth.user) {
-      const currentUser = users.find((u: any) => u.username === this._myState.auth.user.username);
-      if (!currentUser) {
-        // Si el usuario no existe en la lista de usuarios, cerrar sesión
-        this._myState.auth = {
-          isAuthenticated: false,
-          user: null,
-        };
-        localStorage.removeItem("loggedInUser");
+    console.log('syncWithLocalStorage: Current auth user status:', this._myState.auth.user);
+    console.log('syncWithLocalStorage: Posts state at start:', this._myState.posts);
+    
+    // Only proceed if user is actually authenticated in the state
+    if (this._myState.auth.isAuthenticated && this._myState.auth.user) {
+      const currentUsername = this._myState.auth.user.username;
+      
+      // Synchronize posts with the current user (if user-specific filtering is needed)
+      // NOTE: Posts are primarily loaded from Firebase, this is for local filtering consistency
+      // Removed: Filtering posts based on localStorage users, as Firebase is the source of truth for posts.
+      // const usersFromLocalStorage = JSON.parse(localStorage.getItem("users") || "[]");
+      // this._myState.posts = this._myState.posts.filter((post) =>
+      //   usersFromLocalStorage.some((u: any) => u.username === post.name)
+      // );
+      // localStorage.setItem("posts", JSON.stringify(this._myState.posts)); // This line might not be needed if posts are Firebase only
+
+      // Synchronize likes
+      if (!this._myState.userLikes[currentUsername]) {
+        this._myState.userLikes[currentUsername] = [];
       }
+      localStorage.setItem("userLikes", JSON.stringify(this._myState.userLikes));
+    } else {
+      // Case: No user is logged in or user was just logged out
+      console.log("syncWithLocalStorage: No authenticated user, clearing user-specific data from localStorage.");
+      localStorage.removeItem("loggedInUser");
+      
+      // Clear user-specific state that is persisted locally
+      this._myState = {
+        ...this._myState,
+        userLikes: {},
+        // posts: [], // Keep posts from being cleared here, as they are now Firebase-driven
+      };
+      localStorage.setItem("userLikes", JSON.stringify({}));
+      // localStorage.setItem("posts", JSON.stringify([])); // Removed, as posts are Firebase-driven
     }
 
-    // Sincronizar posts con el usuario actual
-    if (this._myState.auth.user) {
-      this._myState.posts = this._myState.posts.filter((post) =>
-        users.some((u: any) => u.username === post.name)
-      );
-    }
-
-    // Sincronizar likes
-    if (this._myState.auth.user) {
-      const username = this._myState.auth.user.username;
-      if (!this._myState.userLikes[username]) {
-        this._myState.userLikes[username] = [];
-      }
-    }
+    console.log('Final State after sync:', this._myState);
   }
 
   // Método mejorado para obtener posts filtrados
@@ -1050,44 +1167,7 @@ class Store {
   removeLoggedInUser(): void {
     this._removeLoggedInUser();
   }
-
-  private _createNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): Post | null {
-    const user = this._getLoggedInUser();
-    if (!user) {
-      console.error("No logged in user found");
-      return null;
-    }
-
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    let photo = user?.profilePic;
-    if (!photo && postData.image) {
-      photo = URL.createObjectURL(postData.image);
-    } else if (!photo) {
-      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    }
-
-    return {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-    };
-  }
-
+  
   private _updatePostLikes(postId: string, increment: boolean): void {
     const posts = this._loadPostsFromStorage();
     const post = posts.find((p: Post) => p.id === postId);
@@ -1099,49 +1179,96 @@ class Store {
   }
 
   // Public methods
-  createPost(postData: {
+  async createPost(postData: {
     content: string;
     category: string;
-    image: File | null;
-    createdAt: string;
-  }): void {
-    const newPost = this._createNewPost(postData);
+    image: string | null;
+  }): Promise<void> {
+    const newPost = this._createNewPost({
+      ...postData,
+      createdAt: new Date().toISOString()
+    });
     if (!newPost) return;
 
-    const currentPosts = this._loadPostsFromStorage();
-    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
+    // Save to Firestore
+    await addPostToFirestore(newPost);
 
-    if (!postExists) {
-      currentPosts.unshift(newPost);
-      this._savePostsToStorage(currentPosts);
+    // Reload posts from Firestore
+    await this.loadPostsFromFirestore();
 
-      AppDispatcher.dispatch({
-        type: PostActionTypes.ADD_POST,
-        payload: newPost,
-      });
+    // If the post belongs to the current user, also update profile posts
+    const currentUser = this._getLoggedInUser();
+    if (currentUser && newPost.name === currentUser.username) {
+      await this.loadProfilePosts();
     }
   }
 
-  updatePostLikes(postId: string, userId: string, liked: boolean): void {
-    this._updatePostLikes(postId, liked);
-    this.saveUserLikes(userId, postId, liked);
-
-    const posts = this._loadPostsFromStorage();
-    const post = posts.find((p: Post) => p.id === postId);
-
-    if (post) {
-      AppDispatcher.dispatch({
-        type: liked ? PostActionTypes.LIKE_POST : PostActionTypes.UNLIKE_POST,
-        payload: {
-          postId,
-          likes: post.likes,
-        },
-      });
+  private _safeToISOString(dateStr: string | number | Date | undefined | null): string {
+    try {
+      if (!dateStr) return new Date().toISOString();
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+    } catch (error) {
+      return new Date().toISOString();
     }
   }
 
-  loadPostsFromStorage(): void {
-    const posts = this._loadPostsFromStorage();
+  private _createNewPost(postData: {
+    content: string;
+    category: string;
+    image: string | null;
+    createdAt: string;
+  }): Post | null {
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return null;
+    }
+    const name = user?.username || "Unknown User";
+    const career = user?.career || user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    return {
+      photo: photo,
+      name: name,
+      date: new Date().toLocaleDateString(),
+      career: career,
+      semestre: semestre,
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image || null,
+      createdAt: postData.createdAt,
+    };
+  }
+
+  async loadPostsFromFirestore(): Promise<void> {
+    const rawPosts = await getAllPostsFromFirestore();
+    const posts: Post[] = rawPosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: p.career || '',
+      semestre: p.semestre || '',
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+      createdAt: p.createdAt || this._safeToISOString(p.date),
+    }));
+
+    // Sort posts by createdAt date in descending order (newest first)
+    posts.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
     this._myState = {
       ...this._myState,
       posts,
@@ -1149,33 +1276,43 @@ class Store {
     this._emitChange();
   }
 
-  private _getProfilePosts(username: string): Post[] {
-    try {
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      return posts.filter((p: Post) => p.name === username);
-    } catch (error) {
-      console.error("Error getting profile posts:", error);
-      return [];
-    }
-  }
-
-  // Public methods
-  getProfilePosts(): Post[] {
-    const user = this._getLoggedInUser();
-    if (!user) return [];
-    return this._getProfilePosts(user.username);
-  }
-
-  loadProfilePosts(): void {
+  async loadProfilePosts(): Promise<void> {
     const user = this._getLoggedInUser();
     if (!user) return;
+    const rawProfilePosts = await getPostsByUsername(user.username);
+    const profilePosts: Post[] = rawProfilePosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: user.career || user.degree || p.career || '', // Use current user's career
+      semestre: user.semester || p.semestre || '', // Use current user's semester
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+      createdAt: p.createdAt || this._safeToISOString(p.date),
+    }));
 
-    const profilePosts = this._getProfilePosts(user.username);
+    // Sort posts by createdAt date in descending order (newest first)
+    profilePosts.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
     this._myState = {
       ...this._myState,
-      posts: profilePosts,
+      profilePosts,
     };
     this._emitChange();
+  }
+
+  // Add a new method to get profile posts
+  getProfilePosts(): Post[] {
+    return this._myState.profilePosts;
   }
 
   private _getUserData(): { photo: string; name: string; career: string } {
@@ -1184,7 +1321,7 @@ class Store {
       return {
         photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
         name: user?.username || "Anonymous",
-        career: user?.career || "",
+        career: user?.career || user?.degree || "",
       };
     } catch (error) {
       console.error("Error getting user data:", error);
@@ -1201,31 +1338,55 @@ class Store {
     return this._getUserData();
   }
 
-  addComment(comment: any): void {
+  async addComment(comment: any): Promise<void> {
     const currentPost = this._getCurrentPost();
     if (!currentPost) return;
 
     const postId = currentPost.id;
-    const currentComments = this._myState.comments[postId] || [];
     const userData = this._getUserData();
 
     const newComment = {
       ...userData,
       date: new Date().toLocaleDateString(),
       message: comment.message,
+      timestamp: new Date().toISOString()
     };
 
-    this._myState = {
-      ...this._myState,
-      comments: {
-        ...this._myState.comments,
-        [postId]: [...currentComments, newComment],
-      },
-    };
+    try {
+      console.log("Adding comment to post ID:", postId);
+      console.log("New comment data:", newComment);
+      // Add comment to Firebase
+      await addCommentToPost(postId, newComment);
+      
+      // Update local state
+      const currentComments = this._myState.comments[postId] || [];
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: [...currentComments, newComment],
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  }
 
-    // Persist comments to localStorage
-    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-    this._emitChange();
+  async loadCommentsForPost(postId: string): Promise<void> {
+    try {
+      const comments = await getCommentsForPost(postId);
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: comments,
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    }
   }
 
   private _createReview(reviewData: {
@@ -1591,26 +1752,78 @@ class Store {
     }
   }
 
-  private _updateUserProfile(oldUsername: string, updatedUser: any): void {
+  private async _updateUserProfile(oldUsername: string, updatedUser: any): Promise<void> {
     try {
-      // Update loggedInUser in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+      // Sync degree and career for compatibility
+      if (updatedUser.degree) {
+        updatedUser.career = updatedUser.degree;
+      } else if (updatedUser.career) {
+        updatedUser.degree = updatedUser.career;
+      }
 
-      // Update all posts for this user
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.map((post: any) => {
-        if (post.name === oldUsername) {
-          return {
-            ...post,
-            name: updatedUser.username,
-            career: updatedUser.degree,
-            semestre: updatedUser.semester,
-            photo: updatedUser.profilePic || post.photo,
-          };
-        }
-        return post;
+      // Get current user from auth
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("No authenticated user found");
+      }
+
+      // Update user document in Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, {
+        username: updatedUser.username,
+        degree: updatedUser.degree,
+        career: updatedUser.career,
+        semester: updatedUser.semester,
+        phone: updatedUser.phone,
+        bio: updatedUser.bio
       });
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+
+      // Get the latest user data from Firestore
+      const updatedUserDoc = await getDoc(userRef);
+      if (!updatedUserDoc.exists()) {
+        throw new Error("User document not found after update");
+      }
+      const latestUserData = updatedUserDoc.data();
+
+      // Update loggedInUser in localStorage with the latest data
+      localStorage.setItem("loggedInUser", JSON.stringify(latestUserData));
+
+      // Update all posts for this user in Firestore
+      const posts = await getAllPostsFromFirestore();
+      const userPosts = posts.filter((post: any) => post.name === oldUsername);
+      
+      // Update each post in Firestore
+      for (const post of userPosts) {
+        if (post.id) {  // Only update if we have a valid Firestore document ID
+          try {
+            const postRef = doc(db, "posts", post.id);
+            await updateDoc(postRef, {
+              name: latestUserData.username,
+              career: latestUserData.career || latestUserData.degree,
+              semestre: latestUserData.semester,
+              photo: latestUserData.profilePic || (post as any).photo,
+            });
+          } catch (error) {
+            console.error(`Error updating post ${post.id}:`, error);
+            // Continue with other posts even if one fails
+            continue;
+          }
+        }
+      }
+
+      // Update local state with the latest data
+      this._myState = {
+        ...this._myState,
+        auth: {
+          ...this._myState.auth,
+          user: latestUserData,
+        },
+      };
+      this._emitChange();
+
+      // Reload posts to reflect changes
+      await this.loadPostsFromFirestore();
+      await this.loadProfilePosts();
     } catch (error) {
       console.error("Error updating user profile:", error);
       throw error;
@@ -1622,8 +1835,8 @@ class Store {
     this._deleteUserAccount(username);
   }
 
-  updateProfile(oldUsername: string, updatedUser: any): void {
-    this._updateUserProfile(oldUsername, updatedUser);
+  async updateProfile(oldUsername: string, updatedUser: any): Promise<void> {
+    await this._updateUserProfile(oldUsername, updatedUser);
   }
 
   static getInstance(): Store {
@@ -1660,8 +1873,36 @@ class Store {
       }
     }
   }
+
+  async updatePostLikes(postId: string, userId: string, liked: boolean) {
+    // Find the post in local state
+    const postIndex = this._myState.posts.findIndex(post => post.id === postId);
+    if (postIndex === -1) return;
+    const post = this._myState.posts[postIndex];
+    // Update likes count
+    let newLikes = post.likes || 0;
+    if (liked) {
+      newLikes += 1;
+      // Add postId to userLikes
+      if (!this._myState.userLikes[userId]) this._myState.userLikes[userId] = [];
+      if (!this._myState.userLikes[userId].includes(postId)) {
+        this._myState.userLikes[userId].push(postId);
+      }
+    } else {
+      newLikes = Math.max(0, newLikes - 1);
+      // Remove postId from userLikes
+      if (this._myState.userLikes[userId]) {
+        this._myState.userLikes[userId] = this._myState.userLikes[userId].filter(id => id !== postId);
+      }
+    }
+    // Update Firestore
+    await updatePostLikesInFirestore(postId, newLikes);
+    // Update local state
+    this._myState.posts[postIndex].likes = newLikes;
+    this._emitChange();
+  }
 }
 
-export const store = Store.getInstance();
+const store = Store.getInstance();
 export default store;
-
+export { store };
