@@ -23,6 +23,7 @@ export class SignUpVerification {
     password: string;
     degree: string;
     semester: string;
+    profileImageFile?: File;
   }): Promise<{ success: boolean; error?: string }> {
     try {
       const result = await registerUser(
@@ -31,7 +32,8 @@ export class SignUpVerification {
         userData.phone,
         userData.degree,
         userData.semester,
-        userData.password
+        userData.password,
+        userData.profileImageFile
       );
 
       if (!result.isRegistered) {

@@ -1,11 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, query, where, getDocs, setDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, setDoc, doc, updateDoc } from "firebase/firestore";
 import { getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword
 } from "firebase/auth";
 import { UserType } from "../../types/Register/UserType";
+import { uploadProfileImage } from "../../flux/SupabaseStorage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -31,7 +32,8 @@ const registerUser = async (
   phone: string,
   career: string,
   semester: string,
-  password: string
+  password: string,
+  profileImageFile?: File
 ) => {
   try {
     console.log("Registering user with username:", username);
@@ -60,7 +62,13 @@ const registerUser = async (
     };
     
     await setDoc(doc(db, "users", userCredential.user.uid), userData);
-    
+
+    // If a profile image is provided, upload to Supabase and update Firestore
+    if (profileImageFile) {
+      const imageUrl = await uploadProfileImage(profileImageFile, userCredential.user.uid);
+      await updateDoc(doc(db, "users", userCredential.user.uid), { profileImage: imageUrl });
+    }
+
     return { isRegistered: true, user: userCredential };
   } catch (error) {
     console.error(error);
@@ -93,6 +101,26 @@ const loginUser = async (username: string, password: string) => {
     console.error(error);
     return { isLoggedIn: false, error: error };
   }
+}
+
+/**
+ * Save a Supabase file URL to Firestore in the 'archivos' collection.
+ * @param nombre - The display name for the file
+ * @param url - The public URL from Supabase
+ * @param id - The Firestore document ID (e.g., 'archivo_1')
+ *
+ * Example usage:
+ *   await saveSupabaseUrlToFirestore(
+ *     'Mi imagen desde Supabase',
+ *     'https://bnmfdyivzrqzfdebnljj.supabase.co/storage/v1/object/public/imagenes/mi-foto.jpg',
+ *     'archivo_1'
+ *   );
+ */
+export async function saveSupabaseUrlToFirestore(nombre: string, url: string, id: string) {
+  await setDoc(doc(db, 'archivos', id), {
+    nombre,
+    url
+  });
 }
 
 export { db, auth, registerUser, loginUser};
