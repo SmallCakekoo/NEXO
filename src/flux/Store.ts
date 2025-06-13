@@ -15,7 +15,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
-import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore } from '../services/Firebase/PostServiceFB';
+import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore, addCommentToPost, getCommentsForPost } from '../services/Firebase/PostServiceFB';
 
 export interface Rating {
   rating: number;
@@ -1090,23 +1090,32 @@ class Store {
     category: string;
     image: string | null;
   }): Promise<void> {
-    const newPost = this._createNewPost({
-      ...postData,
-      createdAt: new Date().toISOString()
-    });
-    if (!newPost) return;
-
-    // Save to Firestore
-    await addPostToFirestore(newPost);
-
-    // Reload posts from Firestore
-    await this.loadPostsFromFirestore();
-
-    // If the post belongs to the current user, also update profile posts
-    const currentUser = this._getLoggedInUser();
-    if (currentUser && newPost.name === currentUser.username) {
-      await this.loadProfilePosts();
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return;
     }
+
+    const name = user?.username || "Unknown User";
+    const career = user?.career || user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+
+    const post = {
+      photo: photo,
+      name: name,
+      date: new Date().toLocaleDateString(),
+      career: career,
+      semestre: semestre,
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image || null,
+    };
+
+    await this._createNewPost(post);
   }
 
   private _safeToISOString(dateStr: string | number | Date | undefined | null): string {
@@ -1119,67 +1128,74 @@ class Store {
     }
   }
 
-  private _createNewPost(postData: {
-    content: string;
-    category: string;
-    image: string | null;
-    createdAt: string;
-  }): Post | null {
-    const user = this._getLoggedInUser();
-    if (!user) {
-      console.error("No logged in user found");
-      return null;
+  private async _createNewPost(post: any): Promise<void> {
+    try {
+      // Add post to Firestore and get the document ID
+      const postId = await addPostToFirestore(post);
+      
+      // Create the post object with the Firestore document ID
+      const newPost: Post = {
+        ...post,
+        id: postId,
+        createdAt: new Date().toISOString(),
+        comments: []
+      };
+
+      // Update local state
+      this._myState = {
+        ...this._myState,
+        posts: [newPost, ...this._myState.posts],
+      };
+
+      // Persist to localStorage
+      localStorage.setItem("posts", JSON.stringify(this._myState.posts));
+      this._emitChange();
+    } catch (error) {
+      console.error("Error creating new post:", error);
+      // Don't throw the error, just log it
     }
-    const name = user?.username || "Unknown User";
-    const career = user?.career || user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    return {
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-      image: postData.image || null,
-      createdAt: postData.createdAt,
-    };
   }
 
   async loadPostsFromFirestore(): Promise<void> {
-    const rawPosts = await getAllPostsFromFirestore();
-    const posts: Post[] = rawPosts.map((p: any) => ({
-      id: p.id || '',
-      photo: p.photo || '',
-      name: p.name || '',
-      date: p.date || '',
-      career: p.career || '',
-      semestre: p.semestre || '',
-      message: p.message || '',
-      tag: p.tag || '',
-      likes: p.likes || 0,
-      share: p.share || '0',
-      comments: p.comments || [],
-      image: p.image || null,
-      createdAt: p.createdAt || this._safeToISOString(p.date),
-    }));
+    try {
+      const rawPosts = await getAllPostsFromFirestore();
+      const posts: Post[] = rawPosts.map((p: any) => ({
+        id: p.id || '',
+        photo: p.photo || '',
+        name: p.name || '',
+        date: p.date || '',
+        career: p.career || '',
+        semestre: p.semestre || '',
+        message: p.message || '',
+        tag: p.tag || '',
+        likes: p.likes || 0,
+        share: p.share || '0',
+        comments: p.comments || [],
+        image: p.image || null,
+        createdAt: p.createdAt || this._safeToISOString(p.date),
+      }));
 
-    // Sort posts by createdAt date in descending order (newest first)
-    posts.sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    });
+      // Sort posts by createdAt date in descending order (newest first)
+      posts.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
 
-    this._myState = {
-      ...this._myState,
-      posts,
-    };
-    this._emitChange();
+      this._myState = {
+        ...this._myState,
+        posts: posts,
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error loading posts from Firestore:", error);
+      // Initialize with empty posts array if there's an error
+      this._myState = {
+        ...this._myState,
+        posts: [],
+      };
+      this._emitChange();
+    }
   }
 
   async loadProfilePosts(): Promise<void> {
@@ -1244,31 +1260,84 @@ class Store {
     return this._getUserData();
   }
 
-  addComment(comment: any): void {
-    const currentPost = this._getCurrentPost();
-    if (!currentPost) return;
+  async addComment(comment: any): Promise<void> {
+    try {
+      const currentPost = this._getCurrentPost();
+      if (!currentPost) {
+        console.error("No current post found");
+        return;
+      }
 
-    const postId = currentPost.id;
-    const currentComments = this._myState.comments[postId] || [];
-    const userData = this._getUserData();
+      const postId = currentPost.id;
+      if (!postId) {
+        console.error("Post has no ID");
+        return;
+      }
 
-    const newComment = {
-      ...userData,
-      date: new Date().toLocaleDateString(),
-      message: comment.message,
-    };
+      const userData = this._getUserData();
+      const newComment = {
+        ...userData,
+        date: new Date().toLocaleDateString(),
+        message: comment.message,
+        timestamp: new Date().toISOString()
+      };
 
-    this._myState = {
-      ...this._myState,
-      comments: {
-        ...this._myState.comments,
-        [postId]: [...currentComments, newComment],
-      },
-    };
+      // Add comment to Firestore
+      await addCommentToPost(postId, newComment);
 
-    // Persist comments to localStorage
-    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
-    this._emitChange();
+      // Update local state
+      const currentComments = this._myState.comments[postId] || [];
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: [...currentComments, newComment],
+        },
+      };
+
+      // Update the post's comments in the posts array
+      const updatedPosts = this._myState.posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [...(post.comments || []), newComment]
+          };
+        }
+        return post;
+      });
+
+      this._myState = {
+        ...this._myState,
+        posts: updatedPosts
+      };
+
+      // Persist to localStorage
+      localStorage.setItem("comments", JSON.stringify(this._myState.comments));
+      localStorage.setItem("posts", JSON.stringify(this._myState.posts));
+      
+      this._emitChange();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      // Don't throw the error, just log it
+    }
+  }
+
+  // Add a method to load comments for a post
+  async loadCommentsForPost(postId: string): Promise<void> {
+    try {
+      const comments = await getCommentsForPost(postId);
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: comments,
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error loading comments:", error);
+      throw error;
+    }
   }
 
   private _createReview(reviewData: {
