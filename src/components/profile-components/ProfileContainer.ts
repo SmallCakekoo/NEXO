@@ -17,15 +17,10 @@ class ProfileContainer extends HTMLElement {
     this.subscribeToStore();
     this.setupEventListeners();
     
-    // Load profile posts when component is first mounted
-    store.loadProfilePosts();
-    
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
       console.log("ProfileContainer: 'profile-updated' event received. Loading posts.");
       store.loadProfilePosts();
-      // Force re-render to update user data
-      this.render();
     });
 
     // Listen for navigation events to reload posts when returning to profile
@@ -34,8 +29,6 @@ class ProfileContainer extends HTMLElement {
       if (customEvent.detail === '/profile') {
         console.log("ProfileContainer: 'navigate' to profile event received. Loading posts.");
         store.loadProfilePosts();
-        // Force re-render to update user data
-        this.render();
       }
     });
   }
@@ -48,16 +41,20 @@ class ProfileContainer extends HTMLElement {
 
   private subscribeToStore() {
     this.unsubscribeStore = store.subscribe(this.handleStoreChange);
+    this.handleStoreChange(store.getState());
   }
 
   private handleStoreChange(state: State) {
-    // Update posts and force re-render
     this.posts = store.getProfilePosts();
     this.render();
   }
 
-  private setupEventListeners() {
-    // Add any additional event listeners if needed
+  // Sets up event listeners for the floating action button
+  setupEventListeners() {
+    const fab = this.shadowRoot!.querySelector("floating-btn");
+    fab?.addEventListener("click", () => {
+      window.dispatchEvent(new CustomEvent("open-modal"));
+    });
   }
 
   render() {
@@ -76,7 +73,6 @@ class ProfileContainer extends HTMLElement {
         likes="${post.likes}"
         share="${post.share}"
         comments="${JSON.stringify(post.comments)}"
-        image="${post.image || ''}"
       ></profile-post>
     `
       )

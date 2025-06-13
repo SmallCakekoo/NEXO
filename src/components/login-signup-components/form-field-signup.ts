@@ -20,7 +20,7 @@ class SignUpFormFields extends HTMLElement {
           background-position: right 0.4375rem center; 
           background-size: 2.0625rem; 
           color: rgb(167, 167, 167);
-          width: 24rem;
+          width: 16.5625rem; 
           padding: 0.3125rem 1rem; 
           margin-bottom: 1.4375rem; 
           border: 0.125rem solid #5354ED; 
@@ -39,7 +39,7 @@ class SignUpFormFields extends HTMLElement {
         }
 
         input {
-          width: 22rem;
+          width: 16.5625rem;
           padding: 0.3125rem 1rem;
           margin-bottom: 1.4375rem;
           border: 0.125rem solid #5354ED;

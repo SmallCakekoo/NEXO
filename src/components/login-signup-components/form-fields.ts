@@ -5,7 +5,7 @@ class FormFields extends HTMLElement {
         input[type="text"],
         input[type="password"] {
           width: 16.56rem; 
-          padding: 0.3160rem 1rem; 
+          padding: 0.3125rem 1rem; 
           margin-bottom: 1.4375rem; 
           border: 0.125rem solid #5354ED; 
           border-radius: 1.875rem; 

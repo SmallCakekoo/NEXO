@@ -10,16 +10,14 @@ export interface Post {
   id?: string;
   photo: string;
   name: string;
-  date: string;
   career: string;
   semestre: string;
   message: string;
   tag: string;
   likes: number;
+  date: string;
   share: string;
-  comments: any[];
-  image?: string | null;
-  createdAt?: string;
+  comments: Comment[];
 }
 
 export interface PostsResponse {

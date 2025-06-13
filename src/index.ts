@@ -130,6 +130,8 @@ customElements.define("comments-detail-profile", CommentsDetailProfilePage);
 import "./components/login-signup-components/header-title";
 import "./components/login-signup-components/form-fields";
 import "./components/login-signup-components/primary-button";
+import "./components/login-signup-components/divider";
+import "./components/login-signup-components/social-buttons";
 import "./components/login-signup-components/forgot-password";
 import "./components/login-signup-components/form-field-signup";
 import "./components/login-signup-components/checkbox";
@@ -139,21 +141,18 @@ import AppContainer from "./layouts/AppContainer";
 customElements.define("app-container", AppContainer);
 
 // Global event listener for post publishing
-// ...existing code...
-
 document.addEventListener("post-published", (event) => {
   const customEvent = event as CustomEvent<{
     content: string;
     category: string;
-    image: string | null; // Cambio de File | null a string | null (base64)
+    image: File | null;
     createdAt: string;
   }>;
   const postData = customEvent.detail;
-
-  // Usa el método centralizado
+  
+  // Use the centralized PostActions.createPost method
   PostActions.createPost(postData);
 });
-// ...existing code...
 
 // Initial navigation or application setup
 // (Keep your existing application initialization code here)

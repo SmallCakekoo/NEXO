@@ -8,7 +8,7 @@ class TeacherCard extends HTMLElement {
 
   constructor() {
     super();
-    // console.log("TeacherCard: Constructor called");
+    console.log("TeacherCard: Constructor called");
     this.attachShadow({ mode: "open" });
   }
 
@@ -17,7 +17,7 @@ class TeacherCard extends HTMLElement {
   }
 
   connectedCallback() {
-    // console.log("TeacherCard: connectedCallback");
+    console.log("TeacherCard: connectedCallback");
     this.render();
     this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
@@ -33,7 +33,7 @@ class TeacherCard extends HTMLElement {
   }
 
   private handleClick = (event: Event) => {
-    // console.log("TeacherCard: Card clicked");
+    console.log("TeacherCard: Card clicked");
     const name = this.getAttribute("name") || "";
     const subject = this.getAttribute("subject") || "";
     const nucleus = this.getAttribute("nucleus") || "";
@@ -52,10 +52,10 @@ class TeacherCard extends HTMLElement {
       image,
     };
 
-    // console.log("TeacherCard: Dispatching teacher data:", teacherData);
+    console.log("TeacherCard: Dispatching teacher data:", teacherData);
     SelectionActions.selectTeacher(teacherData);
 
-    // console.log("TeacherCard: Navigating to /teacher-detail");
+    console.log("TeacherCard: Navigating to /teacher-detail");
     NavigationActions.navigate("/teacher-detail");
   };
 
@@ -201,7 +201,7 @@ class TeacherCard extends HTMLElement {
     // Agregar el event listener después de renderizar
     const card = this.shadowRoot?.querySelector("#teacherCard");
     if (card) {
-      // console.log("TeacherCard: Adding click listener to card");
+      console.log("TeacherCard: Adding click listener to card");
       card.addEventListener("click", this.handleClick);
     } else {
       console.error("TeacherCard: Could not find #teacherCard element");
