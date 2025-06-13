@@ -25,11 +25,8 @@ class CommentForm extends HTMLElement {
         return;
       }
 
-      const newComment = {
-        message: commentText
-      };
-      
-      store.addComment(newComment);
+      const event = new CustomEvent("comment-submitted", { detail: commentText });
+      document.dispatchEvent(event);
       commentInput.value = "";
       this.showNotification("¡Comentario publicado con éxito!");
     });

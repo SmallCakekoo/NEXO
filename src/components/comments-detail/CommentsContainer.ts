@@ -19,6 +19,9 @@ class CommentsContainer extends HTMLElement {
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (name === "post-id" && newValue !== oldValue) {
       this.postId = newValue;
+      if (this.postId) {
+        store.fetchCommentsForPost(this.postId);
+      }
     }
   }
 
@@ -26,6 +29,9 @@ class CommentsContainer extends HTMLElement {
     this.render();
     this.setupEventListeners();
     this.subscribeToStore();
+    if (this.postId) {
+      store.fetchCommentsForPost(this.postId);
+    }
   }
 
   disconnectedCallback() {

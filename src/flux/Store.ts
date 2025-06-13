@@ -16,6 +16,7 @@ import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
 import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore, addCommentToPost, getCommentsForPost } from '../services/Firebase/PostServiceFB';
+import { addCommentToFirestore, getCommentsByPostId } from "../services/Firebase/commentService";
 
 export interface Rating {
   rating: number;
@@ -1355,8 +1356,8 @@ class Store {
     try {
       console.log("Adding comment to post ID:", postId);
       console.log("New comment data:", newComment);
-      // Add comment to Firebase
-      await addCommentToPost(postId, newComment);
+      // Add comment to Firestore using the new function
+      await addCommentToFirestore(postId, newComment);
       
       // Update local state
       const currentComments = this._myState.comments[postId] || [];
@@ -1900,6 +1901,22 @@ class Store {
     // Update local state
     this._myState.posts[postIndex].likes = newLikes;
     this._emitChange();
+  }
+
+  async fetchCommentsForPost(postId: string): Promise<void> {
+    try {
+      const comments = await getCommentsByPostId(postId);
+      this._myState = {
+        ...this._myState,
+        comments: {
+          ...this._myState.comments,
+          [postId]: comments,
+        },
+      };
+      this._emitChange();
+    } catch (error) {
+      console.error("Error fetching comments for post:", postId, error);
+    }
   }
 }
 
