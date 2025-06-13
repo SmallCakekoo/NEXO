@@ -11,10 +11,11 @@ import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
 import { Review } from "../types/subject-detail/SubjectReviewList.types";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
+import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore } from '../services/Firebase/PostServiceFB';
 
 export interface Rating {
   rating: number;
@@ -1080,83 +1081,43 @@ class Store {
   }
 
   // Public methods
-// ...existing code...
-createPost(postData: {
-  content: string;
-  category: string;
-  image: string | null; // ahora acepta base64 string o null
-  createdAt: string;
-}): void {
-  const newPost = this._createNewPost(postData);
-  if (!newPost) return;
+  async createPost(postData: {
+    content: string;
+    category: string;
+    image: string | null; // ahora acepta base64 string o null
+    createdAt: string;
+  }): Promise<void> {
+    const newPost = this._createNewPost(postData);
+    if (!newPost) return;
 
-  const currentPosts = this._loadPostsFromStorage();
-  const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
+    // Save to Firestore
+    await addPostToFirestore(newPost);
 
-  if (!postExists) {
-    currentPosts.unshift(newPost);
-    this._savePostsToStorage(currentPosts);
+    // Reload posts from Firestore
+    await this.loadPostsFromFirestore();
 
     AppDispatcher.dispatch({
       type: PostActionTypes.ADD_POST,
       payload: newPost,
     });
   }
-}
 
-private _createNewPost(postData: {
-  content: string;
-  category: string;
-  image: string | null; // base64 string o null
-  createdAt: string;
-}): Post | null {
-  const user = this._getLoggedInUser();
-  if (!user) {
-    console.error("No logged in user found");
-    return null;
-  }
-
-  const name = user?.username || "Unknown User";
-  const career = user?.degree || "Unknown Career";
-  const semestre = user?.semester || "";
-  const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-    photo: photo, // SIEMPRE la foto de perfil
-    name: name,
-    date: new Date().toLocaleDateString(),
-    career: career,
-    semestre: semestre,
-    message: postData.content,
-    tag: postData.category,
-    likes: 0,
-    share: "0",
-    comments: [],
-    image: postData.image || null, // imagen subida en el post
-  };
-}
-
-  updatePostLikes(postId: string, userId: string, liked: boolean): void {
-    this._updatePostLikes(postId, liked);
-    this.saveUserLikes(userId, postId, liked);
-
-    const posts = this._loadPostsFromStorage();
-    const post = posts.find((p: Post) => p.id === postId);
-
-    if (post) {
-      AppDispatcher.dispatch({
-        type: liked ? PostActionTypes.LIKE_POST : PostActionTypes.UNLIKE_POST,
-        payload: {
-          postId,
-          likes: post.likes,
-        },
-      });
-    }
-  }
-
-  loadPostsFromStorage(): void {
-    const posts = this._loadPostsFromStorage();
+  async loadPostsFromFirestore(): Promise<void> {
+    const rawPosts = await getAllPostsFromFirestore();
+    const posts: Post[] = rawPosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: p.career || '',
+      semestre: p.semestre || '',
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+    }));
     this._myState = {
       ...this._myState,
       posts,
@@ -1164,28 +1125,24 @@ private _createNewPost(postData: {
     this._emitChange();
   }
 
-  private _getProfilePosts(username: string): Post[] {
-    try {
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      return posts.filter((p: Post) => p.name === username);
-    } catch (error) {
-      console.error("Error getting profile posts:", error);
-      return [];
-    }
-  }
-
-  // Public methods
-  getProfilePosts(): Post[] {
-    const user = this._getLoggedInUser();
-    if (!user) return [];
-    return this._getProfilePosts(user.username);
-  }
-
-  loadProfilePosts(): void {
+  async loadProfilePosts(): Promise<void> {
     const user = this._getLoggedInUser();
     if (!user) return;
-
-    const profilePosts = this._getProfilePosts(user.username);
+    const rawProfilePosts = await getPostsByUsername(user.username);
+    const profilePosts: Post[] = rawProfilePosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: p.career || '',
+      semestre: p.semestre || '',
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+    }));
     this._myState = {
       ...this._myState,
       posts: profilePosts,
@@ -1681,8 +1638,67 @@ private _createNewPost(postData: {
       }
     }
   }
+
+  private _createNewPost(postData: {
+    content: string;
+    category: string;
+    image: string | null;
+    createdAt: string;
+  }): Post | null {
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return null;
+    }
+    const name = user?.username || "Unknown User";
+    const career = user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    return {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      photo: photo,
+      name: name,
+      date: new Date().toLocaleDateString(),
+      career: career,
+      semestre: semestre,
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image || null,
+    };
+  }
+
+  async updatePostLikes(postId: string, userId: string, liked: boolean) {
+    // Find the post in local state
+    const postIndex = this._myState.posts.findIndex(post => post.id === postId);
+    if (postIndex === -1) return;
+    const post = this._myState.posts[postIndex];
+    // Update likes count
+    let newLikes = post.likes || 0;
+    if (liked) {
+      newLikes += 1;
+      // Add postId to userLikes
+      if (!this._myState.userLikes[userId]) this._myState.userLikes[userId] = [];
+      if (!this._myState.userLikes[userId].includes(postId)) {
+        this._myState.userLikes[userId].push(postId);
+      }
+    } else {
+      newLikes = Math.max(0, newLikes - 1);
+      // Remove postId from userLikes
+      if (this._myState.userLikes[userId]) {
+        this._myState.userLikes[userId] = this._myState.userLikes[userId].filter(id => id !== postId);
+      }
+    }
+    // Update Firestore
+    await updatePostLikesInFirestore(postId, newLikes);
+    // Update local state
+    this._myState.posts[postIndex].likes = newLikes;
+    this._emitChange();
+  }
 }
 
-export const store = Store.getInstance();
+const store = Store.getInstance();
 export default store;
-
+export { store };

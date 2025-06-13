@@ -45,7 +45,7 @@ class ProfileContainer extends HTMLElement {
   }
 
   private handleStoreChange(state: State) {
-    this.posts = store.getProfilePosts();
+    this.posts = store.getState().posts;
     this.render();
   }
 

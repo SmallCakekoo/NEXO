@@ -29,7 +29,7 @@ export const FeedActions = {
     });
   },
 
-  refreshFeedFromStorage: () => {
-    store.loadPostsFromStorage();
+  refreshFeedFromStorage: async () => {
+    await store.loadPostsFromFirestore();
   }
 };

@@ -13,12 +13,12 @@ export const PostActions = {
     store.createPost(postData);
   },
 
-  likePost(postId: string, userId: string) {
-    store.updatePostLikes(postId, userId, true);
+  async likePost(postId: string, userId: string) {
+    await store.updatePostLikes(postId, userId, true);
   },
 
-  unlikePost(postId: string, userId: string) {
-    store.updatePostLikes(postId, userId, false);
+  async unlikePost(postId: string, userId: string) {
+    await store.updatePostLikes(postId, userId, false);
   },
 
   // ... rest of the existing code ...
