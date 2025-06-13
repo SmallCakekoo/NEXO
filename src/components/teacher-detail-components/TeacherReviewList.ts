@@ -75,19 +75,16 @@ class TeacherReviewList extends HTMLElement {
     try {
       const state = store.getState();
       const teacherRatings = state.teacherRatings[this.teacherName] || [];
-      // Map the ratings to the Review type, formatting the date and including author/image if available
       this.reviews = teacherRatings.map(rating => ({
         rating: rating.rating,
         text: rating.comment,
-        // Format the timestamp to a readable date string
-        date: new Date(rating.timestamp).toLocaleDateString(), 
-        author: (rating as any).author || 'Anonymous', // Bypassing type check as author might not be on Rating type
-        image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`, // Bypassing type check for image
+        date: new Date(rating.timestamp).toLocaleDateString(),
+        author: rating.author || 'Anonymous',
+        image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
       }));
-
       this.render();
     } catch (error) {
-      console.error('Error in fetchReviews:', error);
+      console.error("Error fetching reviews:", error);
       this.reviews = [];
       this.render();
     } finally {
@@ -103,10 +100,8 @@ class TeacherReviewList extends HTMLElement {
   }
 
   connectedCallback() {
-    this.teacherName = this.getAttribute('teacher-name') || '';
-    if (this.teacherName) {
-      this.fetchReviews();
-    }
+    this.fetchReviews();
+    this.setupEventListeners();
     this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
   }
 
@@ -120,35 +115,31 @@ class TeacherReviewList extends HTMLElement {
     }
   }
 
-  private handleStoreChange(state: State) {
+  setupEventListeners() {
+    // Event listener removed to prevent duplicate submissions
+    // The event is now only handled by TeacherCommentsContainer
+  }
+
+  handleStoreChange(state: State) {
     if (!this.isConnected || !this.teacherName) {
-      return; // Only update if the component is connected and has a teacher name
+      return;
     }
-    // Update reviews from the store state for this teacher
     const latestRatings = state.teacherRatings[this.teacherName] || [];
     this.reviews = latestRatings.map(rating => ({
       rating: rating.rating,
       text: rating.comment,
       date: new Date(rating.timestamp).toLocaleDateString(),
-      author: (rating as any).author || 'Anonymous',
-      image: (rating as any).image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+      author: rating.author || 'Anonymous',
+      image: rating.image || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
     }));
     this.render();
   }
 
   addReview(review: Review) {
     console.warn('addReview method in TeacherReviewList called. Consider using the store for updates.');
-    const localKey = `teacherReviews_${this.teacherName}`;
-    let localReviews: Review[] = [];
-    try {
-      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
-    } catch (e) {}
-    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
-      localReviews.unshift(review);
-      localStorage.setItem(localKey, JSON.stringify(localReviews));
-      this.reviews = localReviews;
-      this.render();
-    }
+    store.saveTeacherReview(this.teacherName, review);
+    this.reviews = store.getTeacherReviews(this.teacherName);
+    this.render();
   }
 
   render() {

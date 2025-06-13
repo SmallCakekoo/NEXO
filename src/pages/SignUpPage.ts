@@ -12,9 +12,9 @@ class SignUpComponent extends HTMLElement {
           max-width: 35.625rem; 
           margin: 3rem auto;
           padding: 1.5rem;
-          background: #ddddfb;
+          background: #FBFBFD;
           border-radius: 0.5rem;
-          border: 0.063rem solid #5354ed; 
+          border: 0.063rem solid #000000; 
           box-shadow: 0 0 0.375rem rgba(0, 0, 0, 0.1); 
           display: flex;
           justify-content: center;
@@ -51,7 +51,6 @@ class SignUpComponent extends HTMLElement {
           signup-form-fields,
           custom-checkbox,
           primary-button,
-          custom-divider,
           social-buttons {
             width: 100%;
             padding: 0 1.5rem;
@@ -67,8 +66,6 @@ class SignUpComponent extends HTMLElement {
         <signup-form-fields></signup-form-fields>
         <custom-checkbox></custom-checkbox>
         <primary-button text="Sign Up"></primary-button>
-        <custom-divider></custom-divider>
-        <social-buttons></social-buttons>
       </section>
     `;
 
@@ -96,7 +93,7 @@ class SignUpComponent extends HTMLElement {
     const signUpButton = this.querySelector("primary-button");
     const signUpFormFields = this.querySelector("signup-form-fields") as any;
 
-    signUpButton?.addEventListener("click", (event) => {
+    signUpButton?.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -121,7 +118,7 @@ class SignUpComponent extends HTMLElement {
       }
 
       // If validation passes, initiate sign up
-      SignUpActions.initiateSignUp({
+      await SignUpActions.initiateSignUp({
         username: formData.get("username") as string,
         email: formData.get("email") as string,
         phone: formData.get("phone") as string,

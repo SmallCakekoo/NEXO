@@ -17,19 +17,19 @@ class FeedPage extends HTMLElement {
     this.render();
     this.setupEventListeners();
 
-    if (sessionStorage.getItem("returnToFeed") === "true") {
-      const savedPosition = sessionStorage.getItem("feedScrollPosition");
+    if (store.getReturnToFeed()) {
+      const savedPosition = store.getScrollPosition();
       if (savedPosition) {
         setTimeout(() => {
-          window.scrollTo(0, parseInt(savedPosition));
-          sessionStorage.removeItem("returnToFeed");
+          window.scrollTo(0, savedPosition);
+          store.clearReturnToFeed();
         }, 100);
       }
     }
   }
 
   disconnectedCallback() {
-    sessionStorage.setItem("feedScrollPosition", window.scrollY.toString());
+    store.saveScrollPosition(window.scrollY);
     window.removeEventListener("scroll", this.handleScroll.bind(this));
 
     if (this.unsubscribeStore) {

@@ -1,8 +1,12 @@
 import { store, State } from "../flux/Store";
 import { NavigationActions } from "../flux/NavigationActions";
 import { AuthActions } from "../flux/AuthActions";
+import { auth, db } from "../services/Firebase/FirebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 class AppContainer extends HTMLElement {
+  private lastPath: string = "";
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -12,6 +16,24 @@ class AppContainer extends HTMLElement {
   connectedCallback() {
     store.load();
 
+    this.updateView(window.location.pathname);
+
+    // Firebase Auth persistence: restore user on reload
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const userProfile = userDoc.data();
+          localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+          AuthActions.loginSuccess(userProfile);
+        }
+      } else {
+        // User is signed out, clear everything
+        localStorage.removeItem("loggedInUser");
+        AuthActions.logout(); // This will clear state and redirect
+      }
+    });
+
     // Verificar autenticación al inicio
     AuthActions.checkAuth();
 
@@ -19,8 +41,12 @@ class AppContainer extends HTMLElement {
     NavigationActions.updateRoute(window.location.pathname);
 
     // Suscribirse a cambios en el store
+    this.lastPath = store.getState().currentPath;
     store.subscribe((state: State) => {
-      this.handleRouteChange(state);
+      if (state.currentPath !== this.lastPath) {
+        this.handleRouteChange(state);
+        this.lastPath = state.currentPath;
+      }
     });
 
     // Agregar manejador para el evento popstate (navegación del navegador)

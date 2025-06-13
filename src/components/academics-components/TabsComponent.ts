@@ -1,12 +1,98 @@
+import { SearchActions } from "../../flux/SearchActions";
+import { store, State } from "../../flux/Store";
+
 class TabsComponent extends HTMLElement {
+  private unsubscribeStore: (() => void) | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
+    console.log("TABS COMPONENT! ========================================")
     this.render();
-    this.setupTabs();
+    this.setupEventListeners();
+    this.unsubscribeStore = store.subscribe(this.handleStoreChange.bind(this));
+  }
+
+  disconnectedCallback() {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+    }
+  }
+
+  handleStoreChange(state: State) {
+    
+    const activeTab = state.navigation.activeAcademicTab
+    const currentTab = this.shadowRoot?.querySelector(".nav-tabs")?.getAttribute("data-active-tab");
+    if (currentTab === activeTab){
+     console.log("============ MISMA TAB =============="); // No change needed
+      return;
+    } else {
+      this.updateActiveTab(activeTab);
+    }
+  }
+
+  setupEventListeners() {
+    const navTabs = this.shadowRoot?.querySelector(".nav-tabs");
+    const buttons = this.shadowRoot?.querySelectorAll(".nav-link");
+    const tabPanes = this.shadowRoot?.querySelectorAll(".tab-pane");
+    const SearchBar = this.shadowRoot?.querySelector("search-bar")
+
+    if (!buttons || !tabPanes) return;
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-target");
+        if (target) {
+          // Update active button
+          buttons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+
+          // Update active tab pane
+          tabPanes.forEach((pane) => {
+            pane.classList.remove("show", "active");
+            if (pane.id === target) {
+              pane.classList.add("show", "active");
+            }
+          });
+
+          // Update nav-tabs data attribute
+          if (navTabs) {
+            navTabs.setAttribute("data-active-tab", target);
+            SearchBar?.setAttribute("searchtype", target);
+            state.navigation.activeAcademicTab = target;
+          }
+        }
+      });
+    });
+
+    // Set initial active tab from store
+    const state = store.getState();
+    this.updateActiveTab(state.navigation.activeAcademicTab);
+  }
+
+  updateActiveTab(activeTab: string) {
+    const navTabs = this.shadowRoot?.querySelector(".nav-tabs");
+    const activeButton = this.shadowRoot?.querySelector(`[data-target="${activeTab}"]`);
+    const activePane = this.shadowRoot?.querySelector(`#${activeTab}`);
+
+    
+    if (activeButton && activePane && navTabs) {
+      // Update active button
+      const buttons = this.shadowRoot?.querySelectorAll(".nav-link");
+      buttons?.forEach(btn => btn.classList.remove("active"));
+      activeButton.classList.add("active");
+
+      // Update active tab pane
+      const tabPanes = this.shadowRoot?.querySelectorAll(".tab-pane");
+      tabPanes?.forEach(pane => pane.classList.remove("show", "active"));
+      activePane.classList.add("show", "active");
+
+      // Update nav-tabs data attribute
+      navTabs.setAttribute("data-active-tab", activeTab);
+    }
   }
 
   render() {
@@ -78,15 +164,15 @@ class TabsComponent extends HTMLElement {
         <div class="container">
           <nav>
             <div class="nav nav-tabs nav-fill" data-active-tab="teacher">
-              <button class="nav-item nav-link active" data-target="teacher" type="button">Teacher Reviews</button>
+              <button class="nav-item nav-link" data-target="teacher" type="button">Teacher Reviews</button>
               <button class="nav-item nav-link" data-target="subjects" type="button">Subjects Reviews</button>
             </div>
           </nav>
   
-          <search-bar></search-bar>
+          <search-bar searchtype="teacher"></search-bar>
   
           <div class="tab-content">
-            <div class="tab-pane show active" id="teacher">
+            <div class="tab-pane" id="teacher">
               <teachers-container></teachers-container>
             </div>
             <div class="tab-pane" id="subjects">
@@ -96,46 +182,6 @@ class TabsComponent extends HTMLElement {
         </div>
       </section>
     `;
-  }
-
-  // Sets up tab switching behavior by listening for button clicks
-  setupTabs() {
-    const triggerTabList = Array.from(
-      this.shadowRoot!.querySelectorAll<HTMLElement>("[data-target]")
-    );
-    const navTabs = this.shadowRoot!.querySelector(".nav-tabs") as HTMLElement;
-
-    // Add click events to each tab button
-    triggerTabList.forEach((triggerEl) => {
-      triggerEl.addEventListener("click", (event: Event) => {
-        event.preventDefault();
-
-        // Hide all tab panes
-        const allPanes = this.shadowRoot!.querySelectorAll(".tab-pane");
-        allPanes.forEach((pane) => {
-          pane.classList.remove("show", "active");
-        });
-
-        // Remove "active" class from all buttons
-        const allButtons = this.shadowRoot!.querySelectorAll(".nav-link");
-        allButtons.forEach((button) => {
-          button.classList.remove("active");
-        });
-
-        // Get the ID of the tab to show
-        const targetId = triggerEl.getAttribute("data-target");
-        if (targetId) {
-          const targetPane = this.shadowRoot!.querySelector(`#${targetId}`);
-          if (targetPane) {
-            // Mark a active
-            targetPane.classList.add("show", "active");
-          }
-          triggerEl.classList.add("active");
-          // Update the active
-          navTabs.setAttribute("data-active-tab", targetId);
-        }
-      });
-    });
   }
 }
 

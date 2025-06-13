@@ -80,17 +80,9 @@ class SubjectReviewList extends HTMLElement {
 
   addReview(review: Review) {
     console.warn('addReview method in SubjectReviewList called. Consider using the store for updates.');
-    const localKey = `subjectReviews_${this.subjectName}`;
-    let localReviews: Review[] = [];
-    try {
-      localReviews = JSON.parse(localStorage.getItem(localKey) || '[]');
-    } catch (e) {}
-    if (!localReviews.some(r => r.author === review.author && r.text === review.text && r.date === review.date)) {
-      localReviews.unshift(review);
-      localStorage.setItem(localKey, JSON.stringify(localReviews));
-      this.reviews = localReviews;
-      this.render();
-    }
+    store.saveSubjectReview(this.subjectName, review);
+    this.reviews = store.getSubjectReviews(this.subjectName);
+    this.render();
   }
 
   render() {

@@ -15,6 +15,8 @@ class ProfileHeader extends HTMLElement {
   connectedCallback() {
     this.setupStoreListeners(); // Setup store listeners on connection
     this.addEventListeners();
+    // Initial render
+    this.render();
   }
 
   disconnectedCallback() {
@@ -24,20 +26,13 @@ class ProfileHeader extends HTMLElement {
   }
 
   private setupStoreListeners() {
+    // Subscribe to store changes
     this.unsubscribe = store.subscribe(this.handleStoreChange);
-    // Trigger an initial render with the current state after subscribing
-    this.handleStoreChange(store.getState());
   }
 
-  private _lastUser: any | null = null;
-
   private handleStoreChange(state: State) {
-    // Actualizar la UI cuando el store cambie based on relevant parts of the state
-    // In this case, we re-render if the auth.user state changes
-    if (state.auth.user !== this._lastUser) { // Check if user data actually changed
-        this._lastUser = state.auth.user;
-        this.render();
-    }
+    // Force re-render when store changes
+    this.render();
   }
 
   // Adds event listener to the "edit" button to trigger navigation
@@ -54,7 +49,7 @@ class ProfileHeader extends HTMLElement {
     const user = store.getState().auth.user;
 
     const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
+    const career = user?.career || user?.degree || "Unknown Career";
     const bio = user?.bio || "";
     const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
 
@@ -185,7 +180,7 @@ h1 {
                 </div>
             </div>
             <div class="profile-section">
-                <img class="profile-picture" src="${profilePic}" alt="Profile picture"  >
+                <img class="profile-picture" src="${profilePic}" alt="Profile Picture">
                 <button class="edit-button">
                     <svg viewBox="0 0 24 24">
                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -198,6 +193,9 @@ h1 {
                 </div>
             </div>
         `;
+
+    // Reattach event listeners after rendering
+    this.addEventListeners();
   }
 }
 

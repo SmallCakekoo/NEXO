@@ -43,7 +43,7 @@ class CommentsContainer extends HTMLElement {
     const commentsList = this.shadowRoot?.querySelector("comments-list");
     if (commentsList && this.postId) {
       const commentsForPost = state.comments[this.postId] || [];
-      commentsList.setAttribute("comments", JSON.stringify(commentsForPost));
+      commentsList.setAttribute("comments", this._escapeHTML(JSON.stringify(commentsForPost)));
       console.log("Store change: Updated comments for postId:", this.postId, commentsForPost);
     }
   }
@@ -123,9 +123,15 @@ class CommentsContainer extends HTMLElement {
         </style>
         <comment-form></comment-form>
         <div class="divider"></div>
-        <comments-list comments='${JSON.stringify(commentsForPost)}'></comments-list>
+        <comments-list comments='${this._escapeHTML(JSON.stringify(commentsForPost))}'></comments-list>
       `;
     }
+  }
+
+  private _escapeHTML(str: string): string {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
   }
 }
 
