@@ -1103,11 +1103,6 @@ class Store {
     if (currentUser && newPost.name === currentUser.username) {
       await this.loadProfilePosts();
     }
-
-    AppDispatcher.dispatch({
-      type: PostActionTypes.ADD_POST,
-      payload: newPost,
-    });
   }
 
   async loadPostsFromFirestore(): Promise<void> {

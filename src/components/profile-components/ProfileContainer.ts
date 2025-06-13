@@ -17,6 +17,9 @@ class ProfileContainer extends HTMLElement {
     this.subscribeToStore();
     this.setupEventListeners();
     
+    // Load profile posts when component is first mounted
+    store.loadProfilePosts();
+    
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
       console.log("ProfileContainer: 'profile-updated' event received. Loading posts.");
