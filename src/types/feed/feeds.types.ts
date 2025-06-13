@@ -18,7 +18,8 @@ export interface Post {
   likes: number;
   share: string;
   comments: any[];
-  image?: string | null; 
+  image?: string | null;
+  createdAt?: string;
 }
 
 export interface PostsResponse {

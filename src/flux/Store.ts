@@ -862,11 +862,10 @@ class Store {
           parsedUser.profilePic = storedProfilePic;
         }
         // Ensure degree and career are both present and in sync
-        if (!parsedUser.degree && parsedUser.career) {
-          parsedUser.degree = parsedUser.career;
-        }
-        if (!parsedUser.career && parsedUser.degree) {
+        if (parsedUser.degree) {
           parsedUser.career = parsedUser.degree;
+        } else if (parsedUser.career) {
+          parsedUser.degree = parsedUser.career;
         }
         this._myState = {
           ...this._myState,
@@ -1087,9 +1086,11 @@ class Store {
     content: string;
     category: string;
     image: string | null;
-    createdAt: string;
   }): Promise<void> {
-    const newPost = this._createNewPost(postData);
+    const newPost = this._createNewPost({
+      ...postData,
+      createdAt: new Date().toISOString()
+    });
     if (!newPost) return;
 
     // Save to Firestore
@@ -1103,6 +1104,48 @@ class Store {
     if (currentUser && newPost.name === currentUser.username) {
       await this.loadProfilePosts();
     }
+  }
+
+  private _safeToISOString(dateStr: string | number | Date | undefined | null): string {
+    try {
+      if (!dateStr) return new Date().toISOString();
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+    } catch (error) {
+      return new Date().toISOString();
+    }
+  }
+
+  private _createNewPost(postData: {
+    content: string;
+    category: string;
+    image: string | null;
+    createdAt: string;
+  }): Post | null {
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return null;
+    }
+    const name = user?.username || "Unknown User";
+    const career = user?.career || user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    return {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      photo: photo,
+      name: name,
+      date: new Date().toLocaleDateString(),
+      career: career,
+      semestre: semestre,
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image || null,
+      createdAt: postData.createdAt,
+    };
   }
 
   async loadPostsFromFirestore(): Promise<void> {
@@ -1120,7 +1163,16 @@ class Store {
       share: p.share || '0',
       comments: p.comments || [],
       image: p.image || null,
+      createdAt: p.createdAt || this._safeToISOString(p.date),
     }));
+
+    // Sort posts by createdAt date in descending order (newest first)
+    posts.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
     this._myState = {
       ...this._myState,
       posts,
@@ -1145,7 +1197,16 @@ class Store {
       share: p.share || '0',
       comments: p.comments || [],
       image: p.image || null,
+      createdAt: p.createdAt || this._safeToISOString(p.date),
     }));
+
+    // Sort posts by createdAt date in descending order (newest first)
+    profilePosts.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
     this._myState = {
       ...this._myState,
       profilePosts,
@@ -1164,7 +1225,7 @@ class Store {
       return {
         photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
         name: user?.username || "Anonymous",
-        career: user?.career || "",
+        career: user?.career || user?.degree || "",
       };
     } catch (error) {
       console.error("Error getting user data:", error);
@@ -1589,7 +1650,7 @@ class Store {
           return {
             ...post,
             name: updatedUser.username,
-            career: updatedUser.degree,
+            career: updatedUser.career || updatedUser.degree,
             semestre: updatedUser.semester,
             photo: updatedUser.profilePic || post.photo,
           };
@@ -1645,37 +1706,6 @@ class Store {
         this._emitChange();
       }
     }
-  }
-
-  private _createNewPost(postData: {
-    content: string;
-    category: string;
-    image: string | null;
-    createdAt: string;
-  }): Post | null {
-    const user = this._getLoggedInUser();
-    if (!user) {
-      console.error("No logged in user found");
-      return null;
-    }
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    return {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-      image: postData.image || null,
-    };
   }
 
   async updatePostLikes(postId: string, userId: string, liked: boolean) {

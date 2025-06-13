@@ -37,7 +37,7 @@ class SettingsProfileContainer extends HTMLElement {
 
     const username = user?.username || "";
     const phone = user?.phone || "";
-    const degree = user?.degree || "";
+    const degree = user?.career || user?.degree || "";
     const semester = user?.semester || "";
     const bio = user?.bio || "";
 
