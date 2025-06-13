@@ -590,6 +590,9 @@ class Store {
           const payload = action.payload as PhotoPayload;
           const user = this._myState.auth.user;
           if (user) {
+            // Save profile picture in localStorage with username-specific key
+            localStorage.setItem(`profilePic_${user.username}`, payload.photo);
+            
             // Update user's profile picture in state
             this._myState = {
               ...this._myState,
@@ -851,6 +854,17 @@ class Store {
       const user = localStorage.getItem("loggedInUser");
       if (user) {
         const parsedUser = JSON.parse(user);
+        const storedProfilePic = localStorage.getItem(`profilePic_${parsedUser.username}`);
+        if (storedProfilePic) {
+          parsedUser.profilePic = storedProfilePic;
+        }
+        // Ensure degree and career are both present and in sync
+        if (!parsedUser.degree && parsedUser.career) {
+          parsedUser.degree = parsedUser.career;
+        }
+        if (!parsedUser.career && parsedUser.degree) {
+          parsedUser.career = parsedUser.degree;
+        }
         this._myState = {
           ...this._myState,
           auth: {
@@ -868,6 +882,10 @@ class Store {
         getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
           if (userDoc.exists()) {
             const userProfile = userDoc.data();
+            const storedProfilePic = localStorage.getItem(`profilePic_${userProfile.username}`);
+            if (storedProfilePic) {
+              userProfile.profilePic = storedProfilePic;
+            }
             this._myState = {
               ...this._myState,
               auth: {
@@ -1590,6 +1608,12 @@ private _createNewPost(postData: {
 
   private _updateUserProfile(oldUsername: string, updatedUser: any): void {
     try {
+      // Sync degree and career for compatibility
+      if (updatedUser.degree) {
+        updatedUser.career = updatedUser.degree;
+      } else if (updatedUser.career) {
+        updatedUser.degree = updatedUser.career;
+      }
       // Update loggedInUser in localStorage
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
 

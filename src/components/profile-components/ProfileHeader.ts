@@ -54,7 +54,7 @@ class ProfileHeader extends HTMLElement {
     const user = store.getState().auth.user;
 
     const name = user?.username || "Unknown User";
-    const career = user?.career || "Unknown Career";
+    const career = user?.degree || user?.career || "Unknown Career";
     const bio = user?.bio || "";
     const profilePic = user?.profilePic || "https://picsum.photos/seed/picsum/200/300";
 
@@ -198,6 +198,9 @@ h1 {
                 </div>
             </div>
         `;
+
+    // Reattach event listeners after rendering
+    this.addEventListeners();
   }
 }
 

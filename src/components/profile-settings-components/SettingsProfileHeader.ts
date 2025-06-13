@@ -260,6 +260,9 @@ h1 {
         </button>
       </div>
     `;
+
+    // Reattach event listeners after rendering
+    this.addEventListeners();
   }
 }
 
