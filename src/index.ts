@@ -141,21 +141,18 @@ import AppContainer from "./layouts/AppContainer";
 customElements.define("app-container", AppContainer);
 
 // Global event listener for post publishing
-// ...existing code...
-
 document.addEventListener("post-published", (event) => {
   const customEvent = event as CustomEvent<{
     content: string;
     category: string;
-    image: string | null; // Cambio de File | null a string | null (base64)
+    image: File | null;
     createdAt: string;
   }>;
   const postData = customEvent.detail;
-
-  // Usa el método centralizado
+  
+  // Use the centralized PostActions.createPost method
   PostActions.createPost(postData);
 });
-// ...existing code...
 
 // Initial navigation or application setup
 // (Keep your existing application initialization code here)

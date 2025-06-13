@@ -1,9 +1,6 @@
-import { subjects } from "../types/academics/SubjectsContainer.types";
-import { teachers } from "../types/academics/TeachersContainer.types";
-
 export interface Action {
   type: string;
-  payload?: object | number | string | teachers[] | subjects[];
+  payload?: object | number | string;
 }
 
 export class Dispatcher {

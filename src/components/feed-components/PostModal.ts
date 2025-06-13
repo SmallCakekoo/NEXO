@@ -337,47 +337,38 @@ class PostModal extends HTMLElement {
     });
 
     // Publicar post
-publishButton.addEventListener("click", async (e) => {
-  e.preventDefault();
-  const content = textarea.value.trim();
-  const category = Array.from(categories).find((radio) => radio.checked)?.value || "Daily Life";
-  const file = fileUpload.files?.[0] || null;
+    publishButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      const content = textarea.value.trim();
+      const category = Array.from(categories).find((radio) => radio.checked)?.value || "Daily Life";
+      const file = fileUpload.files?.[0] || null;
 
-  if (!content) {
-    alert("Por favor escribe algo antes de publicar");
-    return;
-  }
+      if (!content) {
+        alert("Por favor escribe algo antes de publicar");
+        return;
+      }
 
-  // Si hay imagen, conviértela a base64
-  let imageBase64: string | null = null;
-  if (file) {
-    imageBase64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      PostActions.createPost({
+        content,
+        category,
+        image: file,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Limpiar el formulario
+      textarea.value = "";
+      fileUpload.value = "";
+      const defaultCategory = this.shadowRoot?.querySelector("#daily-life") as HTMLInputElement;
+      if (defaultCategory) defaultCategory.checked = true;
+
+      FeedActions.closePostModal();
     });
-  }
-  PostActions.createPost({
-    content,
-    category,
-    image: imageBase64, // ahora es base64 o null
-    createdAt: new Date().toISOString(),
-  });
-  // Limpiar el formulario
-  textarea.value = "";
-  fileUpload.value = "";
-  const defaultCategory = this.shadowRoot?.querySelector("#daily-life") as HTMLInputElement;
-  if (defaultCategory) defaultCategory.checked = true;
-
-  FeedActions.closePostModal();
-});
 
     // Preview de imagen
     fileUpload.addEventListener("change", (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        // Aquí se puede agregar una vista previa de la imagen
+        // Aquí podrías agregar una vista previa de la imagen si lo deseas
       }
     });
   }

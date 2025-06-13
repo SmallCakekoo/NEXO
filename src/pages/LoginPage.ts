@@ -1,8 +1,5 @@
 import { AuthActions } from "../flux/AuthActions";
 import { store } from "../flux/Store";
-import { loginUser } from "../services/Firebase/FirebaseConfig";
-import { db } from "../services/Firebase/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
 
 class LoginComponent extends HTMLElement {
   connectedCallback() {
@@ -68,7 +65,7 @@ class LoginComponent extends HTMLElement {
 
   setupLoginHandler() {
     const loginButton = this.querySelector("primary-button");
-    loginButton?.addEventListener("click", async () => {
+    loginButton?.addEventListener("click", () => {
       const form = this.querySelector("#login-form") as HTMLFormElement;
       if (!form) return;
       const usernameInput = form.querySelector('input[type="text"]') as HTMLInputElement;
@@ -81,32 +78,19 @@ class LoginComponent extends HTMLElement {
         return;
       }
 
-      // Use Firebase Auth and Firestore for login
-      const result = await loginUser(username, password);
-      if (!result.isLoggedIn) {
+      // Use Store to validate credentials
+      const user = store.validateUserCredentials(username, password);
+
+      if (!user) {
         alert("Usuario o contraseña inválidos.");
         return;
       }
 
-      // Fetch user profile from Firestore
-      if (!result.user || !result.user.user) {
-        alert("No user credential returned from Firebase.");
-        return;
-      }
-      const userCredential = result.user.user;
-      const userDoc = await getDoc(doc(db, "users", userCredential.uid));
-      if (!userDoc.exists()) {
-        alert("No user profile found in Firestore.");
-        return;
-      }
-      const userProfile = userDoc.data();
-
       // Use AuthActions for login
-      AuthActions.loginSuccess(userProfile);
+      AuthActions.loginSuccess(user);
       // Navigation to feed will be handled automatically in the Store
     });
   }
 }
 
 export default LoginComponent;
-

@@ -1,8 +1,4 @@
 import { AppDispatcher } from "./Dispatcher";
-import { store } from "./Store";
-import { db } from "../services/Firebase/FirebaseConfig";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { uploadProfileImage } from "./StorageSupabase";
 
 // Action Types
 export const ProfileActionTypes = {
@@ -21,7 +17,7 @@ export const ProfileActionTypes = {
 export const ProfileActions = {
   deleteAccount: () => {
     // Get current user data
-    const loggedInUser = store.getState().auth.user;
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
     if (!loggedInUser) {
       AppDispatcher.dispatch({
         type: ProfileActionTypes.DELETE_ACCOUNT_ERROR,
@@ -31,7 +27,41 @@ export const ProfileActions = {
     }
 
     try {
-      store.deleteAccount(loggedInUser.username);
+      // Remove user from users array
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const updatedUsers = users.filter((u: any) => u.username !== loggedInUser.username);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+      // Remove user's posts
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      const updatedPosts = posts.filter((p: any) => p.name !== loggedInUser.username);
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+
+      // Remove user's likes
+      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
+      delete userLikes[loggedInUser.username];
+      localStorage.setItem("userLikes", JSON.stringify(userLikes));
+
+      // Remove user's teacher ratings
+      const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
+      Object.keys(teacherRatings).forEach((teacher) => {
+        teacherRatings[teacher] = teacherRatings[teacher].filter(
+          (r: any) => r.userId !== loggedInUser.username
+        );
+      });
+      localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
+
+      // Remove user's subject ratings
+      const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
+      Object.keys(subjectRatings).forEach((subject) => {
+        subjectRatings[subject] = subjectRatings[subject].filter(
+          (r: any) => r.userId !== loggedInUser.username
+        );
+      });
+      localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
+
+      // Remove logged in user
+      localStorage.removeItem("loggedInUser");
 
       // Dispatch success action
       AppDispatcher.dispatch({
@@ -47,7 +77,7 @@ export const ProfileActions = {
     }
   },
 
-  updateProfile: async (profileData: {
+  updateProfile: (profileData: {
     username: string;
     phone: string;
     degree: string;
@@ -56,23 +86,11 @@ export const ProfileActions = {
   }) => {
     try {
       // Get current user data
-      const loggedInUser = store.getState().auth.user;
+      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || "null");
       if (!loggedInUser) {
         AppDispatcher.dispatch({
           type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
           payload: { error: "No logged in user found" },
-        });
-        return;
-      }
-
-      // Validate phone number
-      const phoneValidation = store.validatePhone(profileData.phone);
-      if (!phoneValidation.isValid) {
-        // Show alert for invalid phone number
-        alert("Change number action canceled, the new number should be 10 digits long and no letters");
-        AppDispatcher.dispatch({
-          type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
-          payload: { error: phoneValidation.error },
         });
         return;
       }
@@ -83,46 +101,46 @@ export const ProfileActions = {
       const updatedUser = {
         ...loggedInUser,
         ...profileData,
-        career: profileData.degree,
       };
 
-      // Update Firestore (do not update profilePic)
-      if (loggedInUser.uid) {
-        const userRef = doc(db, "users", loggedInUser.uid);
-        await setDoc(
-          userRef,
-          {
-            username: updatedUser.username,
-            phone: updatedUser.phone,
-            degree: updatedUser.degree,
-            career: updatedUser.degree,
-            semester: updatedUser.semester,
-            bio: updatedUser.bio,
-          },
-          { merge: true }
-        );
+      // Update loggedInUser in localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
 
-        // Get the latest user data from Firestore
-        const updatedUserDoc = await getDoc(userRef);
-        if (!updatedUserDoc.exists()) {
-          throw new Error("User document not found after update");
-        }
-        const latestUserData = updatedUserDoc.data();
-
-        // Update store with the latest data
-        await store.updateProfile(oldUsername, latestUserData);
-
-        // Dispatch success action with the latest data
-        AppDispatcher.dispatch({
-          type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
-          payload: { user: latestUserData },
-        });
-
-        // Dispatch profile-updated event
-        document.dispatchEvent(new CustomEvent("profile-updated"));
+      // Update in users array
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const userIndex = users.findIndex(
+        (u: any) => u.username === oldUsername || u.email === loggedInUser.email
+      );
+      if (userIndex !== -1) {
+        users[userIndex] = updatedUser;
+        localStorage.setItem("users", JSON.stringify(users));
       }
+
+      // Update all posts for this user
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      const updatedPosts = posts.map((post: any) => {
+        if (post.name === oldUsername) {
+          return {
+            ...post,
+            name: updatedUser.username,
+            career: updatedUser.degree,
+            semestre: updatedUser.semester,
+            photo: updatedUser.profilePic || post.photo,
+          };
+        }
+        return post;
+      });
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+
+      // Dispatch success action
+      AppDispatcher.dispatch({
+        type: ProfileActionTypes.UPDATE_PROFILE_SUCCESS,
+        payload: { user: updatedUser },
+      });
+
+      // Dispatch profile-updated event
+      document.dispatchEvent(new CustomEvent("profile-updated"));
     } catch (error) {
-      console.error("Error updating profile:", error);
       AppDispatcher.dispatch({
         type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
         payload: { error: "Failed to update profile" },
@@ -132,7 +150,7 @@ export const ProfileActions = {
 
   logout: () => {
     try {
-      store.removeLoggedInUser();
+      localStorage.removeItem("loggedInUser");
 
       AppDispatcher.dispatch({
         type: ProfileActionTypes.LOGOUT_SUCCESS,
@@ -145,34 +163,10 @@ export const ProfileActions = {
     }
   },
 
-  updateProfilePhoto: async function (file: File) {
-    try {
-      const loggedInUser = store.getState().auth.user;
-      if (!loggedInUser || !loggedInUser.uid) {
-        AppDispatcher.dispatch({
-          type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
-          payload: { error: "No logged in user found" },
-        });
-        return;
-      }
-      // Upload to Supabase
-      const publicUrl = await uploadProfileImage(file, loggedInUser.uid);
-      // Update Firestore user profile
-      await setDoc(
-        doc(db, "users", loggedInUser.uid),
-        { profilePic: publicUrl },
-        { merge: true }
-      );
-      // Update local store
-      AppDispatcher.dispatch({
-        type: ProfileActionTypes.UPDATE_PROFILE_PHOTO,
-        payload: { photo: publicUrl },
-      });
-    } catch (error) {
-      AppDispatcher.dispatch({
-        type: ProfileActionTypes.UPDATE_PROFILE_ERROR,
-        payload: { error: "Failed to update profile photo" },
-      });
-    }
+  updateProfilePhoto(photoBase64: string) {
+    AppDispatcher.dispatch({
+      type: ProfileActionTypes.UPDATE_PROFILE_PHOTO,
+      payload: { photo: photoBase64 },
+    });
   },
 };

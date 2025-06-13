@@ -151,7 +151,7 @@ class LandingPage extends HTMLElement {
     
     <section class="hero">
       <div class="text">
-        <h1>Your Academic Network for<br/>Connecting, Learning and Growing.</h1>
+        <h1>Your Academic Network for<br/>Connect, Learn and Grow.</h1>
         <h4>Our space to share knowledge, solve doubts, and find academic support.</h4>
         <start-button></start-button>
       </div>

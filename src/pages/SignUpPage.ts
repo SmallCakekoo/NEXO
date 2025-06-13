@@ -96,7 +96,7 @@ class SignUpComponent extends HTMLElement {
     const signUpButton = this.querySelector("primary-button");
     const signUpFormFields = this.querySelector("signup-form-fields") as any;
 
-    signUpButton?.addEventListener("click", async (event) => {
+    signUpButton?.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -121,7 +121,7 @@ class SignUpComponent extends HTMLElement {
       }
 
       // If validation passes, initiate sign up
-      await SignUpActions.initiateSignUp({
+      SignUpActions.initiateSignUp({
         username: formData.get("username") as string,
         email: formData.get("email") as string,
         phone: formData.get("phone") as string,

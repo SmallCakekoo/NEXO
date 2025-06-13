@@ -1,14 +1,10 @@
 import { subjects } from "../../types/academics/SubjectsContainer.types";
 import { fetchSubjects } from "../../services/SubjectService";
-import store from "../../flux/Store";
-import { SearchActions } from "../../flux/SearchActions";
 
 class SubjectsContainer extends HTMLElement {
   private subjects: subjects[] = [];
   private currentPage: number = 1;
   private itemsPerPage: number = 8;
-  private unsubscribeStore: (() => void) | null = null;
-
 
   constructor() {
     super();
@@ -18,16 +14,6 @@ class SubjectsContainer extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadSubjects();
-    this.unsubscribeStore = store.subscribe(() => {
-      this.renderPage();
-      this.renderPagination();
-    });
-  }
-
-  disconnectedCallback() {
-    if (this.unsubscribeStore) {
-      this.unsubscribeStore();
-    }
   }
 
   render() {
@@ -122,7 +108,6 @@ class SubjectsContainer extends HTMLElement {
     try {
       const response = await fetchSubjects();
       this.subjects = response.subjects;
-      store.getState().subjects = response.subjects;
       this.renderPage();
       this.renderPagination();
     } catch (error) {
@@ -133,22 +118,13 @@ class SubjectsContainer extends HTMLElement {
   renderPage() {
     const row = this.shadowRoot?.querySelector(".row");
     if (row) {
-      
       row.innerHTML = "";
 
-      const state = store.getState();
-      const subjectList = state.filteredSubjects ?  state.filteredSubjects as subjects[]: this.subjects;
-      
-      if (subjectList.length === 0) {
-        row.innerHTML = "<div style='width:100%;text-align:center;padding:2rem;'>No subjects found.</div>";
-        return;
-      }
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-      const endIndex = Math.min(startIndex + this.itemsPerPage, subjectList.length);
+      const endIndex = Math.min(startIndex + this.itemsPerPage, this.subjects.length);
 
       for (let i = startIndex; i < endIndex; i++) {
-        const subject = subjectList[i];
-        if (!subject) continue;
+        const subject = this.subjects[i];
         const col = document.createElement("div");
         col.className = "col";
 
@@ -170,10 +146,7 @@ class SubjectsContainer extends HTMLElement {
     if (paginationContainer) {
       paginationContainer.innerHTML = "";
 
-      const state = store.getState();
-      const subjectList = state.filteredSubjects ? state.filteredSubjects : this.subjects;
-      
-      const totalPages = Math.ceil(subjectList.length / this.itemsPerPage);
+      const totalPages = Math.ceil(this.subjects.length / this.itemsPerPage);
 
       const prevButton = document.createElement("button");
       prevButton.textContent = "«";

@@ -7,19 +7,19 @@ export const PostActions = {
   createPost(postData: {
     content: string;
     category: string;
-    image: string | null; // Cambio de File (base64)
+    image: File | null;
     createdAt: string;
   }) {
     store.createPost(postData);
   },
 
-  async likePost(postId: string, userId: string) {
-    await store.updatePostLikes(postId, userId, true);
+  likePost(postId: string, userId: string) {
+    store.updatePostLikes(postId, userId, true);
   },
 
-  async unlikePost(postId: string, userId: string) {
-    await store.updatePostLikes(postId, userId, false);
+  unlikePost(postId: string, userId: string) {
+    store.updatePostLikes(postId, userId, false);
   },
 
   // ... rest of the existing code ...
-};
+}; 
