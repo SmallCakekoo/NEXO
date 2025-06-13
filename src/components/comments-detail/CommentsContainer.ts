@@ -44,7 +44,7 @@ class CommentsContainer extends HTMLElement {
     if (commentsList && this.postId) {
       const commentsForPost = state.comments[this.postId] || [];
       commentsList.setAttribute("comments", this._escapeHTML(JSON.stringify(commentsForPost)));
-      console.log("Store change: Updated comments for postId:", this.postId, commentsForPost);
+      console.log("CommentsContainer: Store change - Updated comments for postId:", this.postId, commentsForPost);
     }
   }
 

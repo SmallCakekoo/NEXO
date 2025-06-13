@@ -44,6 +44,14 @@ class CommentsDetailPage extends HTMLElement {
       this.postId = this.postData.id;
       this.fromProfile = store.getFromProfile();
       this.checkUserLikeStatus();
+      
+      // Load comments from Firebase
+      try {
+        await store.loadCommentsForPost(this.postId);
+      } catch (error) {
+        console.error("Error loading comments:", error);
+      }
+      
       this.render();
       this.setupEventListeners();
       return;
@@ -54,38 +62,26 @@ class CommentsDetailPage extends HTMLElement {
 
   async fetchPostData() {
     try {
-      const response = await fetch("/data/Feed.json");
-      const data = await response.json();
-
-      if (this.postId && data.posts) {
-        console.log("Searching for post with ID in fetched data:", this.postId);
-        this.postData = data.posts.find((post: any) => post.id === this.postId);
-
-        if (!this.postData && data.posts.length > 0) {
-          console.warn("Post not found with ID:", this.postId, ", using first post as fallback.");
-          this.postData = data.posts[0];
-          this.postId = this.postData.id;
-        } else if (this.postData) {
-          console.log("Found post in fetched data:", this.postData);
+      if (this.postId) {
+        const post = store.getPostById(this.postId);
+        if (post) {
+          this.postData = post;
+          this.fromProfile = store.getFromProfile();
+          this.checkUserLikeStatus();
+          
+          // Load comments from Firebase
+          await store.loadCommentsForPost(this.postId);
+          
+          this.render();
+          this.setupEventListeners();
         } else {
-          console.warn("No posts found in fetched data.");
+          console.error("Post not found");
+          NavigationActions.navigate("/feed");
         }
       }
-
-      // Ensure that comments are in format array
-      if (this.postData && this.postData.comments) {
-        this.postData.comments = Array.isArray(this.postData.comments)
-          ? this.postData.comments
-          : JSON.parse(this.postData.comments);
-      }
-
-      this.checkUserLikeStatus(); // Check like status after fetching post
-      this.render();
-      this.setupEventListeners();
     } catch (error) {
-      console.error("Error loading post data:", error);
-      this.render(); // Renderizar con datos por defecto
-      this.setupEventListeners();
+      console.error("Error fetching post data:", error);
+      NavigationActions.navigate("/feed");
     }
   }
 
@@ -489,3 +485,4 @@ class CommentsDetailPage extends HTMLElement {
 }
 
 export default CommentsDetailPage;
+

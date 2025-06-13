@@ -51,13 +51,12 @@ class CommentsList extends HTMLElement {
           <div class="comment-item">
             <div class="comment-header">
               <div class="user-info">
-                <img src="${userImage}" alt="${name}" class="user-avatar" onerror="this.onerror=null; this.src='${defaultAvatar}';">
+                <img src="${userImage}" alt="${name}" class="user-avatar">
                 <div>
                   <h4 class="user-name">${name}</h4>
                   <div class="comment-date">${date}</div>
                 </div>
               </div>
-              ${career ? `<div class="comment-career">${career}</div>` : ""}
             </div>
             <p class="comment-text">${message}</p>
           </div>
@@ -148,14 +147,6 @@ class CommentsList extends HTMLElement {
         .comment-date {
           font-size: 13px;
           color: #5354ed;
-        }
-        
-        .comment-career {
-          font-size: 12px;
-          color: #6b7280;
-          background-color: #f0f2fa;
-          padding: 4px 8px;
-          border-radius: 12px;
         }
         
         .comment-text {
