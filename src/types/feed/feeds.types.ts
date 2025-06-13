@@ -18,6 +18,11 @@ export interface Post {
   date: string;
   share: string;
   comments: Comment[];
+  content: string;
+  category: string;
+  imageUrl?: string; // Nueva propiedad para la URL de la imagen
+  createdAt: string;
+  userId: string;
 }
 
 export interface PostsResponse {

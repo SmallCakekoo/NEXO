@@ -7,4 +7,7 @@ export enum PostActionTypes {
   UPDATE_SUBJECT_RATING = 'UPDATE_SUBJECT_RATING',
   LOAD_POSTS = 'LOAD_POSTS',
   ADD_POST = 'ADD_POST'
+
+  
 } 
+
