@@ -47,31 +47,12 @@ class SettingsProfileHeader extends HTMLElement {
     fileInput?.addEventListener("change", async () => {
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-          const base64 = e.target?.result as string;
-          if (!base64) return;
-
-          const user = store.getState().auth.user;
-          if (!user) {
-            console.error("No logged in user found in store state");
-            return;
-          }
-
-          // Guardar en localStorage
-          localStorage.setItem(`profilePic_${user.username}`, base64);
-
-          // Notificar al store
-          ProfileActions.updateProfilePhoto(base64);
-        };
-
-        reader.onerror = (error) => {
-          console.error("Error reading file:", error);
+        try {
+          await ProfileActions.updateProfilePhoto(file);
+        } catch (error) {
+          console.error("Error uploading image:", error);
           alert("Error uploading image. Please try again.");
-        };
-
-        reader.readAsDataURL(file);
+        }
       }
     });
   }

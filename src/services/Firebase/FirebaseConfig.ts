@@ -95,4 +95,24 @@ const loginUser = async (username: string, password: string) => {
   }
 }
 
+/**
+ * Save a Supabase file URL to Firestore in the 'archivos' collection.
+ * @param nombre - The display name for the file
+ * @param url - The public URL from Supabase
+ * @param id - The Firestore document ID (e.g., 'archivo_1')
+ *
+ * Example usage:
+ *   await saveSupabaseUrlToFirestore(
+ *     'Mi imagen desde Supabase',
+ *     'https://bnmfdyivzrqzfdebnljj.supabase.co/storage/v1/object/public/imagenes/mi-foto.jpg',
+ *     'archivo_1'
+ *   );
+ */
+export async function saveSupabaseUrlToFirestore(nombre: string, url: string, id: string) {
+  await setDoc(doc(db, 'archivos', id), {
+    nombre,
+    url
+  });
+}
+
 export { db, auth, registerUser, loginUser};
