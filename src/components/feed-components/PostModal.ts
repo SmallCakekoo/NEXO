@@ -339,29 +339,7 @@ class PostModal extends HTMLElement {
     // Publicar post
     publishButton.addEventListener("click", (e) => {
       e.preventDefault();
-      const content = textarea.value.trim();
-      const category = Array.from(categories).find((radio) => radio.checked)?.value || "Daily Life";
-      const file = fileUpload.files?.[0] || null;
-
-      if (!content) {
-        alert("Por favor escribe algo antes de publicar");
-        return;
-      }
-
-      PostActions.createPost({
-        content,
-        category,
-        image: file,
-        createdAt: new Date().toISOString(),
-      });
-
-      // Limpiar el formulario
-      textarea.value = "";
-      fileUpload.value = "";
-      const defaultCategory = this.shadowRoot?.querySelector("#daily-life") as HTMLInputElement;
-      if (defaultCategory) defaultCategory.checked = true;
-
-      FeedActions.closePostModal();
+      this.handleSubmit();
     });
 
     // Preview de imagen
@@ -409,6 +387,37 @@ class PostModal extends HTMLElement {
       overlay.style.display = "none";
       modal.style.display = "none";
     }, 300);
+  }
+
+  private async handleSubmit() {
+    const content = (this.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement).value;
+    const category = (this.shadowRoot!.querySelector('input[name="category"]:checked') as HTMLInputElement)?.value;
+    const imageInput = this.shadowRoot!.querySelector('input[type="file"]') as HTMLInputElement;
+    const imageFile = imageInput?.files?.[0];
+
+    if (!content || !category) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      let imageUrl: string | null = null;
+      if (imageFile) {
+        imageUrl = await PostActions.uploadPostImage(imageFile);
+      }
+
+      await store.createPost({
+        content,
+        category,
+        image: imageUrl,
+        createdAt: new Date().toISOString()
+      });
+
+      this.closeModal();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Error creating post. Please try again.');
+    }
   }
 }
 

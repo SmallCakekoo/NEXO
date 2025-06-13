@@ -68,7 +68,7 @@ const registerUser = async (
       const imageUrl = await uploadProfileImage(profileImageFile, userCredential.user.uid);
       await updateDoc(doc(db, "users", userCredential.user.uid), { profileImage: imageUrl });
     }
-
+    
     return { isRegistered: true, user: userCredential };
   } catch (error) {
     console.error(error);

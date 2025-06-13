@@ -11,10 +11,12 @@ import { FeedActionsType } from "./FeedActions";
 import { TagActionTypes } from "../types/feed/TagActionTypes";
 import { Review } from "../types/subject-detail/SubjectReviewList.types";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { teachers } from "../types/academics/TeachersContainer.types";
 import { subjects } from "../types/academics/SubjectsContainer.types";
+import { addPostToFirestore, getAllPostsFromFirestore, getPostsByUsername, updatePostLikesInFirestore } from '../services/Firebase/PostServiceFB';
+import { uploadPostImage } from './SupabaseStorage';
 
 export interface Rating {
   rating: number;
@@ -113,8 +115,9 @@ export interface State {
 
   filteredTeachers: teachers[] | null;
   filteredSubjects: subjects[] | null;
-
-  // queryResult: teachers[]|subjects[] | null;
+  searchDebounceTimeout: number | null;
+  teachers: teachers[];
+  subjects: subjects[];
 }
 
 type Listener = (state: State) => void;
@@ -153,7 +156,9 @@ class Store {
 
     filteredTeachers: null,
     filteredSubjects: null,
-    // queryResult: null,
+    searchDebounceTimeout: null,
+    teachers: [],
+    subjects: [],
   };
 
   // Los componentes
@@ -214,8 +219,6 @@ class Store {
               user: action.payload,
             },
           };
-          // Provisional fix: Save logged-in user to localStorage
-          localStorage.setItem("loggedInUser", JSON.stringify(action.payload));
           // Si el usuario está en una ruta pública, redirigir al feed
           if (["/", "/login", "/signup"].includes(this._myState.currentPath)) {
             window.history.replaceState({}, "", "/feed");
@@ -227,7 +230,6 @@ class Store {
 
       case AuthActionsType.LOGOUT:
         signOut(auth).then(() => {
-          localStorage.removeItem("loggedInUser");
           this._myState = {
             ...this._myState,
             auth: {
@@ -347,8 +349,6 @@ class Store {
               [teacherName]: [...currentRatings, { rating, comment, timestamp, author, image }],
             },
           };
-          // Persist ratings to localStorage
-          localStorage.setItem("teacherRatings", JSON.stringify(this._myState.teacherRatings));
           this._emitChange();
         }
         break;
@@ -377,12 +377,6 @@ class Store {
               ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
               : rating;
 
-          // Update the rating in localStorage for the teacher card
-          const teacherData = JSON.parse(localStorage.getItem("selectedTeacher") || "{}");
-          if (teacherData.name === teacherName) {
-            teacherData.rating = averageRating.toFixed(1);
-            localStorage.setItem("selectedTeacher", JSON.stringify(teacherData));
-          }
           this._emitChange();
         }
         break;
@@ -400,21 +394,15 @@ class Store {
               ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
               : rating;
 
-          // Update the rating in localStorage for the subject card
-          const subjectData = JSON.parse(localStorage.getItem("selectedSubject") || "{}");
-          if (subjectData.name === subjectName) {
-            subjectData.rating = averageRating.toFixed(1);
-            localStorage.setItem("selectedSubject", JSON.stringify(subjectData));
-          }
           this._emitChange();
         }
         break;
       case PostActionTypes.LOAD_POSTS:
         if (action.payload && Array.isArray(action.payload)) {
-          // Cargar posts desde localStorage si existen
-          const storedPosts = localStorage.getItem("posts");
-          const posts = storedPosts ? JSON.parse(storedPosts) : action.payload;
-
+          // Ensure only Post[] is assigned
+          const posts = action.payload.filter((p: any) =>
+            typeof p === 'object' && 'photo' in p && 'name' in p && 'message' in p && 'tag' in p
+          );
           this._myState = {
             ...this._myState,
             posts: posts,
@@ -427,8 +415,6 @@ class Store {
           const newPost = action.payload as Post;
           const updatedPosts = [newPost, ...this._myState.posts];
 
-          // Actualizar localStorage y estado
-          localStorage.setItem("posts", JSON.stringify(updatedPosts));
           this._myState = {
             ...this._myState,
             posts: updatedPosts,
@@ -457,38 +443,40 @@ class Store {
       case SearchActionTypes.SEARCH_SUBJECTS:
         if (action.payload && typeof action.payload === "object") {
             const payload = action.payload as subjects[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredSubjects) !== JSON.stringify(payload)) {
             this._myState = {
               ...this._myState, 
               filteredSubjects: payload,
-            }
-
-            console.log("Store: Filtered subjects:", this._myState.filteredSubjects);
+            };
             this._emitChange();
           }
-
+        }
           break;
       case SearchActionTypes.SEARCH_TEACHERS:
         if (action.payload && typeof action.payload === "object") {
             const payload = action.payload as teachers[];
+          // Only update if the results are different
+          if (JSON.stringify(this._myState.filteredTeachers) !== JSON.stringify(payload)) {
             this._myState = {
               ...this._myState, 
               filteredTeachers: payload,
-            }
-
+            };
             this._emitChange();
           }
-
+        }
           break;
-
       case SearchActionTypes.CLEAR_SEARCH:
+        // Only update if there are actually results to clear
+        if (this._myState.filteredSubjects !== null || this._myState.filteredTeachers !== null) {
         this._myState = {
           ...this._myState,
           filteredSubjects: null,
           filteredTeachers: null,
         };
         this._emitChange();
+        }
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_SUCCESS:
         if (action.payload) {
           const payload = action.payload as DeleteAccountSuccessPayload;
@@ -504,7 +492,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case ProfileActionTypes.DELETE_ACCOUNT_ERROR:
         if (action.payload) {
           const payload = action.payload as DeleteAccountErrorPayload;
@@ -512,7 +499,6 @@ class Store {
         }
         this._emitChange();
         break;
-
       case CommentActionsType.ADD_COMMENT:
         if (action.payload) {
           const currentPost = this._getCurrentPost();
@@ -526,13 +512,10 @@ class Store {
                 [postId]: [...currentComments, action.payload],
               },
             };
-            // Persist comments to localStorage
-            localStorage.setItem("comments", JSON.stringify(this._myState.comments));
             this._emitChange();
           }
         }
         break;
-
       case FeedActionsType.OPEN_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -543,7 +526,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.CLOSE_POST_MODAL:
         this._myState = {
           ...this._myState,
@@ -554,7 +536,6 @@ class Store {
         };
         this._emitChange();
         break;
-
       case FeedActionsType.SHARE_POST:
         if (action.payload && typeof action.payload === "object" && "postId" in action.payload) {
           const payload = action.payload as PostModalPayload;
@@ -564,7 +545,6 @@ class Store {
           }
         }
         break;
-
       case FeedActionsType.LOAD_POSTS_FROM_STORAGE:
         if (action.payload && typeof action.payload === "object" && "posts" in action.payload) {
           const payload = action.payload as { posts: Post[] };
@@ -575,7 +555,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case TagActionTypes.SELECT_TAG:
         if (action.payload) {
           const tag = action.payload as string;
@@ -587,7 +566,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_PHOTO:
         if (action.payload && typeof action.payload === "object" && "photo" in action.payload) {
           const payload = action.payload as PhotoPayload;
@@ -604,32 +582,10 @@ class Store {
                 },
               },
             };
-
-            // Update user's profile picture in localStorage
-            localStorage.setItem("loggedInUser", JSON.stringify(this._myState.auth.user));
-
-            // Update all posts for this user
-            const posts = this._myState.posts.map((post) => {
-              if (post.name === user.username) {
-                return {
-                  ...post,
-                  photo: payload.photo,
-                };
-              }
-              return post;
-            });
-
-            this._myState = {
-              ...this._myState,
-              posts,
-            };
-
-            localStorage.setItem("posts", JSON.stringify(posts));
             this._emitChange();
           }
         }
         break;
-
       case ProfileActionTypes.UPDATE_PROFILE_SUCCESS:
         if (action.payload && typeof action.payload === "object" && "user" in action.payload) {
           this._myState = {
@@ -642,7 +598,6 @@ class Store {
           this._emitChange();
         }
         break;
-
       case NavigateActionsType.SET_RETURN_TO_FEED:
         this._myState = {
           ...this._myState,
@@ -651,10 +606,8 @@ class Store {
             returnToFeed: true,
           },
         };
-        sessionStorage.setItem("returnToFeed", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_RETURN_TO_PROFILE:
         this._myState = {
           ...this._myState,
@@ -663,10 +616,8 @@ class Store {
             returnToProfile: true,
           },
         };
-        sessionStorage.setItem("returnToProfile", "true");
         this._emitChange();
         break;
-
       case NavigateActionsType.CLEAR_RETURN_FLAGS:
         this._myState = {
           ...this._myState,
@@ -676,11 +627,8 @@ class Store {
             returnToProfile: false,
           },
         };
-        sessionStorage.removeItem("returnToFeed");
-        sessionStorage.removeItem("returnToProfile");
         this._emitChange();
         break;
-
       case NavigateActionsType.SET_ACTIVE_ACADEMIC_TAB:
         if (action.payload && typeof action.payload === "object" && "tab" in action.payload) {
           this._myState = {
@@ -693,52 +641,6 @@ class Store {
           this._emitChange();
         }
         break;
-
-      // case SearchActionTypes.SEARCH_ALL: 
-      //   if (action.payload && typeof action.payload === "object" && "query" in action.payload) {
-      //     const query = String(action.payload.query).toLowerCase();
-
-      //     const filteredTeachers = this._myState.posts
-      //       .filter((p) => p.tag === "teacher")
-      //       .filter(
-      //         (p) =>
-      //           p.name.toLowerCase().includes(query) ||
-      //           p.career?.toLowerCase().includes(query) ||
-      //           p.semestre?.toLowerCase().includes(query)
-      //       );
-
-      //     const filteredSubjects = this._myState.posts
-      //       .filter((p) => p.tag === "subject")
-      //       .filter(
-      //         (p) =>
-      //           p.name.toLowerCase().includes(query) || p.message?.toLowerCase().includes(query)
-      //       );
-
-      //     this._myState = {
-      //       ...this._myState,
-      //       searchQuery: query,
-      //       filteredTeachers,
-      //       filteredSubjects,
-      //     };
-
-      //     this._emitChange();
-      //   }
-      //   break;
-
-        // case SearchActionTypes.SEARCH_QUERY:
-        //   if (action.payload && typeof action.payload === "object") {
-        //     const payload = action.payload as teachers[] | subjects[];
-        //     this._myState = {
-        //       ...this._myState, 
-        //       queryResult: payload,
-        //     }
-
-        //     this._emitChange();
-        //   }
-
-        //   break
-
-      
     }
   }
 
@@ -786,8 +688,6 @@ class Store {
       }
     }
     this._myState.userLikes[userId] = userLikes;
-    localStorage.setItem("userLikes", JSON.stringify(this._myState.userLikes));
-    this._emitChange();
   }
 
   private _getUserLikes(userId: string): string[] {
@@ -795,90 +695,91 @@ class Store {
   }
 
   private _saveCurrentPost(post: any) {
-    sessionStorage.setItem("currentPostId", post.id);
-    sessionStorage.setItem("currentPost", JSON.stringify(post));
+    // No longer saving to sessionStorage
   }
 
   private _getCurrentPost(): any {
-    const postStr = sessionStorage.getItem("currentPost");
-    return postStr ? JSON.parse(postStr) : null;
+    // No longer retrieving from sessionStorage
+    return null; // Or fetch from Firebase if needed
+  }
+
+  private _saveCurrentPostId(postId: string): void {
+    // No longer saving to sessionStorage
+  }
+
+  private _getCurrentPostId(): string {
+    // No longer retrieving from sessionStorage
+    return "";
   }
 
   private _setFromProfile(value: boolean) {
-    sessionStorage.setItem("fromProfile", value.toString());
+    // No longer saving to sessionStorage
   }
 
   private _getFromProfile(): boolean {
-    return sessionStorage.getItem("fromProfile") === "true";
+    // No longer retrieving from sessionStorage
+    return false;
   }
 
   // Add scroll position management methods
   private _saveScrollPosition(position: number): void {
-    sessionStorage.setItem("feedScrollPosition", position.toString());
+    // No longer saving to sessionStorage
   }
 
   private _getScrollPosition(): number {
-    const position = sessionStorage.getItem("feedScrollPosition");
-    return position ? parseInt(position) : 0;
+    // No longer retrieving from sessionStorage
+    return 0;
   }
 
   private _clearReturnToFeed(): void {
-    sessionStorage.removeItem("returnToFeed");
+    // No longer removing from sessionStorage
   }
 
   private _getReturnToFeed(): boolean {
-    return sessionStorage.getItem("returnToFeed") === "true";
-  }
-
-  // Add current post management methods
-  private _saveCurrentPostId(postId: string): void {
-    sessionStorage.setItem("currentPostId", postId);
-  }
-
-  private _getCurrentPostId(): string {
-    return sessionStorage.getItem("currentPostId") || "";
-  }
-
-  private _setReturnToProfile(value: boolean): void {
-    sessionStorage.setItem("returnToProfile", value.toString());
+    // No longer retrieving from sessionStorage
+    return false;
   }
 
   // Public methods for scroll position
   saveScrollPosition(position: number): void {
-    this._saveScrollPosition(position);
+    // No longer saving to sessionStorage
   }
 
   getScrollPosition(): number {
-    return this._getScrollPosition();
+    // No longer retrieving from sessionStorage
+    return 0;
   }
 
   clearReturnToFeed(): void {
-    this._clearReturnToFeed();
+    // No longer clearing from sessionStorage
   }
 
   getReturnToFeed(): boolean {
-    return this._getReturnToFeed();
+    // No longer retrieving from sessionStorage
+    return false;
   }
 
   // Public methods for current post management
   saveCurrentPostId(postId: string): void {
-    this._saveCurrentPostId(postId);
+    // No longer saving to sessionStorage
   }
 
   getCurrentPostId(): string {
-    return this._getCurrentPostId();
+    // No longer retrieving from sessionStorage
+    return "";
   }
 
   setFromProfile(value: boolean): void {
-    this._setFromProfile(value);
+    // No longer saving to sessionStorage
   }
 
   getFromProfile(): boolean {
-    return this._getFromProfile();
+    // No longer retrieving from sessionStorage
+    return false;
   }
 
   setReturnToProfile(value: boolean): void {
-    this._setReturnToProfile(value);
+    // No longer saving to sessionStorage
   }
 
   // Add public methods to access the private ones
@@ -901,88 +802,18 @@ class Store {
   // Update load method to include userLikes
   load(): void {
     try {
-      // Cargar datos del usuario
-      const user = localStorage.getItem("loggedInUser");
-      if (user) {
-        const parsedUser = JSON.parse(user);
-        this._myState = {
-          ...this._myState,
-          auth: {
-            isAuthenticated: true,
-            user: parsedUser,
-          },
-        };
-        // Si el usuario está en una ruta pública, redirigir al feed
-        if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-          window.history.replaceState({}, "", "/feed");
-          this._handleRouteChange("/feed");
-        }
-      } else if (auth.currentUser) {
-        // If no local user but Firebase Auth user exists, fetch profile from Firestore
-        getDoc(doc(db, "users", auth.currentUser.uid)).then((userDoc) => {
-          if (userDoc.exists()) {
-            const userProfile = userDoc.data();
-            this._myState = {
-              ...this._myState,
-              auth: {
-                isAuthenticated: true,
-                user: userProfile,
-              },
-            };
-            // Save to localStorage for provisional persistence
-            localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
-            if (["/", "/login", "/signup"].includes(window.location.pathname)) {
-              window.history.replaceState({}, "", "/feed");
-              this._handleRouteChange("/feed");
-            } else {
-              this._handleRouteChange(window.location.pathname);
-            }
-            this._emitChange();
-          }
-        });
-      }
+      // Rely on setUserFromFirebase for authentication and user data
+      this.setUserFromFirebase();
 
-      // Cargar posts
-      const storedPosts = localStorage.getItem("posts");
-      if (storedPosts) {
-        this._myState.posts = JSON.parse(storedPosts);
-      }
+      // Posts should be loaded from Firestore when needed (e.g., on feed page load)
+      this.loadPostsFromFirestore(); // This will be called explicitly where posts are needed.
 
-      // Cargar ratings de profesores
-      const storedTeacherRatings = localStorage.getItem("teacherRatings");
-      if (storedTeacherRatings) {
-        this._myState.teacherRatings = JSON.parse(storedTeacherRatings);
-      }
-
-      // Cargar ratings de materias
-      const storedSubjectRatings = localStorage.getItem("subjectRatings");
-      if (storedSubjectRatings) {
-        this._myState.subjectRatings = JSON.parse(storedSubjectRatings);
-      }
-
-      // Cargar likes de usuarios
-      const storedUserLikes = localStorage.getItem("userLikes");
-      if (storedUserLikes) {
-        this._myState.userLikes = JSON.parse(storedUserLikes);
-      }
-
-      // Cargar comentarios
-      const storedComments = localStorage.getItem("comments");
-      if (storedComments) {
-        this._myState.comments = JSON.parse(storedComments);
-      }
-
-      // Load navigation state
-      this._myState.navigation.returnToFeed = sessionStorage.getItem("returnToFeed") === "true";
-      this._myState.navigation.returnToProfile =
-        sessionStorage.getItem("returnToProfile") === "true";
-
-      // Sincronizar el estado con localStorage
-      this.syncWithLocalStorage();
+      // Ratings, likes, and comments will be managed directly via Firestore
+      // Remove all localStorage.getItem for these as they will be fetched on demand or managed in Firestore.
 
       this._emitChange();
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
+      console.error("Error loading data:", error);
       // Reiniciar el estado en caso de error
       this._myState = {
         ...this._myState,
@@ -1001,34 +832,8 @@ class Store {
   }
 
   private syncWithLocalStorage(): void {
-    // Sincronizar usuarios
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    if (this._myState.auth.user) {
-      const currentUser = users.find((u: any) => u.username === this._myState.auth.user.username);
-      if (!currentUser) {
-        // Si el usuario no existe en la lista de usuarios, cerrar sesión
-        this._myState.auth = {
-          isAuthenticated: false,
-          user: null,
-        };
-        localStorage.removeItem("loggedInUser");
-      }
-    }
-
-    // Sincronizar posts con el usuario actual
-    if (this._myState.auth.user) {
-      this._myState.posts = this._myState.posts.filter((post) =>
-        users.some((u: any) => u.username === post.name)
-      );
-    }
-
-    // Sincronizar likes
-    if (this._myState.auth.user) {
-      const username = this._myState.auth.user.username;
-      if (!this._myState.userLikes[username]) {
-        this._myState.userLikes[username] = [];
-      }
-    }
+    // This method is no longer needed as we removed localStorage usage
+    // It will be removed entirely.
   }
 
   // Método mejorado para obtener posts filtrados
@@ -1063,7 +868,11 @@ class Store {
 
   private _loadPostsFromStorage(): Post[] {
     try {
-      return JSON.parse(localStorage.getItem("posts") || "[]");
+      // This method is no longer needed as posts are loaded directly from Firestore
+      // via loadPostsFromFirestore. We will return an empty array or handle it
+      // if there's a specific use case where posts are still expected from local storage,
+      // but for now, it's deprecated.
+      return [];
     } catch (error) {
       console.error("Failed to load posts from storage:", error);
       return [];
@@ -1072,28 +881,21 @@ class Store {
 
   private _savePostsToStorage(posts: Post[]): void {
     try {
-      localStorage.setItem("posts", JSON.stringify(posts));
+      // This method is no longer needed as posts are now managed directly in Firestore.
+      // We will remove any logic that attempts to save to local storage.
     } catch (error) {
       console.error("Failed to save posts to storage:", error);
     }
   }
 
   private _getLoggedInUser(): any {
-    try {
-      return JSON.parse(localStorage.getItem("loggedInUser") || "null");
-    } catch (error) {
-      console.error("Error getting logged in user:", error);
-      return null;
-    }
+    // Retrieve the user directly from the in-memory state
+    return this._myState.auth.user;
   }
 
   private _removeLoggedInUser(): void {
-    try {
-      localStorage.removeItem("loggedInUser");
-    } catch (error) {
-      console.error("Error removing logged in user:", error);
-      throw error;
-    }
+    // No localStorage removal needed as we are not persisting user in localStorage
+    // The actual logout is handled by signOut(auth) in _handleActions
   }
 
   // Public methods for profile management
@@ -1104,44 +906,7 @@ class Store {
   removeLoggedInUser(): void {
     this._removeLoggedInUser();
   }
-
-  private _createNewPost(postData: {
-    content: string;
-    category: string;
-    image: File | null;
-    createdAt: string;
-  }): Post | null {
-    const user = this._getLoggedInUser();
-    if (!user) {
-      console.error("No logged in user found");
-      return null;
-    }
-
-    const name = user?.username || "Unknown User";
-    const career = user?.degree || "Unknown Career";
-    const semestre = user?.semester || "";
-    let photo = user?.profilePic;
-    if (!photo && postData.image) {
-      photo = URL.createObjectURL(postData.image);
-    } else if (!photo) {
-      photo = `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
-    }
-
-    return {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      photo: photo,
-      name: name,
-      date: new Date().toLocaleDateString(),
-      career: career,
-      semestre: semestre,
-      message: postData.content,
-      tag: postData.category,
-      likes: 0,
-      share: "0",
-      comments: [],
-    };
-  }
-
+  
   private _updatePostLikes(postId: string, increment: boolean): void {
     const posts = this._loadPostsFromStorage();
     const post = posts.find((p: Post) => p.id === postId);
@@ -1153,49 +918,61 @@ class Store {
   }
 
   // Public methods
-  createPost(postData: {
+  async createPost(postData: {
     content: string;
     category: string;
-    image: File | null;
+    image?: string | null;
+    video?: string | null;
+    mediaType?: 'image' | 'video' | null;
     createdAt: string;
-  }): void {
-    const newPost = this._createNewPost(postData);
-    if (!newPost) return;
+  }): Promise<void> {
+    try {
+      const userData = this._getUserData();
+      const newPost: Post = {
+        id: crypto.randomUUID(),
+        photo: userData.photo,
+        name: userData.name,
+        career: userData.career,
+        semestre: "1", // This should be updated with actual semester data
+        message: postData.content,
+        tag: postData.category,
+        likes: 0,
+        date: postData.createdAt,
+        share: "0",
+        comments: [],
+        image: postData.image || null,
+        video: postData.video || null,
+        mediaType: postData.mediaType || null
+      };
 
-    const currentPosts = this._loadPostsFromStorage();
-    const postExists = currentPosts.some((post: Post) => post.id === newPost.id);
-
-    if (!postExists) {
-      currentPosts.unshift(newPost);
-      this._savePostsToStorage(currentPosts);
-
-      AppDispatcher.dispatch({
-        type: PostActionTypes.ADD_POST,
-        payload: newPost,
-      });
+      await addPostToFirestore(newPost);
+      this._myState.posts = [newPost, ...this._myState.posts];
+      this._savePostsToStorage(this._myState.posts);
+      this._emitChange();
+    } catch (error) {
+      console.error("Error creating post:", error);
+      throw error;
     }
   }
 
-  updatePostLikes(postId: string, userId: string, liked: boolean): void {
-    this._updatePostLikes(postId, liked);
-    this.saveUserLikes(userId, postId, liked);
-
-    const posts = this._loadPostsFromStorage();
-    const post = posts.find((p: Post) => p.id === postId);
-
-    if (post) {
-      AppDispatcher.dispatch({
-        type: liked ? PostActionTypes.LIKE_POST : PostActionTypes.UNLIKE_POST,
-        payload: {
-          postId,
-          likes: post.likes,
-        },
-      });
-    }
-  }
-
-  loadPostsFromStorage(): void {
-    const posts = this._loadPostsFromStorage();
+  async loadPostsFromFirestore(): Promise<void> {
+    const rawPosts = await getAllPostsFromFirestore();
+    const posts: Post[] = rawPosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: p.career || '',
+      semestre: p.semestre || '',
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+      video: p.video || null,
+      mediaType: p.mediaType || null,
+    }));
     this._myState = {
       ...this._myState,
       posts,
@@ -1203,28 +980,26 @@ class Store {
     this._emitChange();
   }
 
-  private _getProfilePosts(username: string): Post[] {
-    try {
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      return posts.filter((p: Post) => p.name === username);
-    } catch (error) {
-      console.error("Error getting profile posts:", error);
-      return [];
-    }
-  }
-
-  // Public methods
-  getProfilePosts(): Post[] {
-    const user = this._getLoggedInUser();
-    if (!user) return [];
-    return this._getProfilePosts(user.username);
-  }
-
-  loadProfilePosts(): void {
+  async loadProfilePosts(): Promise<void> {
     const user = this._getLoggedInUser();
     if (!user) return;
-
-    const profilePosts = this._getProfilePosts(user.username);
+    const rawProfilePosts = await getPostsByUsername(user.username);
+    const profilePosts: Post[] = rawProfilePosts.map((p: any) => ({
+      id: p.id || '',
+      photo: p.photo || '',
+      name: p.name || '',
+      date: p.date || '',
+      career: p.career || '',
+      semestre: p.semestre || '',
+      message: p.message || '',
+      tag: p.tag || '',
+      likes: p.likes || 0,
+      share: p.share || '0',
+      comments: p.comments || [],
+      image: p.image || null,
+      video: p.video || null,
+      mediaType: p.mediaType || null,
+    }));
     this._myState = {
       ...this._myState,
       posts: profilePosts,
@@ -1233,21 +1008,12 @@ class Store {
   }
 
   private _getUserData(): { photo: string; name: string; career: string } {
-    try {
-      const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
-      return {
-        photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
-        name: user?.username || "Anonymous",
-        career: user?.career || "",
-      };
-    } catch (error) {
-      console.error("Error getting user data:", error);
-      return {
-        photo: "https://picsum.photos/seed/default/200/300",
-        name: "Anonymous",
-        career: "",
-      };
-    }
+    const user = this._myState.auth.user;
+    return {
+      photo: user?.profilePic || "https://picsum.photos/seed/default/200/300",
+      name: user?.username || "Anonymous",
+      career: user?.career || "",
+    };
   }
 
   // Public methods
@@ -1277,8 +1043,6 @@ class Store {
       },
     };
 
-    // Persist comments to localStorage
-    localStorage.setItem("comments", JSON.stringify(this._myState.comments));
     this._emitChange();
   }
 
@@ -1311,16 +1075,8 @@ class Store {
         : rating;
 
     // Update the rating in localStorage for the card
-    const cardData = JSON.parse(
-      localStorage.getItem(`selected${type === "teacher" ? "Teacher" : "Subject"}`) || "{}"
-    );
-    if (cardData.name === name) {
-      cardData.rating = averageRating.toFixed(1);
-      localStorage.setItem(
-        `selected${type === "teacher" ? "Teacher" : "Subject"}`,
-        JSON.stringify(cardData)
-      );
-    }
+    // Removed localStorage update as it's no longer used.
+    // cardData and localStorage.setItem calls are removed.
   }
 
   // Public methods
@@ -1356,7 +1112,6 @@ class Store {
           ],
         },
       };
-      localStorage.setItem("teacherRatings", JSON.stringify(this._myState.teacherRatings));
     } else {
       const currentRatings = this._myState.subjectRatings[reviewData.name] || [];
       this._myState = {
@@ -1375,7 +1130,6 @@ class Store {
           ],
         },
       };
-      localStorage.setItem("subjectRatings", JSON.stringify(this._myState.subjectRatings));
     }
 
     // Update average rating
@@ -1391,23 +1145,11 @@ class Store {
   }
 
   private _getPostById(postId: string): Post | null {
-    try {
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      return posts.find((post: Post) => post.id === postId) || null;
-    } catch (error) {
-      console.error("Error getting post by ID:", error);
-      return null;
-    }
+    return this._myState.posts.find((post: Post) => post.id === postId) || null;
   }
 
   private _getUserLikeStatus(userId: string, postId: string): boolean {
-    try {
-      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-      return userLikes[userId] && userLikes[userId].includes(postId);
-    } catch (error) {
-      console.error("Error getting user like status:", error);
-      return false;
-    }
+    return this._myState.userLikes[userId] && this._myState.userLikes[userId].includes(postId);
   }
 
   // Public methods
@@ -1420,13 +1162,9 @@ class Store {
   }
 
   private _validateUserCredentials(username: string, password: string): any | null {
-    try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      return users.find((u: any) => u.username === username && u.password === password) || null;
-    } catch (error) {
-      console.error("Error validating user credentials:", error);
-      return null;
-    }
+    // Users are now authenticated directly with Firebase Auth.
+    // This method is no longer needed as we are not validating local storage users.
+    return null;
   }
 
   // Public methods
@@ -1512,41 +1250,21 @@ class Store {
       return phoneValidation;
     }
 
-    // Check for duplicate username or email
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const duplicate = users.find((u: any) => u.username === username || u.email === email);
-    if (duplicate) {
-      return { isValid: false, error: "Username or email already exists" };
-    }
+    // User existence check is now handled by Firebase `registerUser` before saving to Firestore.
+    // The local storage check for duplicate username or email is no longer needed.
 
     return { isValid: true };
   }
 
   private _getSubjectReviews(subjectName: string): Review[] {
-    try {
-      const localKey = `subjectReviews_${subjectName}`;
-      return JSON.parse(localStorage.getItem(localKey) || "[]");
-    } catch (error) {
-      console.error("Error getting subject reviews:", error);
-      return [];
-    }
+    // Subject reviews will be fetched directly from Firestore or managed in state.
+    // This method is no longer needed for local storage retrieval.
+    return [];
   }
 
   private _saveSubjectReview(subjectName: string, review: Review): void {
-    try {
-      const localKey = `subjectReviews_${subjectName}`;
-      const localReviews = this._getSubjectReviews(subjectName);
-      if (
-        !localReviews.some(
-          (r) => r.author === review.author && r.text === review.text && r.date === review.date
-        )
-      ) {
-        localReviews.unshift(review);
-        localStorage.setItem(localKey, JSON.stringify(localReviews));
-      }
-    } catch (error) {
-      console.error("Error saving subject review:", error);
-    }
+    // Subject reviews will be saved directly to Firestore or managed in state.
+    // This method is no longer needed for local storage saving.
   }
 
   // Public methods for subject reviews
@@ -1559,30 +1277,14 @@ class Store {
   }
 
   private _getTeacherReviews(teacherName: string): Review[] {
-    try {
-      const localKey = `teacherReviews_${teacherName}`;
-      return JSON.parse(localStorage.getItem(localKey) || "[]");
-    } catch (error) {
-      console.error("Error getting teacher reviews:", error);
-      return [];
-    }
+    // Teacher reviews will be fetched directly from Firestore or managed in state.
+    // This method is no longer needed for local storage retrieval.
+    return [];
   }
 
   private _saveTeacherReview(teacherName: string, review: Review): void {
-    try {
-      const localKey = `teacherReviews_${teacherName}`;
-      const localReviews = this._getTeacherReviews(teacherName);
-      if (
-        !localReviews.some(
-          (r) => r.author === review.author && r.text === review.text && r.date === review.date
-        )
-      ) {
-        localReviews.unshift(review);
-        localStorage.setItem(localKey, JSON.stringify(localReviews));
-      }
-    } catch (error) {
-      console.error("Error saving teacher review:", error);
-    }
+    // Teacher reviews will be saved directly to Firestore or managed in state.
+    // This method is no longer needed for local storage saving.
   }
 
   // Public methods for teacher reviews
@@ -1612,63 +1314,15 @@ class Store {
 
   // Profile-related methods
   private _deleteUserAccount(username: string): void {
-    try {
-      // Remove user's posts
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.filter((p: any) => p.name !== username);
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
-
-      // Remove user's likes
-      const userLikes = JSON.parse(localStorage.getItem("userLikes") || "{}");
-      delete userLikes[username];
-      localStorage.setItem("userLikes", JSON.stringify(userLikes));
-
-      // Remove user's teacher ratings
-      const teacherRatings = JSON.parse(localStorage.getItem("teacherRatings") || "{}");
-      Object.keys(teacherRatings).forEach((teacher) => {
-        teacherRatings[teacher] = teacherRatings[teacher].filter((r: any) => r.userId !== username);
-      });
-      localStorage.setItem("teacherRatings", JSON.stringify(teacherRatings));
-
-      // Remove user's subject ratings
-      const subjectRatings = JSON.parse(localStorage.getItem("subjectRatings") || "{}");
-      Object.keys(subjectRatings).forEach((subject) => {
-        subjectRatings[subject] = subjectRatings[subject].filter((r: any) => r.userId !== username);
-      });
-      localStorage.setItem("subjectRatings", JSON.stringify(subjectRatings));
-
-      // Remove logged in user
-      localStorage.removeItem("loggedInUser");
-    } catch (error) {
-      console.error("Error deleting user account:", error);
-      throw error;
-    }
+    // Account deletion now primarily involves Firebase Auth and Firestore.
+    // Removing local storage items is no longer relevant.
   }
 
   private _updateUserProfile(oldUsername: string, updatedUser: any): void {
-    try {
-      // Update loggedInUser in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
-
-      // Update all posts for this user
-      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-      const updatedPosts = posts.map((post: any) => {
-        if (post.name === oldUsername) {
-          return {
-            ...post,
-            name: updatedUser.username,
-            career: updatedUser.degree,
-            semestre: updatedUser.semester,
-            photo: updatedUser.profilePic || post.photo,
-          };
-        }
-        return post;
-      });
-      localStorage.setItem("posts", JSON.stringify(updatedPosts));
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      throw error;
-    }
+    // Update user profile in Firestore directly. No localStorage update needed.
+    // The `updatedUser` should already be in the state if setUserFromFirebase is working.
+    // This method should ideally be replaced with a direct Firestore update call.
+    console.warn("'_updateUserProfile' should directly update Firestore.");
   }
 
   // Public methods for profile management
@@ -1714,7 +1368,67 @@ class Store {
       }
     }
   }
+
+  private _createNewPost(postData: {
+    content: string;
+    category: string;
+    image: string | null;
+    createdAt: string;
+  }): Post | null {
+    const user = this._getLoggedInUser();
+    if (!user) {
+      console.error("No logged in user found");
+      return null;
+    }
+    const name = user?.username || "Unknown User";
+    const career = user?.degree || "Unknown Career";
+    const semestre = user?.semester || "";
+    const photo = user?.profilePic || `https://picsum.photos/800/450?random=${Math.floor(Math.random() * 100)}`;
+    return {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      photo: photo,
+      name: name,
+      date: new Date().toLocaleDateString(),
+      career: career,
+      semestre: semestre,
+      message: postData.content,
+      tag: postData.category,
+      likes: 0,
+      share: "0",
+      comments: [],
+      image: postData.image,
+    };
+  }
+
+  async updatePostLikes(postId: string, userId: string, liked: boolean) {
+    // Find the post in local state
+    const postIndex = this._myState.posts.findIndex(post => post.id === postId);
+    if (postIndex === -1) return;
+    const post = this._myState.posts[postIndex];
+    // Update likes count
+    let newLikes = post.likes || 0;
+    if (liked) {
+      newLikes += 1;
+      // Add postId to userLikes
+      if (!this._myState.userLikes[userId]) this._myState.userLikes[userId] = [];
+      if (!this._myState.userLikes[userId].includes(postId)) {
+        this._myState.userLikes[userId].push(postId);
+      }
+    } else {
+      newLikes = Math.max(0, newLikes - 1);
+      // Remove postId from userLikes
+      if (this._myState.userLikes[userId]) {
+        this._myState.userLikes[userId] = this._myState.userLikes[userId].filter(id => id !== postId);
+      }
+    }
+    // Update Firestore
+    await updatePostLikesInFirestore(postId, newLikes);
+    // Update local state
+    this._myState.posts[postIndex].likes = newLikes;
+    this._emitChange();
+  }
 }
 
-export const store = Store.getInstance();
+const store = Store.getInstance();
 export default store;
+export { store };

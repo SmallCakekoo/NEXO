@@ -2,6 +2,7 @@ import { Post } from "../../types/feed/feeds.types";
 import { AppDispatcher } from "../../flux/Dispatcher";
 import { PostActionTypes } from "../../types/feed/PostActionTypes";
 import { store, State } from "../../flux/Store";
+import { FeedActions } from "../../flux/FeedActions";
 
 class ProfileContainer extends HTMLElement {
   private posts: Post[] = [];
@@ -16,6 +17,7 @@ class ProfileContainer extends HTMLElement {
   connectedCallback() {
     this.subscribeToStore();
     this.setupEventListeners();
+    store.loadProfilePosts();
     
     // Listen for profile updates
     document.addEventListener('profile-updated', () => {
@@ -45,7 +47,7 @@ class ProfileContainer extends HTMLElement {
   }
 
   private handleStoreChange(state: State) {
-    this.posts = store.getProfilePosts();
+    this.posts = state.posts;
     this.render();
   }
 
@@ -53,7 +55,7 @@ class ProfileContainer extends HTMLElement {
   setupEventListeners() {
     const fab = this.shadowRoot!.querySelector("floating-btn");
     fab?.addEventListener("click", () => {
-      window.dispatchEvent(new CustomEvent("open-modal"));
+      FeedActions.openPostModal(null);
     });
   }
 

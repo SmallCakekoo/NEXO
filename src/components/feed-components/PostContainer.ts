@@ -86,6 +86,7 @@ export class PostContainer extends HTMLElement {
   private handleStoreChange(state: State) {
     // Update filtered posts based on store state
     this.filteredPosts = store.getFilteredPosts(state.selectedTag);
+    console.log("PostContainer: filteredPosts updated to", this.filteredPosts);
     this.render();
   }
 

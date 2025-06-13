@@ -23,6 +23,9 @@ class ProfilePost extends HTMLElement {
       date: "",
       share: "",
       comments: [],
+      image: null,
+      video: null,
+      mediaType: null,
     };
   }
 
@@ -39,6 +42,9 @@ class ProfilePost extends HTMLElement {
       "date",
       "share",
       "comments",
+      "image",
+      "video",
+      "mediatype",
     ];
   }
 
@@ -55,6 +61,12 @@ class ProfilePost extends HTMLElement {
       } catch {
         this.post.comments = [];
       }
+    } else if (propName === "image") {
+      this.post.image = newValue as string;
+    } else if (propName === "video") {
+      this.post.video = newValue as string;
+    } else if (propName === "mediaType") {
+      this.post.mediaType = newValue as "image" | "video";
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
     }
@@ -417,86 +429,86 @@ class ProfilePost extends HTMLElement {
             .just-likes,
             .just-comments,
             .just-share {
-              flex: 1;
-              justify-content: center;
+              font-size: 0.75rem;
               padding: 0.3rem 0;
-              font-size: 0.8rem;
-            }
-
-            .tag {
-              font-size: 0.65rem;
-              padding: 3px 10px;
-              margin: 0.5rem 0;
-            }
-
-            .profile-picture {
-              width: 40px;
-              height: 40px;
-            }
-
-            .name {
-              font-size: 0.95rem;
-            }
-
-            .date {
-              font-size: 0.85rem;
-              transform: translateY(0);
             }
           }
-
         </style>
         <div class="post">
-          <div class="attributes-container">
-            <div class="user-container"> 
-              <div class="profile-container">
-                <img class="profile-picture" src="${this.post.photo}" alt="Profile Picture">
-                <div class="name-container">
-                  <p class="name">${this.post.name}</p>
-                  <p class="date">${this.post.date}</p>
+          <div class="user-container">
+            <div class="profile-container">
+              <img src="${this.post.photo}" alt="Profile Picture" class="profile-picture" />
+              <div class="name-container">
+                <p class="name">${this.post.name}</p>
+                <div class="the-career">
+                  <p class="career">${this.post.career}</p>
+                  <p class="semestre">${this.post.semestre}</p>
                 </div>
               </div>
-
-              <div class="the-career">
-                <p class="career">${this.post.career}</p>
-                <p class="semestre">${this.post.semestre}</p>
-              </div>
             </div>
-
-            <div class="message-container">
-              <p class="message">${this.post.message}</p>
-            </div>
+            <span class="date">${this.post.date}</span>
           </div>
-
-          <p class="tag">${this.post.tag}</p>
-          
-          <hr>
-          <div class="footer">  
-             <div class="align-likes">
-              <button class="just-likes ${userLikedPost ? "liked" : ""}">
-                <svg class="like-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-width="2"/>
-                </svg>
-                <p class="likes-count">${this.post.likes} Likes</p>
-              </button>
-            </div>  
-
-            <div class="align-comments">
-              <button class="just-comments">
-                <svg class="comment-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-                </svg>
-                <p class="comments-count">Comment</p>
-              </button>
-            </div>
-
-            <div class="align-share">
-              <button class="just-share">
-                <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
-                </svg>
-                <p class="share-count">Shared</p>
-              </button>
-            </div>
+          <p class="message-container message">${this.post.message}</p>
+          ${this.post.mediaType === 'image' && this.post.image ? `<img src="${this.post.image}" alt="Post Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px;" />` : ''}
+          ${this.post.mediaType === 'video' && this.post.video ? `<video controls src="${this.post.video}" style="max-width: 100%; border-radius: 8px; margin-top: 10px;"></video>` : ''}
+          <span class="tag">${this.post.tag}</span>
+          <hr />
+          <div class="footer">
+            <button class="just-likes ${userLikedPost ? 'liked' : ''}">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                class="like-icon"
+              >
+                <path
+                  d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"
+                  stroke="#6B7280"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="likes-count">${this.post.likes} Likes</span>
+            </button>
+            <button class="just-comments">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                class="comment-icon"
+              >
+                <path
+                  d="M21 11.5C21 16.75 16.75 21 11.5 21H3L2.25 21.75L2.25 21.75L3 21H2.5C2.17 21 1.84 20.97 1.51 20.92C1.19 20.87 0.88 20.79 0.58 20.66C0.29 20.53 0.05 20.36 -0.19 20.14L-0.25 20.08L-0.25 20.08C-0.342111 19.9892 -0.424169 19.8973 -0.495254 19.8049L-0.5 19.75V19.75C-0.5 19.75 -0.5 19.75 -0.5 19.75L-0.56 19.68L-0.56 19.68C-0.65 19.56 -0.73 19.43 -0.8 19.3L-0.86 19.18C-0.93 19.04 -0.99 18.91 -1.04 18.77L-1.04 18.77C-1.12 18.5 -1.18 18.23 -1.23 17.96L-1.23 17.96C-1.29 17.63 -1.33 17.3 -1.36 16.97L-1.37 16.89L-1.37 16.89C-1.39 16.55 -1.4 16.21 -1.41 15.88L-1.41 15.88C-1.41 15.54 -1.41 15.21 -1.41 14.87V11.5C-1.41 6.25 2.84 2 8.09 2H11.5C16.75 2 21 6.25 21 11.5Z"
+                  fill="#5354ED"
+                  stroke="#5354ED"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="comments-count">${this.post.comments.length} Comments</span>
+            </button>
+            <button class="just-share">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class="share-icon"
+              >
+                <path
+                  d="M18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 6.66 16.34 8 18 8ZM6 15C7.66 15 9 13.66 9 12C9 10.34 7.66 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15ZM18 22C19.66 22 21 20.66 21 19C21 17.34 19.66 16 18 16C16.34 16 15 17.34 15 19C15 20.66 16.34 22 18 22ZM16.5 6.5L7.59 11.5L8.04 12.46L17.02 7.42L16.5 6.5ZM7.59 12.46L16.5 17.5L17.02 16.58L8.04 11.54L7.59 12.46Z"
+                  fill="#5354ED"
+                />
+              </svg>
+              <span>${this.post.share} Shares</span>
+            </button>
           </div>
         </div>
       `;

@@ -50,11 +50,6 @@ class SettingsProfileHeader extends HTMLElement {
     fileInput?.addEventListener("change", async () => {
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-          const base64 = e.target?.result as string;
-          if (!base64) return;
 
           // Get current user from store state
           const user = store.getState().auth.user;
@@ -64,16 +59,8 @@ class SettingsProfileHeader extends HTMLElement {
             return;
           }
 
-          // Update profile photo using Flux action
-          ProfileActions.updateProfilePhoto(base64);
-        };
-
-        reader.onerror = (error) => {
-          console.error("Error reading file:", error);
-          alert("Error uploading image. Please try again.");
-        };
-
-        reader.readAsDataURL(file);
+        // Update profile photo using Flux action, passing the File object
+        ProfileActions.updateProfilePhoto(file);
       }
     });
   }

@@ -145,7 +145,8 @@ document.addEventListener("post-published", (event) => {
   const customEvent = event as CustomEvent<{
     content: string;
     category: string;
-    image: File | null;
+    imageFile?: File | null;
+    videoFile?: File | null;
     createdAt: string;
   }>;
   const postData = customEvent.detail;

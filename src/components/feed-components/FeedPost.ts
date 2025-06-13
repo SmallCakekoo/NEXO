@@ -23,6 +23,9 @@ class FeedPost extends HTMLElement {
       date: "",
       share: "",
       comments: [],
+      image: null,
+      video: null,
+      mediaType: null,
     };
   }
 
@@ -39,6 +42,9 @@ class FeedPost extends HTMLElement {
       "share",
       "comments",
       "id",
+      "image",
+      "video",
+      "mediatype",
     ];
   }
 
@@ -57,6 +63,12 @@ class FeedPost extends HTMLElement {
       }
     } else if (propName === "id") {
       this.post.id = newValue as string;
+    } else if (propName === "image") {
+      this.post.image = newValue as string;
+    } else if (propName === "video") {
+      this.post.video = newValue as string;
+    } else if (propName === "mediaType") {
+      this.post.mediaType = newValue as "image" | "video";
     } else if (typeof newValue === "string") {
       this.post[propName] = newValue;
     }
@@ -506,13 +518,11 @@ class FeedPost extends HTMLElement {
                 <img class="profile-picture" src="${this.post.photo}" alt="Profile Picture">
                 <div class="name-container">
                   <p class="name">${this.post.name}</p>
-                  <p class="date">${this.post.date}</p>
+                  <div class="the-career">
+                    <p class="career">${this.post.career}</p>
+                    <p class="semestre">${this.post.semestre}</p>
+                  </div>
                 </div>
-              </div>
-
-              <div class="the-career">
-                <p class="career">${this.post.career}</p>
-                <p class="semestre">${this.post.semestre}</p>
               </div>
             </div>
 
@@ -520,6 +530,9 @@ class FeedPost extends HTMLElement {
               <p class="message">${this.post.message}</p>
             </div>
           </div>
+
+          ${this.post.mediaType === 'image' && this.post.image ? `<img src="${this.post.image}" alt="Post Image" style="max-width: 100%; border-radius: 8px; margin-top: 10px;" />` : ''}
+          ${this.post.mediaType === 'video' && this.post.video ? `<video controls src="${this.post.video}" style="max-width: 100%; border-radius: 8px; margin-top: 10px;"></video>` : ''}
 
           <p class="tag">${this.post.tag}</p>
           

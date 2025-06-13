@@ -6,6 +6,7 @@ type UserType = {
     semester: string;
     career: string;
     password: string;
+    profileImage?: string;
 };
 
 

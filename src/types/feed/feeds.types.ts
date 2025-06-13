@@ -18,6 +18,9 @@ export interface Post {
   date: string;
   share: string;
   comments: Comment[];
+  image?: string | null;
+  video?: string | null;
+  mediaType?: 'image' | 'video' | null;
 }
 
 export interface PostsResponse {

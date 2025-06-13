@@ -9,7 +9,7 @@ export enum FeedActionsType {
 }
 
 export const FeedActions = {
-  openPostModal: (postId: string) => {
+  openPostModal: (postId: string | null = null) => {
     AppDispatcher.dispatch({
       type: FeedActionsType.OPEN_POST_MODAL,
       payload: { postId },
@@ -29,7 +29,7 @@ export const FeedActions = {
     });
   },
 
-  refreshFeedFromStorage: () => {
-    store.loadPostsFromStorage();
+  refreshFeedFromStorage: async () => {
+    await store.loadPostsFromFirestore();
   }
 };

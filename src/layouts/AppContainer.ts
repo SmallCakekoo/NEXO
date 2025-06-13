@@ -4,6 +4,7 @@ import { AuthActions } from "../flux/AuthActions";
 import { auth, db } from "../services/Firebase/FirebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { UserType } from "../types/Register/UserType";
 
 class AppContainer extends HTMLElement {
   constructor() {
@@ -20,13 +21,11 @@ class AppContainer extends HTMLElement {
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-          const userProfile = userDoc.data();
-          localStorage.setItem("loggedInUser", JSON.stringify(userProfile));
+          const userProfile: UserType = userDoc.data() as UserType;
           AuthActions.loginSuccess(userProfile);
         }
       } else {
         // User is signed out, clear everything
-        localStorage.removeItem("loggedInUser");
         AuthActions.logout(); // This will clear state and redirect
       }
     });

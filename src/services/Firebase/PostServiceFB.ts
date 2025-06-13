@@ -11,7 +11,8 @@ export async function addPostToFirestore(post: any) {
 export async function getAllPostsFromFirestore() {
   const q = query(collection(db, "posts"));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return posts;
 }
 
 // Get posts by username
